@@ -6,7 +6,7 @@
  * @param code year2 code (YY)
  * @returns year2 description
  */
- function year2Description(code: string): string {
+export function year2Description(code: string): string {
   var val = parseInt(code, 10);
   return val > 50? '19' + code : '20' + code;
 }
@@ -16,7 +16,7 @@
  * @param desc year2 description
  * @returns year2 code (YY)
  */
-function year2(desc: string): string {
+export function year2(desc: string): string {
   return desc.substring(2);
 }
 
@@ -47,7 +47,7 @@ const MONTH3_DESCRIPTION: Map<string, string> = new Map([
  * @param code month3 code (MMM)
  * @returns month3 description
  */
- function month3Description(code: string): string {
+export function month3Description(code: string): string {
   return MONTH3_DESCRIPTION.get(code);
 }
 
@@ -56,7 +56,7 @@ const MONTH3_DESCRIPTION: Map<string, string> = new Map([
  * @param desc month3 description
  * @returns month3 code (MMM)
  */
-function month3(desc: string): string {
+export function month3(desc: string): string {
   return desc.substring(0, 3).toUpperCase();
 }
 
@@ -102,7 +102,7 @@ const MONTH1_CODE: Map<string, string> = new Map([
  * @param code month1 code (MMM)
  * @returns month1 description
  */
- function month1Description(code: string): string {
+export function month1Description(code: string): string {
   return MONTH1_DESCRIPTION.get(code);
 }
 
@@ -111,7 +111,7 @@ const MONTH1_CODE: Map<string, string> = new Map([
  * @param desc month1 description
  * @returns month1 code (MMM)
  */
-function month1(desc: string): string {
+export function month1(desc: string): string {
   var key = desc.substring(0, 3).toUpperCase();
   return MONTH1_CODE.get(key);
 }
@@ -127,7 +127,7 @@ function month1(desc: string): string {
  * @param code day2 code (DD)
  * @returns day2 description
  */
- function day2Description(code: string): string {
+export function day2Description(code: string): string {
   return code.replace(/^0+/, '');
 }
 
@@ -136,7 +136,7 @@ function month1(desc: string): string {
  * @param desc day2 description
  * @returns day2 code (DD)
  */
-function day2(desc: string): string {
+export function day2(desc: string): string {
   return desc.padStart(2, '0');
 }
 
@@ -157,7 +157,7 @@ const OPTION_TYPE_DESCRIPTION: Map<string, string> = new Map([
  * @param code option type code (CE, PE)
  * @returns option type description
  */
- function optionTypeDescription(code: string): string {
+export function optionTypeDescription(code: string): string {
   return OPTION_TYPE_DESCRIPTION.get(code);
 }
 
@@ -166,7 +166,7 @@ const OPTION_TYPE_DESCRIPTION: Map<string, string> = new Map([
  * @param desc option type description
  * @returns option type code (CE, PE)
  */
-function optionType(desc: string): string {
+export function optionType(desc: string): string {
   return /^[ps]/i.test(desc)? 'PE' : 'CE';
 }
 
@@ -194,7 +194,7 @@ const EXCHANGE_CODE: Map<string, number> = new Map([
  * @param code exchange code (10, 11, 12)
  * @returns exchange description
  */
-function exchangeDescription(code: number): string {
+export function exchangeDescription(code: number): string {
   return EXCHANGE_DESCRIPTION.get(code);
 }
 
@@ -203,7 +203,7 @@ function exchangeDescription(code: number): string {
  * @param desc exchange description
  * @returns exchange code (10, 11, 12)
  */
-function exchange(desc: string): number {
+export function exchange(desc: string): number {
   var key = desc.charAt(0).toUpperCase();
   return EXCHANGE_CODE.get(key);
 }
@@ -234,7 +234,7 @@ const SEGMENT_CODE: Map<string, number> = new Map([
  * @param code segment code (10, 11, 12, 20)
  * @returns segment description
  */
-function segmentDescription(code: number): string {
+export function segmentDescription(code: number): string {
   return SEGMENT_DESCRIPTION.get(code);
 }
 
@@ -243,7 +243,7 @@ function segmentDescription(code: number): string {
  * @param desc segment description
  * @returns segment code (10, 11, 12, 20)
  */
-function segment(desc: string): number {
+export function segment(desc: string): number {
   var key = 'CM';
   if (/^com/i.test(desc)) key = 'COM';
   else if (/^cur/i.test(desc)) key = 'CD';
@@ -319,7 +319,7 @@ const INSTRUMENT_TYPE_CODE: Map<string, number> = new Map([
  * @param code instrument type code (0-32)
  * @returns instrument type description
  */
-function instrumentTypeDescription(code: number): string {
+export function instrumentTypeDescription(code: number): string {
   return INSTRUMENT_TYPE_DESCRIPTION.get(code);
 }
 
@@ -328,7 +328,7 @@ function instrumentTypeDescription(code: number): string {
  * @param desc instrument type description
  * @returns instrument type code (0-32)
  */
-function instrumentType(desc: string): number {
+export function instrumentType(desc: string): number {
   var key = 'EQ';
   var fut = /fut|future/i.test(desc);
   var opt = /opt|option/i.test(desc);
@@ -365,7 +365,7 @@ function instrumentType(desc: string): number {
 
 
 // PRODUCT-TYPES
-// --------------
+// -------------
 
 const PRODUCT_TYPE_DESCRIPTION: Map<string, string> = new Map([
   ['CNC',      'For equity only'],
@@ -390,7 +390,7 @@ const PRODUCT_TYPE_CODE: Map<string, string> = new Map([
  * @param code product type code (CNC, INTRADAY, MARGIN, CO, BO)
  * @returns product type description
  */
-function productTypeDescription(code: string): string {
+export function productTypeDescription(code: string): string {
   return PRODUCT_TYPE_DESCRIPTION.get(code);
 }
 
@@ -399,7 +399,7 @@ function productTypeDescription(code: string): string {
  * @param desc product type description
  * @returns product type code (CNC, INTRADAY, MARGIN, CO, BO)
  */
-function productType(desc: string): string {
+export function productType(desc: string): string {
   if (/cnc|cash|carry/i.test(desc)) desc = 'Delivery';
   var key = desc.charAt(0).toUpperCase();
   return PRODUCT_TYPE_CODE.get(key);
@@ -409,7 +409,7 @@ function productType(desc: string): string {
 
 
 // ORDER-TYPES
-// --------------
+// -----------
 
 const ORDER_TYPE_DESCRIPTION: Map<number, string> = new Map([
   [1, 'Limit order'],
@@ -431,7 +431,7 @@ const ORDER_TYPE_CODE: Map<string, number> = new Map([
  * @param code order type code (1, 2, 3, 4)
  * @returns order type description
  */
-function orderTypeDescription(code: number): string {
+export function orderTypeDescription(code: number): string {
   return ORDER_TYPE_DESCRIPTION.get(code);
 }
 
@@ -440,7 +440,7 @@ function orderTypeDescription(code: number): string {
  * @param desc order type description
  * @returns order type code (1, 2, 3, 4)
  */
-function orderType(desc: string): number {
+export function orderType(desc: string): number {
   var key = desc.charAt(0).toUpperCase();
   if (/s.+l/i.test(desc)) key = 'R';
   return ORDER_TYPE_CODE.get(key);
@@ -459,6 +459,7 @@ const ORDER_STATUS_DESCRIPTION: Map<number, string> = new Map([
   [4, 'Transit'],
   [5, 'Rejected'],
   [6, 'Pending'],
+  [7, 'Expired'],
 ]);
 
 const ORDER_STATUS_CODE: Map<string, number> = new Map([
@@ -467,24 +468,25 @@ const ORDER_STATUS_CODE: Map<string, number> = new Map([
   ['T', 4],
   ['R', 5],
   ['P', 6],
+  ['E', 7],
 ]);
 
 
 /**
  * Get order status description.
- * @param code order status code (1, 2, 3, 4, 5, 6)
+ * @param code order status code (1, 2, 3, 4, 5, 6, 7)
  * @returns order status description
  */
-function orderStatusDescription(code: number): string {
+export function orderStatusDescription(code: number): string {
   return ORDER_STATUS_DESCRIPTION.get(code);
 }
 
 /**
  * Get order status code.
  * @param desc order status description
- * @returns order status code (1, 2, 3, 4, 5, 6)
+ * @returns order status code (1, 2, 3, 4, 5, 6, 7)
  */
-function orderStatus(desc: string): number {
+export function orderStatus(desc: string): number {
   if (/traded/i.test(desc)) desc = 'Filled';
   var key = desc.charAt(0).toUpperCase();
   return ORDER_STATUS_CODE.get(key);
@@ -512,7 +514,7 @@ const ORDER_SIDE_CODE: Map<string, number> = new Map([
  * @param code order side code (1, -1)
  * @returns order side description
  */
-function orderSideDescription(code: number): string {
+export function orderSideDescription(code: number): string {
   return ORDER_SIDE_DESCRIPTION.get(code);
 }
 
@@ -521,7 +523,7 @@ function orderSideDescription(code: number): string {
  * @param desc order side description
  * @returns order size code (1, -1)
  */
-function orderSide(desc: string): number {
+export function orderSide(desc: string): number {
   var key = desc.charAt(0).toUpperCase();
   return ORDER_SIDE_CODE.get(key);
 }
@@ -550,7 +552,7 @@ const POSITION_SIDE_CODE: Map<string, number> = new Map([
  * @param code position side code (1, -1, 0)
  * @returns position side description
  */
-function positionSideDescription(code: number): string {
+export function positionSideDescription(code: number): string {
   return POSITION_SIDE_DESCRIPTION.get(code);
 }
 
@@ -559,9 +561,39 @@ function positionSideDescription(code: number): string {
  * @param desc position side description
  * @returns position side code (1, -1, 0)
  */
-function positionSide(desc: string): number {
+export function positionSide(desc: string): number {
   var key = desc.charAt(0).toUpperCase();
   return POSITION_SIDE_CODE.get(key);
+}
+
+
+
+
+// HOLDING-TYPES
+// -------------
+
+const HOLDING_TYPE_DESCRIPTION: Map<string, string> = new Map([
+  ['T1',  'The shares are purchased but not yet delivered to the demat account'],
+  ['HLD', 'The shares are purchased and are available in the demat account'],
+]);
+
+
+/**
+ * Get holding type description.
+ * @param code holding type code (T1, HLD)
+ * @returns holding type description
+ */
+export function holdingTypeDescription(code: string): string {
+  return HOLDING_TYPE_DESCRIPTION.get(code);
+}
+
+/**
+ * Get order cource code.
+ * @param desc holding type description
+ * @returns holding type code (T1, HLD)
+ */
+export function holdingType(desc: string): string {
+  return /not|un/i.test(desc)? 'T1' : 'HLD';
 }
 
 
@@ -592,7 +624,7 @@ const ORDER_SOURCE_CODE: Map<string, string> = new Map([
  * @param code order source code (M, W, R, A, ITS)
  * @returns order source description
  */
-function orderSourceDescription(code: string): string {
+export function orderSourceDescription(code: string): string {
   return ORDER_SOURCE_DESCRIPTION.get(code);
 }
 
@@ -601,7 +633,7 @@ function orderSourceDescription(code: string): string {
  * @param desc order source description
  * @returns order source code (M, W, R, A, ITS)
  */
-function orderSource(desc: string): string {
+export function orderSource(desc: string): string {
   var words = desc.split(' ');
   var key   = words[words.length-1].substring(0, 2).toUpperCase();
   return ORDER_SOURCE_CODE.get(key);
@@ -687,6 +719,6 @@ const ERROR_MESSAGE : Map<number, string> = new Map([
  * @param code error code (-ve)
  * @returns error message
  */
-function errorMessage(code: number): string {
+export function errorMessage(code: number): string {
   return ERROR_MESSAGE.get(code);
 }
