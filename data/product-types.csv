@@ -1,0 +1,6 @@
+code,description
+CNC,For equity only
+INTRADAY,Applicable for all segments
+MARGIN,Applicable only for derivatives
+CO,Cover Order
+BO,Bracket Order

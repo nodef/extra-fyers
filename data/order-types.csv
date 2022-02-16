@@ -1,0 +1,5 @@
+code,description
+1,Limit order
+2,Market order
+3,Stop order (SL-M)
+4,Stoplimit order (SL-L)

@@ -1,0 +1,66 @@
+code,message
+-209,Invalid order id
+-101,Invalid order type
+-305,For CO orders only market and limit orders are allowed
+-323,For BO orders only market and limit orders are allowed
+-308,Invalid limit price
+-309,Invalid stop price
+-310,Invalid order quantity
+-311,Invalid stop loss price
+-313,Invalid order side of either buy or sell
+-314,Invalid product type for the order
+-315,Invalid price for stop limit order
+-316,Invalid stop loss price for CO/BO orders
+-323,Invalid stop loss value
+-325,Ivalid target value (take_profit)
+-326,Invalid order validity
+-327,Invalid order disclosed quantity
+-328,Invalid order offline flag
+-201,Connection issue while processing your request
+-202,Connection timed out
+-204,Request wasnt processed
+-205,Market wasnt able to accept or process the request
+-157,User doesnt exist
+-159,Invalid order number
+-161,This order has already been cancelled
+-162,This order has already traded
+-163,Order modfication wasnt done successfully
+-164,This order has already been rejected
+-390,Invalid stop price
+-392,Price is not in multiples of tick size
+-353,API limit exceeded
+-372,Invalid price
+-397,Position quantity is zero
+-398,No open positions
+-399,No pending orders to be closed/cancelled
+-329,Please check if exit positions is complete
+-373,No permission
+-374,Invalid authorization code (auth_code)
+-371,Invalid SHA256 hash of (app_id:secret_key)
+-17,Invalid access token used for authentication
+-352,Invalid app id
+-96,An unexpected error occurred when processing request
+-351,Greater than 50 symbols
+-300,Invalid symbol
+-310,Invalid symbols
+-301,Invalid resolution format
+-302,Invalid historical timestamp from when you require data
+-303,Invalid historical timestamp till when you require data
+-356,The range_from value cannot be greater than range_to value
+-334,Invalid key date format value
+-335,Historical timestamp from when you require data not in epoch format
+-336,Historical timestamp till when you require data not in epoch format
+-337,Historical timestamp from when you require data not in YYYY-MM-DD format
+-338,Historical timestamp till when you require data not in YYYY-MM-DD format
+-339,The range cannot be more than 1 year for day resolution
+-341,The range cannot be more than 100 days for 1 min resolution
+-343,The range cannot be more than 100 days for 2 min resolution
+-344,The range cannot be more than 100 days for 3 min resolution
+-345,The range cannot be more than 100 days for 5 min resolution
+-346,The range cannot be more than 100 days for 10 min resolution
+-347,The range cannot be more than 100 days for 15 min resolution
+-348,The range cannot be more than 100 days for 20 min resolution
+-349,The range cannot be more than 100 days for 30 min resolution
+-353,The range cannot be more than 100 days for 60 min resolution
+-354,The range cannot be more than 100 days for 120 min resolution
+-355,The range cannot be more than 100 days for 240 min resolution
