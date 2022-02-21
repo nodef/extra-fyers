@@ -1,0 +1,103 @@
+import crypto from 'crypto';
+import https from 'https';
+
+
+
+
+// CRYPTO
+// ------
+
+export async function sha256DigestHex(text: string): Promise<string> {
+  return crypto.createHash('sha256').update(text).digest('hex');
+}
+
+
+
+
+// HTTP
+// ----
+
+export interface HttpHeaders {
+  [key: string]: string,
+}
+
+export interface HttpRequestError extends Error {
+  code: number,
+  response: string|object,
+}
+
+export interface HttpRequestOptions {
+  method?: string,
+  query?: object,
+  body?: object,
+  headers?: HttpHeaders,
+  timeout?: number,
+}
+
+
+function queryString(data: object): string {
+  if (data == null) return '';
+  var a = new URLSearchParams();
+  for (var k in data)
+    a.append(k, data[k]);
+  return '?' + a.toString();
+}
+
+function getHttpError(error: Error): HttpRequestError {
+  var a  = error as HttpRequestError;
+  a.code = 0;
+  a.response = null;
+  return a;
+}
+
+function getHttpResponseError(error: Error, code: number, response: string): HttpRequestError {
+  var a  = error as HttpRequestError;
+  a.code = code;
+  a.response = response;
+  return a;
+}
+
+
+function hasHeader(key: string, o: HttpRequestOptions): boolean {
+  if (o.headers == null) return false;
+  if (o.headers.hasOwnProperty(key)) return true;
+  if (o.headers.hasOwnProperty(key.toLowerCase())) return true;
+  return false;
+}
+
+function setHeaders(headers: HttpHeaders, o: HttpRequestOptions): void {
+  if (o.body != null && !hasHeader('Content-Type', o)) {
+    headers['content-type'] = 'application/json; charset=utf-8';
+  }
+  if (!hasHeader('Accept', o)) {
+    headers['accept'] = 'application/json, text/*';
+  }
+}
+
+
+function httpRequest(url: string, o: HttpRequestOptions={}): Promise<string> {
+  return new Promise((resolve, reject) => {
+    url += queryString(o.query);
+    var {method, headers, timeout} = o;
+    setHeaders(headers, o);
+    var req = https.request(url, {method, headers, timeout}, res => {
+      var body = '';
+      res.setEncoding('utf8');
+      res.on('error', e => reject(getHttpResponseError(e, res.statusCode, body)));
+      res.on('data',  chunk => body += chunk);
+      res.on('end',   () => resolve(body));
+    });
+    req.on('error', e => reject(getHttpError(e)));
+    if (o.body != null) req.write(JSON.stringify(o.body));
+    req.end();
+  });
+}
+
+export function httpRequestText(url: string, o: HttpRequestOptions={}): Promise<string> {
+  return httpRequest(url, o);
+}
+
+export async function httpRequestJson(url: string, o: HttpRequestOptions={}): Promise<object> {
+  var response = await httpRequest(url, o);
+  return JSON.parse(response);
+}

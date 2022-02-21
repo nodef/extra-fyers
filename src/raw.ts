@@ -1,4 +1,4 @@
-import {sha256DigestHex} from './_crypto';
+import {sha256DigestHex} from './_utility';
 import {queryString, httpsRequest, HttpsRequestOptions} from './_https';
 
 
