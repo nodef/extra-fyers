@@ -17,6 +17,21 @@ export interface HttpsIncomingMessage extends http.IncomingMessage {
 
 
 
+function makeRequest(url, args, resolve, reject) {
+  var method = args.method != null? args.method.toUpperCase() : 'GET';
+  var body   = args.body;
+}
+
+
+
+
+
+
+
+
+
+
+
 /**
  * Get object as query string .
  * @param data object with keys and values
