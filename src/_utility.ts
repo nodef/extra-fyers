@@ -27,15 +27,15 @@ export interface HttpRequestError extends Error {
 }
 
 export interface HttpRequestOptions {
+  url: string,
   method?: string,
-  query?: object,
   body?: object,
   headers?: HttpHeaders,
   timeout?: number,
 }
 
 
-function queryString(data: object): string {
+export function queryString(data: object): string {
   if (data == null) return '';
   var a = new URLSearchParams();
   for (var k in data)
@@ -75,10 +75,9 @@ function setHeaders(headers: HttpHeaders, o: HttpRequestOptions): void {
 }
 
 
-function httpRequest(url: string, o: HttpRequestOptions={}): Promise<string> {
+function httpRequest(o: HttpRequestOptions): Promise<string> {
   return new Promise((resolve, reject) => {
-    url += queryString(o.query);
-    var {method, headers, timeout} = o;
+    var {url, method, headers, timeout} = o;
     setHeaders(headers, o);
     var req = https.request(url, {method, headers, timeout}, res => {
       var body = '';
@@ -93,11 +92,11 @@ function httpRequest(url: string, o: HttpRequestOptions={}): Promise<string> {
   });
 }
 
-export function httpRequestText(url: string, o: HttpRequestOptions={}): Promise<string> {
-  return httpRequest(url, o);
+export function httpRequestText(options: HttpRequestOptions): Promise<string> {
+  return httpRequest(options);
 }
 
-export async function httpRequestJson(url: string, o: HttpRequestOptions={}): Promise<object> {
-  var response = await httpRequest(url, o);
+export async function httpRequestJson(options: HttpRequestOptions): Promise<object> {
+  var response = await httpRequest(options);
   return JSON.parse(response);
 }

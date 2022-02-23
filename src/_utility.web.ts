@@ -25,15 +25,15 @@ export interface HttpRequestError extends Error {
 }
 
 export interface HttpRequestOptions {
+  url: string,
   method?: string,
-  query?: object,
   body?: object,
   headers?: HttpHeaders,
   timeout?: number,
 }
 
 
-function queryString(data: object): string {
+export function queryString(data: object): string {
   if (data == null) return '';
   var a = new URLSearchParams();
   for (var k in data)
@@ -105,10 +105,10 @@ function setHeaders(xhr: XMLHttpRequest, o: HttpRequestOptions): void {
 }
 
 
-function httpRequest(responseType: string, url: string, o: HttpRequestOptions={}): Promise<string|object> {
+function httpRequest(responseType: string, o: HttpRequestOptions): Promise<string|object> {
   return new Promise((resolve, reject) => {
-    url += queryString(o.query);
-    var method = o.method || 'GET';
+    var url = o.url;
+    var method  = o.method || 'GET';
     var isError = false, isAbort = false, isTimeout = false;
     var xhr = new XMLHttpRequest();
     xhr.open(method, url);
@@ -127,7 +127,7 @@ function httpRequest(responseType: string, url: string, o: HttpRequestOptions={}
     };
     xhr.ontimeout = function(e) {
       isTimeout = true;
-      var xhr = e.target as XMLHttpRequest;
+      var xhr   = e.target as XMLHttpRequest;
       reject(getXhrError(xhr, 'Request timed out'));
     };
     xhr.onreadystatechange = function(e) {
@@ -153,10 +153,10 @@ function httpRequest(responseType: string, url: string, o: HttpRequestOptions={}
   });
 }
 
-export function httpRequestText(url: string, o: HttpRequestOptions={}): Promise<string> {
-  return httpRequest('text', url, o) as Promise<string>;
+export function httpRequestText(options: HttpRequestOptions): Promise<string> {
+  return httpRequest('text', options) as Promise<string>;
 }
 
-export function httpRequestJson(url: string, o: HttpRequestOptions={}): Promise<object> {
-  return httpRequest('json', url, o) as Promise<object>;
+export function httpRequestJson(options: HttpRequestOptions): Promise<object> {
+  return httpRequest('json', options) as Promise<object>;
 }
