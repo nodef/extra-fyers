@@ -1,5 +1,4 @@
-import {sha256DigestHex} from './_utility';
-import {queryString, httpsRequest, HttpsRequestOptions} from './_https';
+import {HttpHeaders, HttpRequestError, HttpRequestOptions, sha256DigestHex, queryString, httpRequestText, httpRequestJson} from './_utility';
 
 
 
@@ -20,7 +19,7 @@ export const DATA_URL: string = 'https://api.fyers.in/data-rest/v2/';
 /**
  * Root URL for Symbol master files.
  */
-export const SYMBOL_URL: string = 'https://public.fyers.in/sym_details/';
+export const SYMBOLS_URL: string = 'https://public.fyers.in/sym_details/';
 
 
 
@@ -29,22 +28,8 @@ export const SYMBOL_URL: string = 'https://public.fyers.in/sym_details/';
 // TYPES (REQUEST/RESPONSE)
 // ------------------------
 
-export interface RequestOptions {
-  method?: string,
-  headers?: object,
-}
-
-/**
- * Defines an HTTPS request (step) to be made.
- */
-export interface RequestStep {
-  /** This is the URL where request need to be sent. */
-  url: string,
-  /** Details such as method, and headers. */
-  options: RequestOptions,
-  /** Any additional POST data. */
-  data: string,
-}
+export type RequestError   = HttpRequestError;
+export type RequestOptions = HttpRequestOptions;
 
 
 /**
@@ -266,7 +251,7 @@ export interface GetHoldingsResponse extends Response {
 // ------------------
 
 /**
- * Order placed by the user across all platforms and exchanges in the current trading day.
+ * Order placed by the user in the current trading day.
  */
 export interface Order {
   /** The unique order id assigned for each order. */
@@ -341,7 +326,15 @@ export interface Order {
 
 
 /**
- * All the orders placed by the user across all platforms and exchanges in the current trading day.
+ * An order placed by the user in the current trading day.
+ */
+ export interface GetOrderRequest {
+  /** The unique order id assigned for each order. */
+  id: string,
+}
+
+/**
+ * All the orders placed by the user in the current trading day.
  */
 export interface GetOrdersResponse extends Response {
   /** List of all orders places during the day. */
@@ -722,6 +715,19 @@ export interface GetMarketStatusResponse extends Response {
 
 
 
+// TYPES (GET-SYMBOL-MASTER)
+// -------------------------
+
+export interface GetSymbolMasterRequest {
+  /** Name of the exchange (NSE, BSE, MCX). */
+  exchange: string,
+  /** The segment whose symbols are needed (CM, FO, CD, COM). */
+  segment: string,
+}
+
+
+
+
 // TYPES (GENERATE-EDIS-TPIN)
 // --------------------------
 
@@ -1032,27 +1038,34 @@ export interface GetMarketDepthResponse extends Response {
 // REQUEST
 // -------
 
-function requestStep(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): RequestStep {
-  var url  = API_URL + path + queryString(query);
-  var data = body == null? '' : JSON.stringify(body);
-  var headers = {};
-  if (auth != null) headers['authorization']  = auth.app_id + ':' + auth.access_token;
-  if (data != null) headers['content-length'] = data.length.toString();
-  if (data != null) headers['content-type']   = 'application/json';
-  return {url, options: {method, headers}, data};
+function requestStep(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): RequestOptions {
+  var url  = path + queryString(query);
+  var headers: HttpHeaders = {};
+  if (auth != null) headers['authorization'] = auth.app_id + ':' + auth.access_token;
+  return {url, method, headers, body};
 }
 
-async function request(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<Response> {
-  var {url, options, data} = requestStep(auth, method, path, query, body);
-  var res = await httpsRequest(url, options as any, data);
-  return JSON.parse(res.body);
+function requestText(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<string> {
+  return httpRequestText(requestStep(auth, method, path, query, body));
+}
+
+function requestJson(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<object> {
+  return httpRequestJson(requestStep(auth, method, path, query, body));
+}
+
+function requestApi(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<Response> {
+  return requestJson(auth, method, API_URL + path, query, body) as Promise<Response>;
+}
+
+function requestData(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<Response> {
+  return requestJson(auth, method, DATA_URL + path, query, body) as Promise<Response>;
+}
+
+function requestSymbols(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<string> {
+  return requestText(auth, method, SYMBOLS_URL + path, query, body);
 }
 
 
-
-
-// RESPONSE
-// --------
 
 
 // AUTHORIZATION
@@ -1060,36 +1073,21 @@ async function request(auth: Authorization|null, method: string, path: string, q
 
 /**
  * Get request step 1 for authorization.
- * @param app_id unique app_id recieved after creating the app
- * @param redirect_uri redirect url set for the app
- * @param state this value is returned as is from request
+ * @param options authorization step 1 details {client_id, redirect_uri, response_type, state}
  * @returns request step 1 for authorization
  */
-export function authorizationStep1(app_id: string, redirect_uri: string, state: string): RequestStep {
-  var query: AuthorizationRequest1 = {
-    client_id: app_id,
-    redirect_uri,
-    response_type: 'code',
-    state,
-  };
-  return requestStep(null, 'GET', 'generate-authcode', query, null);
+export function authorizationStep1(options: AuthorizationRequest1): RequestOptions {
+  return requestStep(null, 'GET', 'generate-authcode', options, null);
 }
 
 
 /**
  * Get request step 2 for authorization.
- * @param app_id unique app_id recieved after creating the app
- * @param app_secret app_secret recieved after creating the app
- * @param auth_code auth_code recieved from step 1
+ * @param options authorization step 2 details {graph_type, appIdHash, code}
  * @returns request step 2 for authorization
  */
-export function authorizationStep2(app_id: string, app_secret: string, auth_code: string): RequestStep {
-  var body: AuthorizationRequest2 = {
-    grant_type: 'authorization_code',
-    appIdHash: sha256DigestHex(app_id + ':' + app_secret),
-    code: auth_code,
-  };
-  return requestStep(null, 'POST', 'validate-authcode', null, body);
+export function authorizationStep2(options: AuthorizationRequest2): RequestOptions {
+  return requestStep(null, 'POST', 'validate-authcode', null, options);
 }
 
 
@@ -1104,7 +1102,7 @@ export function authorizationStep2(app_id: string, app_secret: string, auth_code
  * @returns details of user's profile
  */
 export function getProfile(auth: Authorization): Promise<GetProfileResponse> {
-  return request(auth, 'GET', 'profile', null, null) as Promise<GetProfileResponse>;
+  return requestApi(auth, 'GET', 'profile', null, null) as Promise<GetProfileResponse>;
 }
 
 
@@ -1114,7 +1112,7 @@ export function getProfile(auth: Authorization): Promise<GetProfileResponse> {
  * @returns details of user's funds
  */
 export function getFunds(auth: Authorization): Promise<GetFundsResponse> {
-  return request(auth, 'GET', 'funds', null, null) as Promise<GetFundsResponse>;
+  return requestApi(auth, 'GET', 'funds', null, null) as Promise<GetFundsResponse>;
 }
 
 
@@ -1124,7 +1122,7 @@ export function getFunds(auth: Authorization): Promise<GetFundsResponse> {
  * @returns details of user's holdings
  */
 export function getHoldings(auth: Authorization): Promise<GetHoldingsResponse> {
-  return request(auth, 'GET', 'holdings', null, null) as Promise<GetHoldingsResponse>;
+  return requestApi(auth, 'GET', 'holdings', null, null) as Promise<GetHoldingsResponse>;
 }
 
 
@@ -1136,11 +1134,11 @@ export function getHoldings(auth: Authorization): Promise<GetHoldingsResponse> {
 /**
  * Get details of an order placed in the current trading day.
  * @param auth authorization {app_id, access_token}
- * @param id unique order id
+ * @param options order query {id}
  * @returns details of an order
  */
-export function getOrder(auth: Authorization, id: string): Promise<GetOrdersResponse> {
-  return request(auth, 'GET', 'orders', {id}, null) as Promise<GetOrdersResponse>;
+export function getOrder(auth: Authorization, options: GetOrderRequest): Promise<GetOrdersResponse> {
+  return requestApi(auth, 'GET', 'orders', options, null) as Promise<GetOrdersResponse>;
 }
 
 
@@ -1150,7 +1148,7 @@ export function getOrder(auth: Authorization, id: string): Promise<GetOrdersResp
  * @returns details of orders
  */
 export function getOrders(auth: Authorization): Promise<GetOrdersResponse> {
-  return request(auth, 'GET', 'orders', null, null) as Promise<GetOrdersResponse>;
+  return requestApi(auth, 'GET', 'orders', null, null) as Promise<GetOrdersResponse>;
 }
 
 
@@ -1160,7 +1158,7 @@ export function getOrders(auth: Authorization): Promise<GetOrdersResponse> {
  * @returns details of positions
  */
 export function getPositions(auth: Authorization): Promise<GetPositionsResponse> {
-  return request(auth, 'GET', 'positions', null, null) as Promise<GetPositionsResponse>;
+  return requestApi(auth, 'GET', 'positions', null, null) as Promise<GetPositionsResponse>;
 }
 
 
@@ -1170,7 +1168,7 @@ export function getPositions(auth: Authorization): Promise<GetPositionsResponse>
  * @returns details of trades
  */
 export function getTrades(auth: Authorization): Promise<GetTradesResponse> {
-  return request(auth, 'GET', 'tradebook', null, null) as Promise<GetTradesResponse>;
+  return requestApi(auth, 'GET', 'tradebook', null, null) as Promise<GetTradesResponse>;
 }
 
 
@@ -1182,22 +1180,22 @@ export function getTrades(auth: Authorization): Promise<GetTradesResponse> {
 /**
  * Place an order to any exchange via Fyers.
  * @param auth authorization {app_id, access_token}
- * @param order details of an order {symbol, qty, type, side, ...}
+ * @param options details of an order {symbol, qty, type, side, ...}
  * @returns unique order id
  */
-export function placeOrder(auth: Authorization, order: PlaceOrderRequest): Promise<PlaceOrderResponse> {
-  return request(auth, 'POST', 'orders', null, order) as Promise<PlaceOrderResponse>;
+export function placeOrder(auth: Authorization, options: PlaceOrderRequest): Promise<PlaceOrderResponse> {
+  return requestApi(auth, 'POST', 'orders', null, options) as Promise<PlaceOrderResponse>;
 }
 
 
 /**
  * Place multiple orders to any exchange via Fyers.
  * @param auth authorization {app_id, access_token}
- * @param orders details of multiple orders [{symbol, qty, type, side, ...}]
+ * @param options details of multiple orders [{symbol, qty, type, side, ...}]
  * @returns unique order id
  */
-export function placeOrders(auth: Authorization, orders: [PlaceOrderRequest]): Promise<PlaceOrdersResponse> {
-  return request(auth, 'POST', 'orders-multi', null, orders) as Promise<PlaceOrdersResponse>;
+export function placeOrders(auth: Authorization, options: [PlaceOrderRequest]): Promise<PlaceOrdersResponse> {
+  return requestApi(auth, 'POST', 'orders-multi', null, options) as Promise<PlaceOrdersResponse>;
 }
 
 
@@ -1209,55 +1207,55 @@ export function placeOrders(auth: Authorization, orders: [PlaceOrderRequest]): P
 /**
  * Modifies an order placed on any exchange via Fyers.
  * @param auth authorization {app_id, access_token}
- * @param order details of order {id, qty, type, side, ...}
+ * @param options details of order {id, qty, type, side, ...}
  * @returns order id
  */
-export function modifyOrder(auth: Authorization, order: ModifyOrderRequest): Promise<ModifyOrderResponse> {
-  return request(auth, 'PUT', 'orders', null, order) as Promise<ModifyOrderResponse>;
+export function modifyOrder(auth: Authorization, options: ModifyOrderRequest): Promise<ModifyOrderResponse> {
+  return requestApi(auth, 'PUT', 'orders', null, options) as Promise<ModifyOrderResponse>;
 }
 
 
 /**
  * Modifies orders placed on any exchange via Fyers.
  * @param auth authorization {app_id, access_token}
- * @param orders details of orders [{id, qty, type, side, ...}]
+ * @param options details of orders [{id, qty, type, side, ...}]
  * @returns order ids
  */
-export function modifyOrders(auth: Authorization, orders: [ModifyOrderRequest]): Promise<ModifyOrdersResponse> {
-  return request(auth, 'PUT', 'orders-multi', null, orders) as Promise<ModifyOrdersResponse>;
+export function modifyOrders(auth: Authorization, options: [ModifyOrderRequest]): Promise<ModifyOrdersResponse> {
+  return requestApi(auth, 'PUT', 'orders-multi', null, options) as Promise<ModifyOrdersResponse>;
 }
 
 
 /**
  * Cancels an order placed on any exchange via Fyers.
  * @param auth authorization {app_id, access_token}
- * @param order details of order {id}
+ * @param options details of order {id}
  * @returns order id
  */
-export function cancelOrder(auth: Authorization, order: CancelOrderRequest): Promise<CancelOrderResponse> {
-  return request(auth, 'DELETE', 'orders', null, order) as Promise<CancelOrderResponse>;
+export function cancelOrder(auth: Authorization, options: CancelOrderRequest): Promise<CancelOrderResponse> {
+  return requestApi(auth, 'DELETE', 'orders', null, options) as Promise<CancelOrderResponse>;
 }
 
 
 /**
  * Cancels orders placed on any exchange via Fyers.
  * @param auth authorization {app_id, access_token}
- * @param orders details of orders [{id}]
+ * @param options details of orders [{id}]
  * @returns order ids
  */
-export function cancelOrders(auth: Authorization, orders: [CancelOrderRequest]): Promise<CancelOrdersResponse> {
-  return request(auth, 'DELETE', 'orders-multi', null, orders) as Promise<CancelOrdersResponse>;
+export function cancelOrders(auth: Authorization, options: [CancelOrderRequest]): Promise<CancelOrdersResponse> {
+  return requestApi(auth, 'DELETE', 'orders-multi', null, options) as Promise<CancelOrdersResponse>;
 }
 
 
 /**
  * Exits a position on the current trading day.
  * @param auth authorization {app_id, access_token}
- * @param position details of position {id}
+ * @param options details of position {id}
  * @returns status
  */
-export function exitPosition(auth: Authorization, position: ExitPositionRequest): Promise<ExitPositionResponse> {
-  return request(auth, 'DELETE', 'positions', null, position) as Promise<ExitPositionResponse>;
+export function exitPosition(auth: Authorization, options: ExitPositionRequest): Promise<ExitPositionResponse> {
+  return requestApi(auth, 'DELETE', 'positions', null, options) as Promise<ExitPositionResponse>;
 }
 
 
@@ -1267,18 +1265,18 @@ export function exitPosition(auth: Authorization, position: ExitPositionRequest)
  * @returns status
  */
 export function exitAllPositions(auth: Authorization): Promise<ExitAllPositionsResponse> {
-  return request(auth, 'DELETE', 'positions', null, {}) as Promise<ExitAllPositionsResponse>;
+  return requestApi(auth, 'DELETE', 'positions', null, {}) as Promise<ExitAllPositionsResponse>;
 }
 
 
 /**
  * Converts a position on the current trading day.
  * @param auth authorization {app_id, access_token}
- * @param position details of position {symbol, positionSide, convertQty, ...}
+ * @param options details of position {symbol, positionSide, convertQty, ...}
  * @returns status
  */
-export function convertPosition(auth: Authorization, position: ConvertPositionRequest): Promise<ConvertPositionResponse> {
-  return request(auth, 'PUT', 'positions', null, position) as Promise<ConvertPositionResponse>;
+export function convertPosition(auth: Authorization, options: ConvertPositionRequest): Promise<ConvertPositionResponse> {
+  return requestApi(auth, 'PUT', 'positions', null, options) as Promise<ConvertPositionResponse>;
 }
 
 
@@ -1293,18 +1291,18 @@ export function convertPosition(auth: Authorization, position: ConvertPositionRe
  * @returns market status
  */
 export function getMarketStatus(auth: Authorization): Promise<GetMarketStatusResponse> {
-  return request(auth, 'GET', 'market-status', null, null) as Promise<GetMarketStatusResponse>;
+  return requestApi(auth, 'GET', 'market-status', null, null) as Promise<GetMarketStatusResponse>;
 }
 
 /**
  * Get all the latest symbols of all the exchanges from the symbol master files.
- * @param exchange exchange name (NSE, BSE, MCX)
- * @param segment segment name (CM, FO, CD, COM)
+ * @param auth authorization (unused)
+ * @param options details of symbol category {exchange, segment}
  * @returns symbol master file as text
  */
-export async function getSymbolMaster(exchange: string, segment: string): Promise<string> {
-  var res = await httpsRequest(SYMBOL_URL + exchange + '_' + segment + '.csv', {}, '');
-  return res.body;
+export function getSymbolMaster(auth: null, options: GetSymbolMasterRequest): Promise<string> {
+  var {exchange, segment} = options;
+  return requestSymbols(null, 'GET', exchange + '_' + segment + '.csv', null, null);
 }
 
 
@@ -1319,19 +1317,19 @@ export async function getSymbolMaster(exchange: string, segment: string): Promis
  * @returns TPIN, an authorization code generated by CDSL/NSDL respectively, using which the customer validates/authorises the transaction
  */
 export function generateEdisTpin(auth: Authorization): Promise<GenerateEdisTpinResponse> {
-  return request(auth, 'GET', 'tpin', null, null) as Promise<GenerateEdisTpinResponse>;
+  return requestApi(auth, 'GET', 'tpin', null, null) as Promise<GenerateEdisTpinResponse>;
 }
 
 export function getEdisTransactions(auth: Authorization): Promise<GetEdisTransactionsResponse> {
-  return request(auth, 'GET', 'details', null, null) as Promise<GetEdisTransactionsResponse>;
+  return requestApi(auth, 'GET', 'details', null, null) as Promise<GetEdisTransactionsResponse>;
 }
 
-export function submitEdisHoldings(auth: Authorization, holdings: SubmitEdisHoldingsRequest): Promise<Response> {
-  return request(auth, 'POST', 'index', null, holdings);
+export function submitEdisHoldingsStep(auth: Authorization, holdings: SubmitEdisHoldingsRequest): RequestOptions {
+  return requestStep(auth, 'POST', 'index', null, holdings);
 }
 
 export function inquireEdisTransaction(auth: Authorization, transaction: InquireEdisTransactionRequest): Promise<InquireEdisTransactionResponse> {
-  return request(auth, 'POST', 'inquiry', null, transaction) as Promise<InquireEdisTransactionResponse>;
+  return requestApi(auth, 'POST', 'inquiry', null, transaction) as Promise<InquireEdisTransactionResponse>;
 }
 
 
@@ -1343,31 +1341,209 @@ export function inquireEdisTransaction(auth: Authorization, transaction: Inquire
 /**
  * Get the current market history for a particular symbol.
  * @param auth authorization {app_id, access_token}
- * @param market market details {symbol, resolution, date_format, ...}
+ * @param options market details {symbol, resolution, date_format, ...}
  * @returns market history
  */
-export function getMarketHistory(auth: Authorization, market: GetMarketHistoryRequest): Promise<GetMarketHistoryResponse> {
-  return request(auth, 'GET', 'history', market, null) as Promise<GetMarketHistoryResponse>;
+export function getMarketHistory(auth: Authorization, options: GetMarketHistoryRequest): Promise<GetMarketHistoryResponse> {
+  return requestData(auth, 'GET', 'history', options, null) as Promise<GetMarketHistoryResponse>;
 }
 
 
 /**
  * Get the current market quotes for a set of symbols.
  * @param auth authorization {app_id, access_token}
- * @param market market details {symbols}
+ * @param options market details {symbols}
  * @returns market quotes
  */
-export function getMarketQuotes(auth: Authorization, market: GetMarketQuotesRequest): Promise<GetMarketQuotesResponse> {
-  return request(auth, 'GET', 'quotes', market, null) as Promise<GetMarketQuotesResponse>;
+export function getMarketQuotes(auth: Authorization, options: GetMarketQuotesRequest): Promise<GetMarketQuotesResponse> {
+  return requestData(auth, 'GET', 'quotes', options, null) as Promise<GetMarketQuotesResponse>;
 }
 
 
 /**
  * Get the current market depth for a particular symbol.
  * @param auth authorization {app_id, access_token}
- * @param market market details {symbol, ohlcv_flag}
+ * @param options market details {symbol, ohlcv_flag}
  * @returns market depth
  */
-export function getMarketDepth(auth: Authorization, market: GetMarketDepthRequest): Promise<GetMarketDepthResponse> {
-  return request(auth, 'GET', 'depth', market, null) as Promise<GetMarketDepthResponse>;
+export function getMarketDepth(auth: Authorization, options: GetMarketDepthRequest): Promise<GetMarketDepthResponse> {
+  return requestData(auth, 'GET', 'depth', options, null) as Promise<GetMarketDepthResponse>;
+}
+
+
+
+
+// MAIN
+// ----
+
+/**
+ * Container for storing authorization details.
+ */
+export class Fyers implements Authorization {
+  app_id: string;
+  access_token: string;
+
+
+  /**
+   * Create a container for storing authorization details.
+   * @param app_id unique app_id received after creating app
+   * @param access_token access token for the current trading day recieved after authorization
+   */
+  constructor(app_id: string, access_token: string) {
+    this.app_id       = app_id;
+    this.access_token = access_token;
+  }
+
+
+  /**
+   * Get basic details of the client.
+   * @returns details of user's profile
+   */
+  getProfile() { return getProfile(this); }
+
+  /**
+   * Get the equity and mutual fund holdings which the user has in this demat account.
+   * @returns details of user's holdings
+   */
+  getFunds() { return getFunds(this); }
+
+  /**
+   * Get the equity and mutual fund holdings which the user has in this demat account.
+   * @returns details of user's holdings
+   */
+  getHoldings() { return getHoldings(this); }
+
+  /**
+   * Get details of an order placed in the current trading day.
+   * @param options order query {id}
+   * @returns details of an order
+   */
+  getOrder(options: GetOrderRequest) { return getOrder(this, options); }
+
+  /**
+   * Get details of all the orders placed in the current trading day.
+   * @returns details of orders
+   */
+  getOrders() { return getOrders(this); }
+
+  /**
+   * Get details of all the positions in the current trading day.
+   * @returns details of positions
+   */
+  getPositions() { return getPositions(this); }
+
+  /**
+   * Get details of all the trades in the current trading day.
+   * @returns details of trades
+   */
+  getTrades() { return getTrades(this); }
+
+  /**
+   * Place an order to any exchange via Fyers.
+   * @param auth authorization {app_id, access_token}
+   * @param options details of an order {symbol, qty, type, side, ...}
+   * @returns unique order id
+   */
+  placeOrder(options: PlaceOrderRequest) { return placeOrder(this, options); }
+
+  /**
+   * Place multiple orders to any exchange via Fyers.
+   * @param options details of multiple orders [{symbol, qty, type, side, ...}]
+   * @returns unique order id
+   */
+  placeOrders(options: [PlaceOrderRequest]) { return placeOrders(this, options); }
+
+  /**
+   * Modifies an order placed on any exchange via Fyers.
+   * @param options details of order {id, qty, type, side, ...}
+   * @returns order id
+   */
+  modifyOrder(options: ModifyOrderRequest) { return modifyOrder(this, options); }
+
+  /**
+   * Modifies orders placed on any exchange via Fyers.
+   * @param options details of orders [{id, qty, type, side, ...}]
+   * @returns order ids
+   */
+  modifyOrders(options: [ModifyOrderRequest]) { return modifyOrders(this, options); }
+
+  /**
+   * Cancels an order placed on any exchange via Fyers.
+   * @param options details of order {id}
+   * @returns order id
+   */
+  cancelOrder(options: CancelOrderRequest) { return cancelOrder(this, options); }
+
+  /**
+   * Cancels orders placed on any exchange via Fyers.
+   * @param options details of orders [{id}]
+   * @returns order ids
+   */
+  cancelOrders(options: [CancelOrderRequest]) { return cancelOrders(this, options); }
+
+  /**
+   * Exits a position on the current trading day.
+   * @param options details of position {id}
+   * @returns status
+   */
+  exitPosition(options: ExitPositionRequest) { return exitPosition(this, options); }
+
+  /**
+   * Exits all positions on the current trading day.
+   * @returns status
+   */
+  exitAllPositions() { return exitAllPositions(this); }
+
+  /**
+   * Converts a position on the current trading day.
+   * @param options details of position {symbol, positionSide, convertQty, ...}
+   * @returns status
+   */
+  convertPosition(options: ConvertPositionRequest) { return convertPosition(this, options); }
+
+  /**
+   * Get the current market status of all the exchanges and their segments.
+   * @returns market status
+   */
+  getMarketStatus() { return getMarketStatus(this); }
+
+  /**
+   * Get all the latest symbols of all the exchanges from the symbol master files.
+   * @param options details of symbol category {exchange, segment}
+   * @returns symbol master file as text
+   */
+  static getSymbolMaster(options: GetSymbolMasterRequest) { return getSymbolMaster(null, options); }
+
+  /**
+   * Generates e-DIS TPIN for validating/authorising transaction.
+   * @returns TPIN, an authorization code generated by CDSL/NSDL respectively, using which the customer validates/authorises the transaction
+   */
+  generateEdisTpin() { return generateEdisTpin(this); }
+
+  getEdisTransactions() { return getEdisTransactions(this); }
+
+  submitEdisHoldingsStep(options: SubmitEdisHoldingsRequest) { return submitEdisHoldingsStep(this, options); }
+
+  inquireEdisTransaction(options: InquireEdisTransactionRequest) { return inquireEdisTransaction(this, options); }
+
+  /**
+   * Get the current market history for a particular symbol.
+   * @param options market details {symbol, resolution, date_format, ...}
+   * @returns market history
+   */
+  getMarketHistory(options: GetMarketHistoryRequest) { return getMarketHistory(this, options); }
+
+  /**
+   * Get the current market quotes for a set of symbols.
+   * @param options market details {symbols}
+   * @returns market quotes
+   */
+  getMarketQuotes(options: GetMarketQuotesRequest) { return getMarketQuotes(this, options); }
+
+  /**
+   * Get the current market depth for a particular symbol.
+   * @param options market details {symbol, ohlcv_flag}
+   * @returns market depth
+   */
+  getMarketDepth(options: GetMarketDepthRequest) { return getMarketDepth(this, options); }
 }

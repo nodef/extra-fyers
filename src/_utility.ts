@@ -4,18 +4,8 @@ import https from 'https';
 
 
 
-// CRYPTO
-// ------
-
-export async function sha256DigestHex(text: string): Promise<string> {
-  return crypto.createHash('sha256').update(text).digest('hex');
-}
-
-
-
-
-// HTTP
-// ----
+// TYPES (HTTP)
+// ------------
 
 export interface HttpHeaders {
   [key: string]: string,
@@ -34,6 +24,21 @@ export interface HttpRequestOptions {
   timeout?: number,
 }
 
+
+
+
+// CRYPTO
+// ------
+
+export async function sha256DigestHex(text: string): Promise<string> {
+  return crypto.createHash('sha256').update(text).digest('hex');
+}
+
+
+
+
+// HTTP
+// ----
 
 export function queryString(data: object): string {
   if (data == null) return '';
