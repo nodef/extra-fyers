@@ -892,7 +892,7 @@ export interface MarketQuoteValue {
   /** Percentage of change between the current value and the previous day's market close. */
   chp: number,
   /** Last traded price. */
-  lp: 163.65,
+  lp: number,
   /** Difference between lowest asking and highest bidding price. */
   spread: number,
   /** Asking price for the symbol. */
@@ -1013,13 +1013,13 @@ export interface MarketDepth {
   /** Expiry date. */
   expiry: string,
   /** Open interest. */
-  oi: 0,
+  oi: number,
   /** Boolean flag for OI data, true or false. */
   oiflag: false,
   /** Previous day open interest. */
-  pdoi: 0,
+  pdoi: number,
   /** Change in open Interest percentage. */
-  oipercent: 0.0
+  oipercent: number,
 }
 
 

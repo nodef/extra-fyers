@@ -1,1 +1,6 @@
 https://webpack.js.org/configuration/resolve/#resolvealias
+
+costPrice => buyPrice
+marketVal => currentPrice
+ltp => currentSharePrice
+pl => income
