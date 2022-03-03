@@ -230,11 +230,16 @@ export function day2(desc: string): string {
 // EXCHANGES
 // ---------
 
+/** Exchange code. */
 export enum Exchange {
+  /** National Stock Exchange (NSE). */
   NSE = 10,
+  /** Multi Commodity Exchange (MCX). */
   MCX = 11,
+  /** Bombay Stock Exchange (BSE). */
   BSE = 12,
 }
+
 
 const EXCHANGE_DESCRIPTION: Map<number, string> = new Map([
   [10, "National Stock Exchange (NSE)"],
@@ -274,12 +279,18 @@ export function exchange(desc: string): number {
 // SEGMENTS
 // --------
 
+/** Segment code. */
 export enum Segment {
+  /** Capital Market (CM). */
   Capital    = 10,
+  /** Equity Derivatives (FO). */
   Derivative = 11,
+  /** Currency Derivatives (CD). */
   Currency   = 12,
+  /** Commodity Derivatives (COM). */
   Commodity  = 20,
 }
+
 
 const SEGMENT_DESCRIPTION: Map<number, string> = new Map([
   [10, "Capital Market (CM)"],
@@ -324,11 +335,16 @@ export function segment(desc: string): number {
 // POSITION-SIDES
 // --------------
 
+/** Position side code. */
 export enum PositionSide {
+  /** Long position. */
   Long   =  1,
+  /** Short position. */
   Short  = -1,
+  /** Closed position. */
   Closed =  0,
 }
+
 
 const POSITION_SIDE_DESCRIPTION: Map<number, string> = new Map([
   [1,  "Long"],
@@ -368,10 +384,14 @@ export function positionSide(desc: string): number {
 // ORDER-SIDES
 // -----------
 
+/** Order side code. */
 export enum OrderSide {
+  /** Buy order. */
   Buy  =  1,
+  /** Sell order. */
   Sell = -1
 }
+
 
 const ORDER_SIDE_DESCRIPTION: Map<number, string> = new Map([
   [1,  "Buy"],
@@ -409,13 +429,20 @@ export function orderSide(desc: string): number {
 // ORDER-SOURCES
 // -------------
 
+/** Order source code. */
 export enum OrderSource {
+  /** FYERS Mobile. */
   Mobile   = "M",
+  /** FYERS Web. */
   Web      = "W",
+  /** FYERS One (desktop). */
   FyersOne = "R",
+  /** Admin. */
   Admin    = "A",
+  /** FYERS API. */
   API      = "ITS",
 }
+
 
 const ORDER_SOURCE_DESCRIPTION: Map<string, string> = new Map([
   ["M",   "Mobile"],
@@ -460,15 +487,24 @@ export function orderSource(desc: string): string {
 // ORDER-STATUSES
 // --------------
 
+/** Order status code. */
 export enum OrderStatus {
+  /** Order has been cancelled. */
   Cancelled = 1,
+  /** Order has been traded/filled. */
   Traded    = 2,
+  /** For future use. */
   Unused    = 3,
+  /** Order is in progress. */
   Transit   = 4,
+  /** Order has been rejected. */
   Rejected  = 5,
+  /** Order is still pending execution. */
   Pending   = 6,
+  /** Order has expired. */
   Expired   = 7,
 }
+
 
 const ORDER_STATUS_DESCRIPTION: Map<number, string> = new Map([
   [1, "Cancelled"],
@@ -516,12 +552,18 @@ export function orderStatus(desc: string): number {
 // ORDER-TYPES
 // -----------
 
+/** Order type code. */
 export enum OrderType {
+  /** Limit order. */
   Limit  = 1,
+  /** Market order. */
   Market = 2,
+  /** Market order with stop loss (SL-M). */
   StopLossMarket = 3,
+  /** Limit order with stop loss (SL-L) */
   StopLossLimit  = 4,
 }
+
 
 const ORDER_TYPE_DESCRIPTION: Map<number, string> = new Map([
   [1, "Limit order"],
@@ -564,10 +606,14 @@ export function orderType(desc: string): number {
 // OPTION-TYPE
 // -----------
 
+/** Option type code. */
 export enum OptionType {
+  /** Call option. */
   Call = "CE",
+  /** Put option. */
   Put  = "PE",
 }
+
 
 const OPTION_TYPE_DESCRIPTION: Map<string, string> = new Map([
   ["CE", "Call Option (CE)"],
@@ -599,10 +645,14 @@ export function optionType(desc: string): string {
 // HOLDING-TYPES
 // -------------
 
+/** Holding type code. */
 export enum HoldingType {
+  /** The shares are purchased but not yet delivered to the demat account. */
   Purchased = "T1",
+  /** The shares are purchased and are available in the demat account. */
   Delivered = "HLD",
 }
+
 
 const HOLDING_TYPE_DESCRIPTION: Map<string, string> = new Map([
   ["T1",  "The shares are purchased but not yet delivered to the demat account"],
@@ -634,13 +684,20 @@ export function holdingType(desc: string): string {
 // PRODUCT-TYPES
 // -------------
 
+/** Product type code. */
 export enum ProductType {
+  /** Cash N Carry or Delivery Order, for equity only (CNC). */
   CNC      = "CNC",
+  /** Intraday Order, applicable for all segments (INTRADAY). */
   Intraday = "INTRADAY",
+  /** Margin Order, applicable only for derivatives (MARGIN). */
   Margin   = "MARGIN",
+  /** Cover Order (CO). */
   Cover    = "CO",
+  /** Bracket Order (BO). */
   Bracket  = "BO",
 }
+
 
 const PRODUCT_TYPE_DESCRIPTION: Map<string, string> = new Map([
   ["CNC",      "Cash N Carry or Delivery Order, for equity only (CNC)"],
@@ -686,37 +743,64 @@ export function productType(desc: string): string {
 // INSTRUMENT-TYPES
 // ----------------
 
+/** Instrument type code. */
 export enum InstrumentType {
   // CM segment
+  /** Equity Shares (EQ). */
   EQ = 0,
+  /** Preference Shares (PREFSHARES). */
   PREFSHARES = 1,
+  /** Collateral-free Debt (DEBENTURES). */
   DEBENTURES = 2,
+  /** Warrants on Stock (WARRANTS). */
   WARRANTS   = 3,
+  /** Miscellaneous (MISC). */
   MISC   = 4,
+  /** Stock Market Index (INDEX). */
   INDEX  = 10,
   // FO segment
+  /** Futures on Index (FUTIDX). */
   FUTIDX = 11,
+  /** Futures on Volatility Index (FUTIVX). */
   FUTIVX = 12,
+  /** Futures on Stock (FUTSTK). */
   FUTSTK = 13,
+  /** Options on Index (OPTIDX). */
   OPTIDX = 14,
+  /** Options on Stock (OPTSTK). */
   OPTSTK = 15,
   // CD segment
+  /** Futures on Currency (FUTCUR). */
   FUTCUR = 16,
+  /** Futures on Government of India Treasury Bills (FUTIRT). */
   FUTIRT = 17,
+  /** Futures on Government of India Bonds (FUTIRC). */
   FUTIRC = 18,
+  /** Options on Currency (OPTCUR). */
   OPTCUR = 19,
+  /** Underlying on Currency (UNDCUR). */
   UNDCUR = 20,
+  /** Underlying on Government of Bonds (UNDIRC). */
   UNDIRC = 21,
+  /** Underlying on Government of India Treasury Bills (UNDIRT). */
   UNDIRT = 22,
+  /** Underlying on 10 Year Notional coupon bearing GOI security (UNDIRD). */
   UNDIRD = 23,
+  /** Market-indexed Certificate of deposit (INDEX_CD). */
   INDEX_CD = 24,
+  /** Futures on 10 Year Notional coupon bearing GOI security (FUTIRD). */
   FUTIRD = 25,
   // COM segment
+  /** Futures on Commodity Index (FUTIDX). */
 //FUTIDX = 11,
+  /** Futures on Commodity (FUTCOM) */
   FUTCOM = 30,
+  /** Options on Commodity Futures (OPTFUT). */
   OPTFUT = 31,
+  /** Options on Commodity (OPTCOM). */
   OPTCOM = 32,
 }
+
 
 const INSTRUMENT_TYPE_DESCRIPTION: Map<number, string> = new Map([
   // CM segment
