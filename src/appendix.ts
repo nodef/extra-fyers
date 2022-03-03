@@ -146,6 +146,11 @@ export function day2(desc: string): string {
 // OPTION-TYPE
 // -----------
 
+export enum OptionType {
+  Call = "CE",
+  Put  = "PE",
+}
+
 const OPTION_TYPE_DESCRIPTION: Map<string, string> = new Map([
   ["CE", "Call Option (CE)"],
   ["PE", "Put Option (PE)"],
@@ -175,6 +180,12 @@ export function optionType(desc: string): string {
 
 // EXCHANGES
 // ---------
+
+export enum Exchange {
+  NSE = 10,
+  MCX = 11,
+  BSE = 12,
+}
 
 const EXCHANGE_DESCRIPTION: Map<number, string> = new Map([
   [10, "National Stock Exchange (NSE)"],
@@ -213,6 +224,13 @@ export function exchange(desc: string): number {
 
 // SEGMENTS
 // --------
+
+export enum Segment {
+  Capital    = 10,
+  Derivative = 11,
+  Currency   = 12,
+  Commodity  = 20,
+}
 
 const SEGMENT_DESCRIPTION: Map<number, string> = new Map([
   [10, "Capital Market (CM)"],
@@ -257,18 +275,53 @@ export function segment(desc: string): number {
 // INSTRUMENT-TYPES
 // ----------------
 
+export enum InstrumentType {
+  // CM segment
+  EQ = 0,
+  PREFSHARES = 1,
+  DEBENTURES = 2,
+  WARRANTS   = 3,
+  MISC   = 4,
+  INDEX  = 10,
+  // FO segment
+  FUTIDX = 11,
+  FUTIVX = 12,
+  FUTSTK = 13,
+  OPTIDX = 14,
+  OPTSTK = 15,
+  // CD segment
+  FUTCUR = 16,
+  FUTIRT = 17,
+  FUTIRC = 18,
+  OPTCUR = 19,
+  UNDCUR = 20,
+  UNDIRC = 21,
+  UNDIRT = 22,
+  UNDIRD = 23,
+  INDEX_CD = 24,
+  FUTIRD = 25,
+  // COM segment
+//FUTIDX = 11,
+  FUTCOM = 30,
+  OPTFUT = 31,
+  OPTCOM = 32,
+}
+
 const INSTRUMENT_TYPE_DESCRIPTION: Map<number, string> = new Map([
+  // CM segment
   [0,  "Equity Shares (EQ)"],
   [1,  "Preference Shares (PREFSHARES)"],
   [2,  "Collateral-free Debt (DEBENTURES)"],
   [3,  "Warrants on Stock (WARRANTS)"],
   [4,  "Miscellaneous (MISC)"],
   [10, "Stock Market Index (INDEX)"],
+  // FO segment
   [11, "Futures on Index (FUTIDX)"],
   [12, "Futures on Volatility Index (FUTIVX)"],
   [13, "Futures on Stock (FUTSTK)"],
   [14, "Options on Index (OPTIDX)"],
   [15, "Options on Stock (OPTSTK)"],
+  // CD segment
   [16, "Futures on Currency (FUTCUR)"],
   [17, "Futures on Government of India Treasury Bills (FUTIRT)"],
   [18, "Futures on Government of India Bonds (FUTIRC)"],
@@ -279,24 +332,28 @@ const INSTRUMENT_TYPE_DESCRIPTION: Map<number, string> = new Map([
   [23, "Underlying on 10 Year Notional coupon bearing GOI security (UNDIRD)"],
   [24, "Market-indexed Certificate of deposit (INDEX_CD)"],
   [25, "Futures on 10 Year Notional coupon bearing GOI security (FUTIRD)"],
-  [11, "Futures on Commodity Index (FUTIDX)"],
+  // COM segment
+//[11, "Futures on Commodity Index (FUTIDX)"],
   [30, "Futures on Commodity (FUTCOM)"],
   [31, "Options on Commodity Futures (OPTFUT)"],
   [32, "Options on Commodity (OPTCOM)"],
 ]);
 
 const INSTRUMENT_TYPE_CODE: Map<string, number> = new Map([
+  // CM segment
   ["EQ", 0],
   ["PREFSHARES", 1],
   ["DEBENTURES", 2],
   ["WARRANTS", 3],
   ["MISC", 4],
   ["INDEX", 10],
+  // FO segment
   ["FUTIDX", 11],
   ["FUTIVX", 12],
   ["FUTSTK", 13],
   ["OPTIDX", 14],
   ["OPTSTK", 15],
+  // CD segment
   ["FUTCUR", 16],
   ["FUTIRT", 17],
   ["FUTIRC", 18],
@@ -307,7 +364,8 @@ const INSTRUMENT_TYPE_CODE: Map<string, number> = new Map([
   ["UNDIRD", 23],
   ["INDEX_CD", 24],
   ["FUTIRD", 25],
-  ["FUTIDX_COM", 11],
+  // COM segment
+//["FUTIDX", 11],
   ["FUTCOM", 30],
   ["OPTFUT", 31],
   ["OPTCOM", 32],
@@ -334,22 +392,26 @@ export function instrumentType(desc: string): number {
   var opt = /opt|option/i.test(desc);
   var idx = /idx|index/i.test(desc);
   var und = /und|underlying/i.test(desc);
+  // COM segment
   if (/com(\b|$)|commodit/i.test(desc)) {
     if (opt) key = fut? "OPTFUT" : "OPTCOM";
     else if (idx) key = "FUTIDX_COM";
     else          key = "FUTCOM";
   }
+  // CD segment
   else if (/(^|\b)und|cd(\b|$)|ir[cdt](\b|$)|cur|gov|bond|trea|coup/i.test(desc)) {
     if (/irc(\b|$)|bond/i.test(desc))      key = und? "UNDIRC" : "FUTIRC";
     else if (/ird(\b|$)|coup/i.test(desc)) key = und? "UNDIRD" : "FUTIRD";
     else if (/irt(\b|$)|trea/i.test(desc)) key = und? "UNDIRT" : "FUTIRT";
     else                key = idx? "INDEX_CD" : (opt? "OPTCUR" : "FUTCUR");
   }
+  // FO segment
   else if (fut || opt) {
     if (/ivx|volatil/i.test(desc)) key = "FUTIVX";
     else if (idx) key = opt? "OPTIDX" : "FUTIDX";
     else          key = opt? "OPTSTK" : "FUTSTK";
   }
+  // CM segment
   else {
     if (idx)                        key = "INDEX";
     else if (/misc/i.test(desc))    key = "MISC";
@@ -366,6 +428,14 @@ export function instrumentType(desc: string): number {
 
 // PRODUCT-TYPES
 // -------------
+
+export enum ProductType {
+  CNC      = "CNC",
+  Intraday = "INTRADAY",
+  Margin   = "MARGIN",
+  Cover    = "CO",
+  Bracket  = "BO",
+}
 
 const PRODUCT_TYPE_DESCRIPTION: Map<string, string> = new Map([
   ["CNC",      "Cash N Carry or Delivery Order, for equity only (CNC)"],
@@ -411,6 +481,13 @@ export function productType(desc: string): string {
 // ORDER-TYPES
 // -----------
 
+export enum OrderType {
+  Limit  = 1,
+  Market = 2,
+  StopLossMarket = 3,
+  StopLossLimit  = 4,
+}
+
 const ORDER_TYPE_DESCRIPTION: Map<number, string> = new Map([
   [1, "Limit order"],
   [2, "Market order"],
@@ -442,7 +519,7 @@ export function orderTypeDescription(code: number): string {
  */
 export function orderType(desc: string): number {
   var key = desc.charAt(0).toUpperCase();
-  if (/s.+l/i.test(desc)) key = "R";
+  if (/s.+l(?!oss)/i.test(desc)) key = "R";
   return ORDER_TYPE_CODE.get(key);
 }
 
@@ -451,6 +528,16 @@ export function orderType(desc: string): number {
 
 // ORDER-STATUSES
 // --------------
+
+export enum OrderStatus {
+  Cancelled = 1,
+  Traded    = 2,
+  Unused    = 3,
+  Transit   = 4,
+  Rejected  = 5,
+  Pending   = 6,
+  Expired   = 7,
+}
 
 const ORDER_STATUS_DESCRIPTION: Map<number, string> = new Map([
   [1, "Cancelled"],
@@ -498,6 +585,11 @@ export function orderStatus(desc: string): number {
 // ORDER-SIDES
 // -----------
 
+export enum OrderSide {
+  Buy  =  1,
+  Sell = -1
+}
+
 const ORDER_SIDE_DESCRIPTION: Map<number, string> = new Map([
   [1,  "Buy"],
   [-1, "Sell"],
@@ -534,6 +626,12 @@ export function orderSide(desc: string): number {
 // POSITION-SIDES
 // --------------
 
+export enum PositionSide {
+  Long   =  1,
+  Short  = -1,
+  Closed =  0,
+}
+
 const POSITION_SIDE_DESCRIPTION: Map<number, string> = new Map([
   [1,  "Long"],
   [-1, "Short"],
@@ -541,9 +639,9 @@ const POSITION_SIDE_DESCRIPTION: Map<number, string> = new Map([
 ]);
 
 const POSITION_SIDE_CODE: Map<string, number> = new Map([
-  ["L", 1],
+  ["L",  1],
   ["S", -1],
-  ["C", 0],
+  ["C",  0],
 ]);
 
 
@@ -571,6 +669,11 @@ export function positionSide(desc: string): number {
 
 // HOLDING-TYPES
 // -------------
+
+export enum HoldingType {
+  Purchased = "T1",
+  Delivered = "HLD",
+}
 
 const HOLDING_TYPE_DESCRIPTION: Map<string, string> = new Map([
   ["T1",  "The shares are purchased but not yet delivered to the demat account"],
@@ -601,6 +704,14 @@ export function holdingType(desc: string): string {
 
 // ORDER-SOURCES
 // -------------
+
+export enum OrderSource {
+  Mobile   = "M",
+  Web      = "W",
+  FyersOne = "R",
+  Admin    = "A",
+  API      = "ITS",
+}
 
 const ORDER_SOURCE_DESCRIPTION: Map<string, string> = new Map([
   ["M",   "Mobile"],
