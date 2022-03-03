@@ -39,7 +39,7 @@ export interface Response {
 
 
 /** HTTP data of multi-response. */
-export interface HttpResponseData<Body> {
+export interface ProxyResponse<Body> {
   /** HTTP status code. */
   statusCode: number,
   /** The actual place order reponse. */
@@ -486,7 +486,7 @@ export interface PlaceOrderResponse extends Response {
 /** Response attributes of placeOrders(). */
 export interface PlaceOrdersResponse extends Response {
   /** List of HTTP data for each order. */
-  data: [HttpResponseData<PlaceOrderResponse>]
+  data: [ProxyResponse<PlaceOrderResponse>]
 }
 
 
@@ -534,7 +534,7 @@ export interface ModifyOrderResponse extends Response {
 /** Reponse attributes of modifyOrders(). */
 export interface ModifyOrdersResponse extends Response {
   /** List of HTTP data for each order. */
-  data: HttpResponseData<ModifyOrderResponse>,
+  data: ProxyResponse<ModifyOrderResponse>,
 }
 
 
@@ -560,7 +560,7 @@ export interface CancelOrderResponse extends Response {
 /** Reponse attributes of cancelOrders(). */
 export interface CancelOrdersResponse extends Response {
   /** List of HTTP data for each order. */
-  data: [HttpResponseData<CancelOrderResponse>]
+  data: [ProxyResponse<CancelOrderResponse>]
 }
 
 
