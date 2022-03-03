@@ -640,112 +640,6 @@ export interface GetMarketStatusResponse extends Response {
 
 
 
-// GET-SYMBOL-MASTER
-// -----------------
-
-export interface GetSymbolMasterRequest {
-  /** Name of the exchange (NSE, BSE, MCX). */
-  exchange: string,
-  /** The segment whose symbols are needed (CM, FO, CD, COM). */
-  segment: string,
-}
-
-
-
-
-// GENERATE-EDIS-TPIN
-// ------------------
-
-export interface GenerateEdisTpinResponse extends Response {
-  /** Unknown, seen to be empty. */
-  data: string
-}
-
-
-
-
-// GET-EDIS-TRANSACTIONS
-// ---------------------
-
-export interface EdisTransaction {
-  /** Transaction id. */
-  transactionId: string
-  /** Internal transaction id. */
-  internalTxnId: string,
-  /** DP transaction id. */
-  dpTxnId: string,
-  /** ISIN code of stock. */
-  isin: string,
-  /** Quantity to transact. */
-  qty: number,
-  /** Quantity already transacted? */
-  qtyUtlize: number,
-  /** Transaction create date-time/ */
-  entryDate: string,
-  /** Transaction processing start date? */
-  startDate: string,
-  /** Transaction processing end date? */
-  endDate: string,
-  /** No. of days since transaction create date? */
-  noOfDays: number,
-  /** Source of transaction. */
-  source: string,
-  /** SUCCESS, FAILURE? */
-  status: string,
-  /** Unique client code? */
-  clientId: string,
-  /** NA. */
-  errCode: string,
-  /** 0. */
-  errorCount: string,
-  /** Message. */
-  reason: string,
-}
-
-
-export interface GetEdisTransactionsResponse extends Response {
-  /** List of e-DIS transactions. */
-  data: [EdisTransaction]|string
-}
-
-
-
-
-// SUBMIT-EDIS-HOLDINGS
-// --------------------
-
-export interface EdisHolding {
-  isin_code: string,
-  qty: number,
-}
-
-export interface SubmitEdisHoldingsRequest {
-  recordLst: [EdisHolding],
-}
-
-
-
-
-// INQUIRE-EDIS-TRANSACTION
-// ------------------------
-
-export interface InquireEdisTransactionRequest {
-  /** Transaction id. */
-  transactionId: string
-}
-
-export interface EdisStatus {
-  FAILED_CNT: number,
-  SUCEESS_CNT: number,
-}
-
-export interface InquireEdisTransactionResponse extends Response {
-  data: EdisStatus,
-}
-
-
-
-
 // GET-MARKET-HISTORY
 // ------------------
 
@@ -940,6 +834,112 @@ export interface MarketDepth {
 export interface GetMarketDepthResponse extends Response {
   /** Dictionary of all market quotes. */
   d: { (symbol: string): MarketDepth }
+}
+
+
+
+
+// GET-SYMBOL-MASTER
+// -----------------
+
+export interface GetSymbolMasterRequest {
+  /** Name of the exchange (NSE, BSE, MCX). */
+  exchange: string,
+  /** The segment whose symbols are needed (CM, FO, CD, COM). */
+  segment: string,
+}
+
+
+
+
+// GENERATE-EDIS-TPIN
+// ------------------
+
+export interface GenerateEdisTpinResponse extends Response {
+  /** Unknown, seen to be empty. */
+  data: string
+}
+
+
+
+
+// GET-EDIS-TRANSACTIONS
+// ---------------------
+
+export interface EdisTransaction {
+  /** Transaction id. */
+  transactionId: string
+  /** Internal transaction id. */
+  internalTxnId: string,
+  /** DP transaction id. */
+  dpTxnId: string,
+  /** ISIN code of stock. */
+  isin: string,
+  /** Quantity to transact. */
+  qty: number,
+  /** Quantity already transacted? */
+  qtyUtlize: number,
+  /** Transaction create date-time/ */
+  entryDate: string,
+  /** Transaction processing start date? */
+  startDate: string,
+  /** Transaction processing end date? */
+  endDate: string,
+  /** No. of days since transaction create date? */
+  noOfDays: number,
+  /** Source of transaction. */
+  source: string,
+  /** SUCCESS, FAILURE? */
+  status: string,
+  /** Unique client code? */
+  clientId: string,
+  /** NA. */
+  errCode: string,
+  /** 0. */
+  errorCount: string,
+  /** Message. */
+  reason: string,
+}
+
+
+export interface GetEdisTransactionsResponse extends Response {
+  /** List of e-DIS transactions. */
+  data: [EdisTransaction]|string
+}
+
+
+
+
+// SUBMIT-EDIS-HOLDINGS
+// --------------------
+
+export interface EdisHolding {
+  isin_code: string,
+  qty: number,
+}
+
+export interface SubmitEdisHoldingsRequest {
+  recordLst: [EdisHolding],
+}
+
+
+
+
+// INQUIRE-EDIS-TRANSACTION
+// ------------------------
+
+export interface InquireEdisTransactionRequest {
+  /** Transaction id. */
+  transactionId: string
+}
+
+export interface EdisStatus {
+  FAILED_CNT: number,
+  SUCEESS_CNT: number,
+}
+
+export interface InquireEdisTransactionResponse extends Response {
+  data: EdisStatus,
 }
 
 
@@ -1195,8 +1195,8 @@ export function convertPosition(auth: Authorization, options: ConvertPositionReq
 
 
 
-// BROKER-CONFIG
-// -------------
+// BROKER-CONFIG, DATA-API
+// -----------------------
 
 /**
  * Get the current market status of all the exchanges and their segments.
@@ -1206,6 +1206,40 @@ export function convertPosition(auth: Authorization, options: ConvertPositionReq
 export function getMarketStatus(auth: Authorization): Promise<GetMarketStatusResponse> {
   return requestApi(auth, 'GET', 'market-status', null, null) as Promise<GetMarketStatusResponse>;
 }
+
+
+/**
+ * Get the current market history for a particular symbol.
+ * @param auth authorization {app_id, access_token}
+ * @param options market details {symbol, resolution, date_format, ...}
+ * @returns market history
+ */
+ export function getMarketHistory(auth: Authorization, options: GetMarketHistoryRequest): Promise<GetMarketHistoryResponse> {
+  return requestData(auth, 'GET', 'history', options, null) as Promise<GetMarketHistoryResponse>;
+}
+
+
+/**
+ * Get the current market quotes for a set of symbols.
+ * @param auth authorization {app_id, access_token}
+ * @param options market details {symbols}
+ * @returns market quotes
+ */
+export function getMarketQuotes(auth: Authorization, options: GetMarketQuotesRequest): Promise<GetMarketQuotesResponse> {
+  return requestData(auth, 'GET', 'quotes', options, null) as Promise<GetMarketQuotesResponse>;
+}
+
+
+/**
+ * Get the current market depth for a particular symbol.
+ * @param auth authorization {app_id, access_token}
+ * @param options market details {symbol, ohlcv_flag}
+ * @returns market depth
+ */
+export function getMarketDepth(auth: Authorization, options: GetMarketDepthRequest): Promise<GetMarketDepthResponse> {
+  return requestData(auth, 'GET', 'depth', options, null) as Promise<GetMarketDepthResponse>;
+}
+
 
 /**
  * Get all the latest symbols of all the exchanges from the symbol master files.
@@ -1243,42 +1277,4 @@ export function submitEdisHoldingsStep(auth: Authorization, holdings: SubmitEdis
 
 export function inquireEdisTransaction(auth: Authorization, transaction: InquireEdisTransactionRequest): Promise<InquireEdisTransactionResponse> {
   return requestApi(auth, 'POST', 'inquiry', null, transaction) as Promise<InquireEdisTransactionResponse>;
-}
-
-
-
-
-// DATA-API
-// --------
-
-/**
- * Get the current market history for a particular symbol.
- * @param auth authorization {app_id, access_token}
- * @param options market details {symbol, resolution, date_format, ...}
- * @returns market history
- */
-export function getMarketHistory(auth: Authorization, options: GetMarketHistoryRequest): Promise<GetMarketHistoryResponse> {
-  return requestData(auth, 'GET', 'history', options, null) as Promise<GetMarketHistoryResponse>;
-}
-
-
-/**
- * Get the current market quotes for a set of symbols.
- * @param auth authorization {app_id, access_token}
- * @param options market details {symbols}
- * @returns market quotes
- */
-export function getMarketQuotes(auth: Authorization, options: GetMarketQuotesRequest): Promise<GetMarketQuotesResponse> {
-  return requestData(auth, 'GET', 'quotes', options, null) as Promise<GetMarketQuotesResponse>;
-}
-
-
-/**
- * Get the current market depth for a particular symbol.
- * @param auth authorization {app_id, access_token}
- * @param options market details {symbol, ohlcv_flag}
- * @returns market depth
- */
-export function getMarketDepth(auth: Authorization, options: GetMarketDepthRequest): Promise<GetMarketDepthResponse> {
-  return requestData(auth, 'GET', 'depth', options, null) as Promise<GetMarketDepthResponse>;
 }
