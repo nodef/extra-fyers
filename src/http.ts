@@ -1,4 +1,4 @@
-import {HttpHeaders, HttpRequestError, HttpRequestOptions, queryString, httpRequestText, httpRequestJson} from './_utility';
+import {HttpHeaders, HttpRequestOptions, queryString, httpRequestText, httpRequestJson} from './_http';
 
 
 
@@ -20,12 +20,8 @@ export const SYMBOLS_URL: string = 'https://public.fyers.in/sym_details/';
 // TYPES
 // =====
 
-// REQUEST/RESPONSE
-// ----------------
-
-export type RequestError   = HttpRequestError;
-export type RequestOptions = HttpRequestOptions;
-
+// RESPONSE
+// --------
 
 /** Common response format. */
 export interface Response {
@@ -63,8 +59,8 @@ export interface Authorization {
 }
 
 
-/** Request attributes for Authorization step 1. */
-export interface AuthorizationRequest1 {
+/** Authorization step 1 request. */
+export interface AuthorizationStep1Request {
   /** This is the app_id which you have received after creating the app. */
   client_id: string,
   /** This is where the user will be redirected after successful login. */
@@ -76,8 +72,8 @@ export interface AuthorizationRequest1 {
 }
 
 
-/** Response attributes for Authorization step 1. */
-export interface AuthorizationResponse1 extends Response {
+/** Authorization step 1 response. */
+export interface AuthorizationStep1Response extends Response {
   /** String value which will be used to generate the access_token. */
   auth_code: string,
   /** This value is returned as is from the first request. */
@@ -85,8 +81,8 @@ export interface AuthorizationResponse1 extends Response {
 }
 
 
-/** Request attributes for Authorization step 2. */
-export interface AuthorizationRequest2 {
+/** Authorization step 2 request. */
+export interface AuthorizationStep2Request {
   /** This value must always be “authorization_code”. */
   grant_type: string,
   /** SHA-256 of `api_id:app_secret` in hex. */
@@ -96,8 +92,8 @@ export interface AuthorizationRequest2 {
 }
 
 
-/** Response attributes for Authorization step 2. */
-export interface AuthorizationResponse2 extends Response {
+/** Authorization step 2 response. */
+export interface AuthorizationStep2Response extends Response {
   /** This value will be used for all the subsequent requests. */
   access_token: string,
 }
@@ -136,8 +132,8 @@ export interface GetProfileResponse extends Response {
 // GET-FUNDS
 // ---------
 
-/** Basic details for particular fund. */
-export interface Fund {
+/** Limit details for particular fund. */
+export interface FundLimit {
   /** Unique identity for particular fund. */
   id: string,
   /** Each title represents a heading of the ledger. */
@@ -149,10 +145,10 @@ export interface Fund {
 }
 
 
-/** Balance available for the user for capital as well as the commodity market. */
+/** Get funds response. */
 export interface GetFundsResponse extends Response {
-  /** Basic detals for all funds. */
-  fund_limit: [Fund],
+  /** Balance available for the user for capital as well as the commodity market. */
+  fund_limit: FundLimit[],
 }
 
 
@@ -161,7 +157,7 @@ export interface GetFundsResponse extends Response {
 // GET-HOLDINGS
 // ------------
 
-/** Details of each holding. */
+/** Details of each equity or mutual fund holding. */
 export interface Holding {
   /** An identifier for this holding. */
   id: number,
@@ -190,7 +186,7 @@ export interface Holding {
 }
 
 
-/** Overall status of holdings in this demat account. */
+/** Overall status of equity and mutual fund holdings in this demat account. */
 export interface HoldingsOverall {
   /** Total number of holdings present. */
   count_total: number,
@@ -208,7 +204,7 @@ export interface HoldingsOverall {
 /** Equity and mutual fund holdings which the user has in this demat account. */
 export interface GetHoldingsResponse extends Response {
   /** Details of each holding. */
-  holdings: [Holding],
+  holdings: Holding[],
   /** Overall status of holdings in this demat account. */
   overall: HoldingsOverall,
 }
@@ -292,16 +288,16 @@ export interface Order {
 }
 
 
-/** An order placed by the user in the current trading day. */
+/** Get order request. */
 export interface GetOrderRequest {
   /** The unique order id assigned for each order. */
   id: string,
 }
 
-/** All the orders placed by the user in the current trading day. */
+/** Get orders response. */
 export interface GetOrdersResponse extends Response {
   /** List of all orders places during the day. */
-  orderBook: [Order],
+  orderBook: Order[],
 }
 
 
@@ -310,7 +306,7 @@ export interface GetOrdersResponse extends Response {
 // GET-POSITIONS
 // -------------
 
-/** Current open and closed position for the current trading day. */
+/** Current open/closed position for the current trading day. */
 export interface Position {
   /** The unique value for each position. */
   id: string,
@@ -380,10 +376,10 @@ export interface PositionsOverall {
 }
 
 
-/** Current open and closed positions for the current trading day. */
+/** Get postions response. */
 export interface GetPositionsResponse extends Response {
   /** List of all positions for the current trading day. */
-  netPositions: [Position],
+  netPositions: Position[],
   /** Overall status of positions for the current trading day. */
   overall: PositionsOverall,
 }
@@ -394,7 +390,7 @@ export interface GetPositionsResponse extends Response {
 // GET-TRADES
 // ----------
 
-/** Trade for the current day across all platforms and exchanges in the current trading day. */
+/** Trade in the current trading day. */
 export interface Trade {
   /** The unique id to sort the trades. */
   id: string,
@@ -435,10 +431,10 @@ export interface Trade {
 }
 
 
-/** All the trades for the current day across all platforms and exchanges in the current trading day. */
+/** Get trades response. */
 export interface GetTradesResponse extends Response {
    /** List of all trades for the current trading day. */
-  tradeBook: [Trade]
+  tradeBook: Trade[]
 }
 
 
@@ -447,7 +443,7 @@ export interface GetTradesResponse extends Response {
 // PLACE-ORDER
 // -----------
 
-/** Defines an order to any exchange via Fyers. */
+/** Place order request to an exchange via Fyers. */
 export interface PlaceOrderRequest {
   /** Eg: NSE:SBIN-EQ. */
   symbol: string,
@@ -476,17 +472,17 @@ export interface PlaceOrderRequest {
 }
 
 
-/** Reponse attributes of placeOrder(). */
+/** Place order reponse. */
 export interface PlaceOrderResponse extends Response {
   /** The order number of the placed order. */
   id: string,
 }
 
 
-/** Response attributes of placeOrders(). */
+/** Place orders response. */
 export interface PlaceOrdersResponse extends Response {
   /** List of HTTP data for each order. */
-  data: [ProxyResponse<PlaceOrderResponse>]
+  data: ProxyResponse<PlaceOrderResponse>[]
 }
 
 
@@ -495,7 +491,7 @@ export interface PlaceOrdersResponse extends Response {
 // MODIFY-ORDER
 // ------------
 
-/** Defines an order modification request to Fyers. */
+/** Modify order request to Fyers. */
 export interface ModifyOrderRequest {
   /** The unique order id assigned for each order. */
   id: string,
@@ -524,17 +520,17 @@ export interface ModifyOrderRequest {
 }
 
 
-/** Reponse attributes of modifyOrder(). */
+/** Modify order response. */
 export interface ModifyOrderResponse extends Response {
   /** The order number of the modified order. */
   id: string,
 }
 
 
-/** Reponse attributes of modifyOrders(). */
+/** Modify orders response. */
 export interface ModifyOrdersResponse extends Response {
   /** List of HTTP data for each order. */
-  data: ProxyResponse<ModifyOrderResponse>,
+  data: ProxyResponse<ModifyOrderResponse>[],
 }
 
 
@@ -543,24 +539,24 @@ export interface ModifyOrdersResponse extends Response {
 // CANCEL-ORDER
 // ------------
 
-/** Defines an order cancellation to any exchange via Fyers. */
+/** Cancel order request to any exchange via Fyers. */
 export interface CancelOrderRequest {
   /** The order number of the placed order. */
   id: string,
 }
 
 
-/** Reponse attributes of cancelOrder(). */
+/** Cancel order response. */
 export interface CancelOrderResponse extends Response {
   /** The order number of the placed order. */
   id: string,
 }
 
 
-/** Reponse attributes of cancelOrders(). */
+/** Cancel orders response. */
 export interface CancelOrdersResponse extends Response {
   /** List of HTTP data for each order. */
-  data: [ProxyResponse<CancelOrderResponse>]
+  data: ProxyResponse<CancelOrderResponse>[]
 }
 
 
@@ -569,16 +565,16 @@ export interface CancelOrdersResponse extends Response {
 // EXIT-POSITION
 // -------------
 
-/** Defines a exit position request to Fyers. */
+/** Exit position request to Fyers. */
 export interface ExitPositionRequest {
   /** Mandatory. Eg: NSE:FCONSUMER-EQ-INTRADAY. */
   id: string,
 }
 
 
-/** Reponse attributes of exitAllPositions(). */
+/** Exit all positions response. */
 export interface ExitAllPositionsResponse extends Response {}
-/** Reponse attributes of exitPosition(). */
+/** Exit position response. */
 export interface ExitPositionResponse extends Response {}
 
 
@@ -587,7 +583,7 @@ export interface ExitPositionResponse extends Response {}
 // CONVERT-POSITION
 // ----------------
 
-/** Defines a convert position request to Fyers. */
+/** Convert position request to Fyers. */
 export interface ConvertPositionRequest {
   /** Mandatory. Eg: 119031547242. */
   symbol: string,
@@ -602,9 +598,9 @@ export interface ConvertPositionRequest {
 }
 
 
-/** Reponse attributes of convertPosition(). */
+/** Convert position response. */
 export interface ConvertPositionResponse extends Response {
-  /** ? */
+  /** Unknown. */
   positionDetails?: number,
 }
 
@@ -627,10 +623,10 @@ export interface MarketStatus {
 }
 
 
-/** Current market status of all the exchanges and their segments. */
+/** Market status response for all the exchanges and their segments. */
 export interface GetMarketStatusResponse extends Response {
   /** List of statuses of various markets. */
-  marketStatus: [MarketStatus],
+  marketStatus: MarketStatus[],
 }
 
 
@@ -639,7 +635,7 @@ export interface GetMarketStatusResponse extends Response {
 // GET-MARKET-HISTORY
 // ------------------
 
-/** Request for getting market history of a symbol. */
+/** Market history request for a symbol. */
 export interface GetMarketHistoryRequest {
   /** Eg: NSE:RCOM-EQ. */
   symbol: string,
@@ -656,7 +652,7 @@ export interface GetMarketHistoryRequest {
 }
 
 
-/** Current market history of a particular stock. */
+/** Market history of a particular stock response. */
 export interface GetMarketHistoryResponse extends Response {
   /** List of candes in the format: [time, open, high, low, close, volume]. */
   candles: [number, number, number, number, number, number][],
@@ -668,14 +664,14 @@ export interface GetMarketHistoryResponse extends Response {
 // GET-MARKET-QUOTES
 // -----------------
 
-/** Request to retrieve the full market quotes for one or more symbols. */
+/** Market quotes request for one or more symbols. */
 export interface GetMarketQuotesRequest {
   /** Eg: NSE:RCOM-EQ, ... */
   symbols: string,
 }
 
 
-/** Text candle in quotes. */
+/** Candle in market quotes. */
 export interface Candle {
   /** UNIX expoch time. */
   t: number,
@@ -695,7 +691,7 @@ export interface Candle {
 
 
 /** Quote details of a particular symbol. */
-export interface MarketQuoteValue {
+export interface MarketQuoteDetails {
   /** Change value. */
   ch: number,
   /** Percentage of change between the current value and the previous day's market close. */
@@ -744,14 +740,14 @@ export interface MarketQuote {
   /** Status (ok). */
   s: string,
   /** Market quote details. */
-  v: MarketQuoteValue,
+  v: MarketQuoteDetails,
 }
 
 
-/** Response attributes for getMarketQuotes(). */
+/** Market quotes response. */
 export interface GetMarketQuotesResponse extends Response {
   /** List of all market quotes. */
-  d: [MarketQuote]
+  d: MarketQuote[]
 }
 
 
@@ -760,7 +756,7 @@ export interface GetMarketQuotesResponse extends Response {
 // GET-MARKET-DEPTH
 // ----------------
 
-/** Request attributes for getMarketDepth(). */
+/** Market depth details request. */
 export interface GetMarketDepthRequest {
   /** Eg: NSE:RCOM-EQ. */
   symbol: string,
@@ -768,7 +764,9 @@ export interface GetMarketDepthRequest {
   ohlcv_flag: number,
 }
 
-export interface BidAsk {
+
+/** Open buy/sell orders at a particular price. */
+export interface MarketOffer {
   /** Bid/ask price. */
   price: number,
   /** Bid/ask volume. */
@@ -778,15 +776,16 @@ export interface BidAsk {
 }
 
 
+/** A measure of the supply and demand for a symbol. */
 export interface MarketDepth {
   /** Total buying quantity. */
   totalbuyqty: number,
   /** Total selling quantity. */
   totalsellqty: number,
   /** Bidding price along with volume and total number of orders. */
-  bids: [BidAsk],
+  bids: MarketOffer[],
   /** Offer price with volume and total number of orders. */
-  ask: [BidAsk],
+  ask: MarketOffer[],
   /** Price at market opening time. */
   o?: number,
   /** Highest price for the day. */
@@ -826,10 +825,10 @@ export interface MarketDepth {
 }
 
 
-/** Response attributes for getMarketDepth(). */
+/** Market depth details response. */
 export interface GetMarketDepthResponse extends Response {
-  /** Dictionary of all market quotes. */
-  d: { (symbol: string): MarketDepth }
+  /** Dictionary of all market depth details. */
+  d: { [symbol: string]: MarketDepth }
 }
 
 
@@ -838,6 +837,7 @@ export interface GetMarketDepthResponse extends Response {
 // GET-SYMBOL-MASTER
 // -----------------
 
+/** Symbol category of master file request. */
 export interface GetSymbolMasterRequest {
   /** Name of the exchange (NSE, BSE, MCX). */
   exchange: string,
@@ -851,6 +851,7 @@ export interface GetSymbolMasterRequest {
 // GENERATE-EDIS-TPIN
 // ------------------
 
+/** e-DIS TPIN generation reponse. */
 export interface GenerateEdisTpinResponse extends Response {
   /** Unknown, seen to be empty. */
   data: string
@@ -862,6 +863,7 @@ export interface GenerateEdisTpinResponse extends Response {
 // GET-EDIS-TRANSACTIONS
 // ---------------------
 
+/** Details of an e-DIS transaction. */
 export interface EdisTransaction {
   /** Transaction id. */
   transactionId: string
@@ -889,18 +891,18 @@ export interface EdisTransaction {
   status: string,
   /** Unique client code? */
   clientId: string,
-  /** NA. */
+  /** Error code (NA). */
   errCode: string,
-  /** 0. */
+  /** Error count (0). */
   errorCount: string,
   /** Message. */
   reason: string,
 }
 
-
+/** e-DIS transaction details response. */
 export interface GetEdisTransactionsResponse extends Response {
   /** List of e-DIS transactions. */
-  data: [EdisTransaction]|string
+  data: EdisTransaction[]|string
 }
 
 
@@ -909,13 +911,19 @@ export interface GetEdisTransactionsResponse extends Response {
 // SUBMIT-EDIS-HOLDINGS
 // --------------------
 
+/** e-DIS securities held in a demat account. */
 export interface EdisHolding {
+  /** 12-digit alphanumeric code of specific symbol. */
   isin_code: string,
+  /** Quantity of securities held. */
   qty: number,
 }
 
+
+/** e-DIS holdings submission request. */
 export interface SubmitEdisHoldingsRequest {
-  recordLst: [EdisHolding],
+  /** Records of holdings of the user. */
+  recordLst: EdisHolding[],
 }
 
 
@@ -924,18 +932,26 @@ export interface SubmitEdisHoldingsRequest {
 // INQUIRE-EDIS-TRANSACTION
 // ------------------------
 
+/** e-DIS transactions status inquiry request. */
 export interface InquireEdisTransactionRequest {
   /** Transaction id. */
   transactionId: string
 }
 
-export interface EdisStatus {
+
+/** e-DIS transaction status counts. */
+export interface EdisTransactionStatus {
+  /** Failure count. */
   FAILED_CNT: number,
+  /** Success count. */
   SUCEESS_CNT: number,
 }
 
+
+/** e-DIS transaction status inquiry response. */
 export interface InquireEdisTransactionResponse extends Response {
-  data: EdisStatus,
+  /** Depository status data. */
+  data: EdisTransactionStatus,
 }
 
 
@@ -947,7 +963,7 @@ export interface InquireEdisTransactionResponse extends Response {
 // REQUEST
 // -------
 
-function requestStep(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): RequestOptions {
+function requestStep(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): HttpRequestOptions {
   var url  = path + queryString(query);
   var headers: HttpHeaders = {};
   if (auth != null) headers['authorization'] = auth.app_id + ':' + auth.access_token;
@@ -983,9 +999,9 @@ function requestSymbols(auth: null, method: string, path: string, query: object|
 /**
  * Get request step 1 for authorization (browser only).
  * @param options authorization step 1 details {client_id, redirect_uri, response_type, state}
- * @returns request options for authorization step 1 (manual)
+ * @returns HTTP(s) request options for authorization step 1 (manual)
  */
-export function authorizationStep1(options: AuthorizationRequest1): RequestOptions {
+export function authorizationStep1(options: AuthorizationStep1Request): HttpRequestOptions {
   return requestStep(null, 'GET', 'generate-authcode', options, null);
 }
 
@@ -993,9 +1009,9 @@ export function authorizationStep1(options: AuthorizationRequest1): RequestOptio
 /**
  * Get request step 2 for authorization (browser, server).
  * @param options authorization step 2 details {graph_type, appIdHash, code}
- * @returns request options for authorization step 2 (manual)
+ * @returns HTTP(s) request options for authorization step 2 (manual)
  */
-export function authorizationStep2(options: AuthorizationRequest2): RequestOptions {
+export function authorizationStep2(options: AuthorizationStep2Request): HttpRequestOptions {
   return requestStep(null, 'POST', 'validate-authcode', null, options);
 }
 
@@ -1278,9 +1294,9 @@ export function getEdisTransactions(auth: Authorization): Promise<GetEdisTransac
  * Redirect to CDSL page for login where you can submit your Holdings information and accordingly you can provide the same to exchange to Sell your holdings (browser only).
  * @param auth authorization {app_id, access_token}
  * @param options holding details {recordLst: [{isin_code, qty}]}
- * @returns request options (manual)
+ * @returns HTTP(s) request options (manual)
  */
-export function submitEdisHoldingsStep(auth: Authorization, options: SubmitEdisHoldingsRequest): RequestOptions {
+export function submitEdisHoldingsStep(auth: Authorization, options: SubmitEdisHoldingsRequest): HttpRequestOptions {
   return requestStep(auth, 'POST', 'index', null, options);
 }
 

@@ -6,20 +6,32 @@ import https from 'https';
 // REQUEST (TYPES)
 // ---------------
 
+/** HTTP(s) header keys and values. */
 export interface HttpHeaders {
   [key: string]: string,
 }
 
+
+/** HTTP(s) request error. */
 export interface HttpRequestError extends Error {
+  /** Status code (404). */
   code: number,
+  /** Response data. */
   response: string|object,
 }
 
+
+/** HTTP(s) request options. */
 export interface HttpRequestOptions {
+  /** Full URL, inluding protocol and query. */
   url: string,
+  /** HTTP(s) method (GET). */
   method?: string,
-  body?: object,
+  /** Body of request (JSON). */
+  body?: object|null,
+  /** Request headers. */
   headers?: HttpHeaders,
+  /** What if we don't get a response? */
   timeout?: number,
 }
 
