@@ -1,3 +1,87 @@
+// ERRORS
+// ------
+
+const ERROR_DESCRIPTION : Map<number, string> = new Map([
+  [-209, "Invalid order id"],
+  [-101, "Invalid order type"],
+  [-305, "For CO orders only market and limit orders are allowed"],
+  [-323, "For BO orders only market and limit orders are allowed"],
+  [-308, "Invalid limit price"],
+  [-309, "Invalid stop price"],
+  [-310, "Invalid order quantity"],
+  [-311, "Invalid stop loss price"],
+  [-313, "Invalid order side of either buy or sell"],
+  [-314, "Invalid product type for the order"],
+  [-315, "Invalid price for stop limit order"],
+  [-316, "Invalid stop loss price for CO/BO orders"],
+  [-323, "Invalid stop loss value"],
+  [-325, "Ivalid target value (take_profit)"],
+  [-326, "Invalid order validity"],
+  [-327, "Invalid order disclosed quantity"],
+  [-328, "Invalid order offline flag"],
+  [-201, "Connection issue while processing your request"],
+  [-202, "Connection timed out"],
+  [-204, "Request wasnt processed"],
+  [-205, "Market wasnt able to accept or process the request"],
+  [-157, "User doesnt exist"],
+  [-159, "Invalid order number"],
+  [-161, "This order has already been cancelled"],
+  [-162, "This order has already traded"],
+  [-163, "Order modfication wasnt done successfully"],
+  [-164, "This order has already been rejected"],
+  [-390, "Invalid stop price"],
+  [-392, "Price is not in multiples of tick size"],
+  [-353, "API limit exceeded"],
+  [-372, "Invalid price"],
+  [-397, "Position quantity is zero"],
+  [-398, "No open positions"],
+  [-399, "No pending orders to be closed/cancelled"],
+  [-329, "Please check if exit positions is complete"],
+  [-373, "No permission"],
+  [-374, "Invalid authorization code (auth_code)"],
+  [-371, "Invalid SHA256 hash of (app_id:secret_key)"],
+  [-17,  "Invalid access token used for authentication"],
+  [-352, "Invalid app id"],
+  [-96,  "An unexpected error occurred when processing request"],
+  [-351, "Greater than 50 symbols"],
+  [-300, "Invalid symbol"],
+  [-310, "Invalid symbols"],
+  [-301, "Invalid resolution format"],
+  [-302, "Invalid historical timestamp from when you require data"],
+  [-303, "Invalid historical timestamp till when you require data"],
+  [-356, "The range_from value cannot be greater than range_to value"],
+  [-334, "Invalid key date format value"],
+  [-335, "Historical timestamp from when you require data not in epoch format"],
+  [-336, "Historical timestamp till when you require data not in epoch format"],
+  [-337, "Historical timestamp from when you require data not in YYYY-MM-DD format"],
+  [-338, "Historical timestamp till when you require data not in YYYY-MM-DD format"],
+  [-339, "The range cannot be more than 1 year for day resolution"],
+  [-341, "The range cannot be more than 100 days for 1 min resolution"],
+  [-343, "The range cannot be more than 100 days for 2 min resolution"],
+  [-344, "The range cannot be more than 100 days for 3 min resolution"],
+  [-345, "The range cannot be more than 100 days for 5 min resolution"],
+  [-346, "The range cannot be more than 100 days for 10 min resolution"],
+  [-347, "The range cannot be more than 100 days for 15 min resolution"],
+  [-348, "The range cannot be more than 100 days for 20 min resolution"],
+  [-349, "The range cannot be more than 100 days for 30 min resolution"],
+  [-353, "The range cannot be more than 100 days for 60 min resolution"],
+  [-354, "The range cannot be more than 100 days for 120 min resolution"],
+  [-355, "The range cannot be more than 100 days for 240 min resolution"],
+]);
+
+
+/**
+ * Get the error description.
+ * @param code error code (-ve)
+ * @returns error description
+ */
+export function errorDescription(code: number): string {
+  return ERROR_DESCRIPTION.get(code);
+}
+
+
+
+
 // YEAR2
 // -----
 
@@ -143,41 +227,6 @@ export function day2(desc: string): string {
 
 
 
-// OPTION-TYPE
-// -----------
-
-export enum OptionType {
-  Call = "CE",
-  Put  = "PE",
-}
-
-const OPTION_TYPE_DESCRIPTION: Map<string, string> = new Map([
-  ["CE", "Call Option (CE)"],
-  ["PE", "Put Option (PE)"],
-]);
-
-
-/**
- * Get option type description.
- * @param code option type code (CE, PE)
- * @returns option type description
- */
-export function optionTypeDescription(code: string): string {
-  return OPTION_TYPE_DESCRIPTION.get(code);
-}
-
-/**
- * Get option type code.
- * @param desc option type description
- * @returns option type code (CE, PE)
- */
-export function optionType(desc: string): string {
-  return /^[ps]/i.test(desc)? "PE" : "CE";
-}
-
-
-
-
 // EXCHANGES
 // ---------
 
@@ -267,6 +316,368 @@ export function segment(desc: string): number {
   else if (/^cur/i.test(desc)) key = "CD";
   else if (/der|fut|opt/i.test(desc)) key = "FO";
   return SEGMENT_CODE.get(key);
+}
+
+
+
+
+// POSITION-SIDES
+// --------------
+
+export enum PositionSide {
+  Long   =  1,
+  Short  = -1,
+  Closed =  0,
+}
+
+const POSITION_SIDE_DESCRIPTION: Map<number, string> = new Map([
+  [1,  "Long"],
+  [-1, "Short"],
+  [0,  "Closed position"],
+]);
+
+const POSITION_SIDE_CODE: Map<string, number> = new Map([
+  ["L",  1],
+  ["S", -1],
+  ["C",  0],
+]);
+
+
+/**
+ * Get position side description.
+ * @param code position side code (1, -1, 0)
+ * @returns position side description
+ */
+export function positionSideDescription(code: number): string {
+  return POSITION_SIDE_DESCRIPTION.get(code);
+}
+
+/**
+ * Get position side code.
+ * @param desc position side description
+ * @returns position side code (1, -1, 0)
+ */
+export function positionSide(desc: string): number {
+  var key = desc.charAt(0).toUpperCase();
+  return POSITION_SIDE_CODE.get(key);
+}
+
+
+
+
+// ORDER-SIDES
+// -----------
+
+export enum OrderSide {
+  Buy  =  1,
+  Sell = -1
+}
+
+const ORDER_SIDE_DESCRIPTION: Map<number, string> = new Map([
+  [1,  "Buy"],
+  [-1, "Sell"],
+]);
+
+const ORDER_SIDE_CODE: Map<string, number> = new Map([
+  ["B", 1],
+  ["S", -1],
+]);
+
+
+/**
+ * Get order side description.
+ * @param code order side code (1, -1)
+ * @returns order side description
+ */
+export function orderSideDescription(code: number): string {
+  return ORDER_SIDE_DESCRIPTION.get(code);
+}
+
+/**
+ * Get order side code.
+ * @param desc order side description
+ * @returns order size code (1, -1)
+ */
+export function orderSide(desc: string): number {
+  var key = desc.charAt(0).toUpperCase();
+  return ORDER_SIDE_CODE.get(key);
+}
+
+
+
+
+// ORDER-SOURCES
+// -------------
+
+export enum OrderSource {
+  Mobile   = "M",
+  Web      = "W",
+  FyersOne = "R",
+  Admin    = "A",
+  API      = "ITS",
+}
+
+const ORDER_SOURCE_DESCRIPTION: Map<string, string> = new Map([
+  ["M",   "Mobile"],
+  ["W",   "Web"],
+  ["R",   "Fyers One"],
+  ["A",   "Admin"],
+  ["ITS", "API"],
+]);
+
+const ORDER_SOURCE_CODE: Map<string, string> = new Map([
+  ["MO", "M"],
+  ["WE", "W"],
+  ["ON", "R"],
+  ["AD", "A"],
+  ["AP", "ITS"],
+]);
+
+
+/**
+ * Get order source description.
+ * @param code order source code (M, W, R, A, ITS)
+ * @returns order source description
+ */
+export function orderSourceDescription(code: string): string {
+  return ORDER_SOURCE_DESCRIPTION.get(code);
+}
+
+/**
+ * Get order source code.
+ * @param desc order source description
+ * @returns order source code (M, W, R, A, ITS)
+ */
+export function orderSource(desc: string): string {
+  var words = desc.split(" ");
+  var key   = words[words.length-1].substring(0, 2).toUpperCase();
+  return ORDER_SOURCE_CODE.get(key);
+}
+
+
+
+
+// ORDER-STATUSES
+// --------------
+
+export enum OrderStatus {
+  Cancelled = 1,
+  Traded    = 2,
+  Unused    = 3,
+  Transit   = 4,
+  Rejected  = 5,
+  Pending   = 6,
+  Expired   = 7,
+}
+
+const ORDER_STATUS_DESCRIPTION: Map<number, string> = new Map([
+  [1, "Cancelled"],
+  [2, "Traded / Filled"],
+  [3, "For future use"],
+  [4, "Transit"],
+  [5, "Rejected"],
+  [6, "Pending"],
+  [7, "Expired"],
+]);
+
+const ORDER_STATUS_CODE: Map<string, number> = new Map([
+  ["C", 1],
+  ["F", 2],
+  ["T", 4],
+  ["R", 5],
+  ["P", 6],
+  ["E", 7],
+]);
+
+
+/**
+ * Get order status description.
+ * @param code order status code (1, 2, 3, 4, 5, 6, 7)
+ * @returns order status description
+ */
+export function orderStatusDescription(code: number): string {
+  return ORDER_STATUS_DESCRIPTION.get(code);
+}
+
+/**
+ * Get order status code.
+ * @param desc order status description
+ * @returns order status code (1, 2, 3, 4, 5, 6, 7)
+ */
+export function orderStatus(desc: string): number {
+  if (/traded/i.test(desc)) desc = "Filled";
+  var key = desc.charAt(0).toUpperCase();
+  return ORDER_STATUS_CODE.get(key);
+}
+
+
+
+
+// ORDER-TYPES
+// -----------
+
+export enum OrderType {
+  Limit  = 1,
+  Market = 2,
+  StopLossMarket = 3,
+  StopLossLimit  = 4,
+}
+
+const ORDER_TYPE_DESCRIPTION: Map<number, string> = new Map([
+  [1, "Limit order"],
+  [2, "Market order"],
+  [3, "Stop order (SL-M)"],
+  [4, "Stoplimit order (SL-L)"],
+]);
+
+const ORDER_TYPE_CODE: Map<string, number> = new Map([
+  ["L", 1],
+  ["M", 2],
+  ["S", 3],
+  ["R", 4],
+]);
+
+
+/**
+ * Get order type description.
+ * @param code order type code (1, 2, 3, 4)
+ * @returns order type description
+ */
+export function orderTypeDescription(code: number): string {
+  return ORDER_TYPE_DESCRIPTION.get(code);
+}
+
+/**
+ * Get order type code.
+ * @param desc order type description
+ * @returns order type code (1, 2, 3, 4)
+ */
+export function orderType(desc: string): number {
+  var key = desc.charAt(0).toUpperCase();
+  if (/s.+l(?!oss)/i.test(desc)) key = "R";
+  return ORDER_TYPE_CODE.get(key);
+}
+
+
+
+
+// OPTION-TYPE
+// -----------
+
+export enum OptionType {
+  Call = "CE",
+  Put  = "PE",
+}
+
+const OPTION_TYPE_DESCRIPTION: Map<string, string> = new Map([
+  ["CE", "Call Option (CE)"],
+  ["PE", "Put Option (PE)"],
+]);
+
+
+/**
+ * Get option type description.
+ * @param code option type code (CE, PE)
+ * @returns option type description
+ */
+export function optionTypeDescription(code: string): string {
+  return OPTION_TYPE_DESCRIPTION.get(code);
+}
+
+/**
+ * Get option type code.
+ * @param desc option type description
+ * @returns option type code (CE, PE)
+ */
+export function optionType(desc: string): string {
+  return /^[ps]/i.test(desc)? "PE" : "CE";
+}
+
+
+
+
+// HOLDING-TYPES
+// -------------
+
+export enum HoldingType {
+  Purchased = "T1",
+  Delivered = "HLD",
+}
+
+const HOLDING_TYPE_DESCRIPTION: Map<string, string> = new Map([
+  ["T1",  "The shares are purchased but not yet delivered to the demat account"],
+  ["HLD", "The shares are purchased and are available in the demat account"],
+]);
+
+
+/**
+ * Get holding type description.
+ * @param code holding type code (T1, HLD)
+ * @returns holding type description
+ */
+export function holdingTypeDescription(code: string): string {
+  return HOLDING_TYPE_DESCRIPTION.get(code);
+}
+
+/**
+ * Get holding type code.
+ * @param desc holding type description
+ * @returns holding type code (T1, HLD)
+ */
+export function holdingType(desc: string): string {
+  return /not|un/i.test(desc)? "T1" : "HLD";
+}
+
+
+
+
+// PRODUCT-TYPES
+// -------------
+
+export enum ProductType {
+  CNC      = "CNC",
+  Intraday = "INTRADAY",
+  Margin   = "MARGIN",
+  Cover    = "CO",
+  Bracket  = "BO",
+}
+
+const PRODUCT_TYPE_DESCRIPTION: Map<string, string> = new Map([
+  ["CNC",      "Cash N Carry or Delivery Order, for equity only (CNC)"],
+  ["INTRADAY", "Intraday Order, applicable for all segments (INTRADAY)"],
+  ["MARGIN",   "Margin Order, applicable only for derivatives (MARGIN)"],
+  ["CO",       "Cover Order (CO)"],
+  ["BO",       "Bracket Order (BO)"],
+]);
+
+const PRODUCT_TYPE_CODE: Map<string, string> = new Map([
+  ["D", "CNC"],
+  ["I", "INTRADAY"],
+  ["M", "MARGIN"],
+  ["M", "MARGIN"],
+  ["C", "CO"],
+  ["B", "BO"],
+]);
+
+
+/**
+ * Get product type description.
+ * @param code product type code (CNC, INTRADAY, MARGIN, CO, BO)
+ * @returns product type description
+ */
+export function productTypeDescription(code: string): string {
+  return PRODUCT_TYPE_DESCRIPTION.get(code);
+}
+
+/**
+ * Get product type code.
+ * @param desc product type description
+ * @returns product type code (CNC, INTRADAY, MARGIN, CO, BO)
+ */
+export function productType(desc: string): string {
+  if (/cnc|cash|carry/i.test(desc)) desc = "Delivery";
+  var key = desc.charAt(0).toUpperCase();
+  return PRODUCT_TYPE_CODE.get(key);
 }
 
 
@@ -421,415 +832,4 @@ export function instrumentType(desc: string): number {
     else                            key = "EQ";
   }
   return INSTRUMENT_TYPE_CODE.get(key);
-}
-
-
-
-
-// PRODUCT-TYPES
-// -------------
-
-export enum ProductType {
-  CNC      = "CNC",
-  Intraday = "INTRADAY",
-  Margin   = "MARGIN",
-  Cover    = "CO",
-  Bracket  = "BO",
-}
-
-const PRODUCT_TYPE_DESCRIPTION: Map<string, string> = new Map([
-  ["CNC",      "Cash N Carry or Delivery Order, for equity only (CNC)"],
-  ["INTRADAY", "Intraday Order, applicable for all segments (INTRADAY)"],
-  ["MARGIN",   "Margin Order, applicable only for derivatives (MARGIN)"],
-  ["CO",       "Cover Order (CO)"],
-  ["BO",       "Bracket Order (BO)"],
-]);
-
-const PRODUCT_TYPE_CODE: Map<string, string> = new Map([
-  ["D", "CNC"],
-  ["I", "INTRADAY"],
-  ["M", "MARGIN"],
-  ["M", "MARGIN"],
-  ["C", "CO"],
-  ["B", "BO"],
-]);
-
-
-/**
- * Get product type description.
- * @param code product type code (CNC, INTRADAY, MARGIN, CO, BO)
- * @returns product type description
- */
-export function productTypeDescription(code: string): string {
-  return PRODUCT_TYPE_DESCRIPTION.get(code);
-}
-
-/**
- * Get product type code.
- * @param desc product type description
- * @returns product type code (CNC, INTRADAY, MARGIN, CO, BO)
- */
-export function productType(desc: string): string {
-  if (/cnc|cash|carry/i.test(desc)) desc = "Delivery";
-  var key = desc.charAt(0).toUpperCase();
-  return PRODUCT_TYPE_CODE.get(key);
-}
-
-
-
-
-// ORDER-TYPES
-// -----------
-
-export enum OrderType {
-  Limit  = 1,
-  Market = 2,
-  StopLossMarket = 3,
-  StopLossLimit  = 4,
-}
-
-const ORDER_TYPE_DESCRIPTION: Map<number, string> = new Map([
-  [1, "Limit order"],
-  [2, "Market order"],
-  [3, "Stop order (SL-M)"],
-  [4, "Stoplimit order (SL-L)"],
-]);
-
-const ORDER_TYPE_CODE: Map<string, number> = new Map([
-  ["L", 1],
-  ["M", 2],
-  ["S", 3],
-  ["R", 4],
-]);
-
-
-/**
- * Get order type description.
- * @param code order type code (1, 2, 3, 4)
- * @returns order type description
- */
-export function orderTypeDescription(code: number): string {
-  return ORDER_TYPE_DESCRIPTION.get(code);
-}
-
-/**
- * Get order type code.
- * @param desc order type description
- * @returns order type code (1, 2, 3, 4)
- */
-export function orderType(desc: string): number {
-  var key = desc.charAt(0).toUpperCase();
-  if (/s.+l(?!oss)/i.test(desc)) key = "R";
-  return ORDER_TYPE_CODE.get(key);
-}
-
-
-
-
-// ORDER-STATUSES
-// --------------
-
-export enum OrderStatus {
-  Cancelled = 1,
-  Traded    = 2,
-  Unused    = 3,
-  Transit   = 4,
-  Rejected  = 5,
-  Pending   = 6,
-  Expired   = 7,
-}
-
-const ORDER_STATUS_DESCRIPTION: Map<number, string> = new Map([
-  [1, "Cancelled"],
-  [2, "Traded / Filled"],
-  [3, "For future use"],
-  [4, "Transit"],
-  [5, "Rejected"],
-  [6, "Pending"],
-  [7, "Expired"],
-]);
-
-const ORDER_STATUS_CODE: Map<string, number> = new Map([
-  ["C", 1],
-  ["F", 2],
-  ["T", 4],
-  ["R", 5],
-  ["P", 6],
-  ["E", 7],
-]);
-
-
-/**
- * Get order status description.
- * @param code order status code (1, 2, 3, 4, 5, 6, 7)
- * @returns order status description
- */
-export function orderStatusDescription(code: number): string {
-  return ORDER_STATUS_DESCRIPTION.get(code);
-}
-
-/**
- * Get order status code.
- * @param desc order status description
- * @returns order status code (1, 2, 3, 4, 5, 6, 7)
- */
-export function orderStatus(desc: string): number {
-  if (/traded/i.test(desc)) desc = "Filled";
-  var key = desc.charAt(0).toUpperCase();
-  return ORDER_STATUS_CODE.get(key);
-}
-
-
-
-
-// ORDER-SIDES
-// -----------
-
-export enum OrderSide {
-  Buy  =  1,
-  Sell = -1
-}
-
-const ORDER_SIDE_DESCRIPTION: Map<number, string> = new Map([
-  [1,  "Buy"],
-  [-1, "Sell"],
-]);
-
-const ORDER_SIDE_CODE: Map<string, number> = new Map([
-  ["B", 1],
-  ["S", -1],
-]);
-
-
-/**
- * Get order side description.
- * @param code order side code (1, -1)
- * @returns order side description
- */
-export function orderSideDescription(code: number): string {
-  return ORDER_SIDE_DESCRIPTION.get(code);
-}
-
-/**
- * Get order side code.
- * @param desc order side description
- * @returns order size code (1, -1)
- */
-export function orderSide(desc: string): number {
-  var key = desc.charAt(0).toUpperCase();
-  return ORDER_SIDE_CODE.get(key);
-}
-
-
-
-
-// POSITION-SIDES
-// --------------
-
-export enum PositionSide {
-  Long   =  1,
-  Short  = -1,
-  Closed =  0,
-}
-
-const POSITION_SIDE_DESCRIPTION: Map<number, string> = new Map([
-  [1,  "Long"],
-  [-1, "Short"],
-  [0,  "Closed position"],
-]);
-
-const POSITION_SIDE_CODE: Map<string, number> = new Map([
-  ["L",  1],
-  ["S", -1],
-  ["C",  0],
-]);
-
-
-/**
- * Get position side description.
- * @param code position side code (1, -1, 0)
- * @returns position side description
- */
-export function positionSideDescription(code: number): string {
-  return POSITION_SIDE_DESCRIPTION.get(code);
-}
-
-/**
- * Get position side code.
- * @param desc position side description
- * @returns position side code (1, -1, 0)
- */
-export function positionSide(desc: string): number {
-  var key = desc.charAt(0).toUpperCase();
-  return POSITION_SIDE_CODE.get(key);
-}
-
-
-
-
-// HOLDING-TYPES
-// -------------
-
-export enum HoldingType {
-  Purchased = "T1",
-  Delivered = "HLD",
-}
-
-const HOLDING_TYPE_DESCRIPTION: Map<string, string> = new Map([
-  ["T1",  "The shares are purchased but not yet delivered to the demat account"],
-  ["HLD", "The shares are purchased and are available in the demat account"],
-]);
-
-
-/**
- * Get holding type description.
- * @param code holding type code (T1, HLD)
- * @returns holding type description
- */
-export function holdingTypeDescription(code: string): string {
-  return HOLDING_TYPE_DESCRIPTION.get(code);
-}
-
-/**
- * Get holding type code.
- * @param desc holding type description
- * @returns holding type code (T1, HLD)
- */
-export function holdingType(desc: string): string {
-  return /not|un/i.test(desc)? "T1" : "HLD";
-}
-
-
-
-
-// ORDER-SOURCES
-// -------------
-
-export enum OrderSource {
-  Mobile   = "M",
-  Web      = "W",
-  FyersOne = "R",
-  Admin    = "A",
-  API      = "ITS",
-}
-
-const ORDER_SOURCE_DESCRIPTION: Map<string, string> = new Map([
-  ["M",   "Mobile"],
-  ["W",   "Web"],
-  ["R",   "Fyers One"],
-  ["A",   "Admin"],
-  ["ITS", "API"],
-]);
-
-const ORDER_SOURCE_CODE: Map<string, string> = new Map([
-  ["MO", "M"],
-  ["WE", "W"],
-  ["ON", "R"],
-  ["AD", "A"],
-  ["AP", "ITS"],
-]);
-
-
-/**
- * Get order source description.
- * @param code order source code (M, W, R, A, ITS)
- * @returns order source description
- */
-export function orderSourceDescription(code: string): string {
-  return ORDER_SOURCE_DESCRIPTION.get(code);
-}
-
-/**
- * Get order source code.
- * @param desc order source description
- * @returns order source code (M, W, R, A, ITS)
- */
-export function orderSource(desc: string): string {
-  var words = desc.split(" ");
-  var key   = words[words.length-1].substring(0, 2).toUpperCase();
-  return ORDER_SOURCE_CODE.get(key);
-}
-
-
-
-
-// ERRORS
-// ------
-
-const ERROR_DESCRIPTION : Map<number, string> = new Map([
-  [-209, "Invalid order id"],
-  [-101, "Invalid order type"],
-  [-305, "For CO orders only market and limit orders are allowed"],
-  [-323, "For BO orders only market and limit orders are allowed"],
-  [-308, "Invalid limit price"],
-  [-309, "Invalid stop price"],
-  [-310, "Invalid order quantity"],
-  [-311, "Invalid stop loss price"],
-  [-313, "Invalid order side of either buy or sell"],
-  [-314, "Invalid product type for the order"],
-  [-315, "Invalid price for stop limit order"],
-  [-316, "Invalid stop loss price for CO/BO orders"],
-  [-323, "Invalid stop loss value"],
-  [-325, "Ivalid target value (take_profit)"],
-  [-326, "Invalid order validity"],
-  [-327, "Invalid order disclosed quantity"],
-  [-328, "Invalid order offline flag"],
-  [-201, "Connection issue while processing your request"],
-  [-202, "Connection timed out"],
-  [-204, "Request wasnt processed"],
-  [-205, "Market wasnt able to accept or process the request"],
-  [-157, "User doesnt exist"],
-  [-159, "Invalid order number"],
-  [-161, "This order has already been cancelled"],
-  [-162, "This order has already traded"],
-  [-163, "Order modfication wasnt done successfully"],
-  [-164, "This order has already been rejected"],
-  [-390, "Invalid stop price"],
-  [-392, "Price is not in multiples of tick size"],
-  [-353, "API limit exceeded"],
-  [-372, "Invalid price"],
-  [-397, "Position quantity is zero"],
-  [-398, "No open positions"],
-  [-399, "No pending orders to be closed/cancelled"],
-  [-329, "Please check if exit positions is complete"],
-  [-373, "No permission"],
-  [-374, "Invalid authorization code (auth_code)"],
-  [-371, "Invalid SHA256 hash of (app_id:secret_key)"],
-  [-17,  "Invalid access token used for authentication"],
-  [-352, "Invalid app id"],
-  [-96,  "An unexpected error occurred when processing request"],
-  [-351, "Greater than 50 symbols"],
-  [-300, "Invalid symbol"],
-  [-310, "Invalid symbols"],
-  [-301, "Invalid resolution format"],
-  [-302, "Invalid historical timestamp from when you require data"],
-  [-303, "Invalid historical timestamp till when you require data"],
-  [-356, "The range_from value cannot be greater than range_to value"],
-  [-334, "Invalid key date format value"],
-  [-335, "Historical timestamp from when you require data not in epoch format"],
-  [-336, "Historical timestamp till when you require data not in epoch format"],
-  [-337, "Historical timestamp from when you require data not in YYYY-MM-DD format"],
-  [-338, "Historical timestamp till when you require data not in YYYY-MM-DD format"],
-  [-339, "The range cannot be more than 1 year for day resolution"],
-  [-341, "The range cannot be more than 100 days for 1 min resolution"],
-  [-343, "The range cannot be more than 100 days for 2 min resolution"],
-  [-344, "The range cannot be more than 100 days for 3 min resolution"],
-  [-345, "The range cannot be more than 100 days for 5 min resolution"],
-  [-346, "The range cannot be more than 100 days for 10 min resolution"],
-  [-347, "The range cannot be more than 100 days for 15 min resolution"],
-  [-348, "The range cannot be more than 100 days for 20 min resolution"],
-  [-349, "The range cannot be more than 100 days for 30 min resolution"],
-  [-353, "The range cannot be more than 100 days for 60 min resolution"],
-  [-354, "The range cannot be more than 100 days for 120 min resolution"],
-  [-355, "The range cannot be more than 100 days for 240 min resolution"],
-]);
-
-
-/**
- * Get the error description.
- * @param code error code (-ve)
- * @returns error description
- */
-export function errorDescription(code: number): string {
-  return ERROR_DESCRIPTION.get(code);
 }
