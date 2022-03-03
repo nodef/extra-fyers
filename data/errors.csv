@@ -1,4 +1,4 @@
-code,message
+code,description
 -209,Invalid order id
 -101,Invalid order type
 -305,For CO orders only market and limit orders are allowed
