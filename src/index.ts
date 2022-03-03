@@ -1224,39 +1224,6 @@ function fromEdisHolding(x: EdisHolding): http.EdisHolding {
 // FUNCTIONS
 // =========
 
-// REQUEST
-// -------
-
-function requestStep(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): RequestOptions {
-  var url  = path + queryString(query);
-  var headers: HttpHeaders = {};
-  if (auth != null) headers['authorization'] = auth.app_id + ':' + auth.access_token;
-  return {url, method, headers, body};
-}
-
-function requestText(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<string> {
-  return httpRequestText(requestStep(auth, method, path, query, body));
-}
-
-function requestJson(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<object> {
-  return httpRequestJson(requestStep(auth, method, path, query, body));
-}
-
-function requestApi(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<Response> {
-  return requestJson(auth, method, API_URL + path, query, body) as Promise<Response>;
-}
-
-function requestData(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<Response> {
-  return requestJson(auth, method, DATA_URL + path, query, body) as Promise<Response>;
-}
-
-function requestSymbols(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<string> {
-  return requestText(auth, method, SYMBOLS_URL + path, query, body);
-}
-
-
-
-
 // AUTHORIZATION
 // -------------
 
