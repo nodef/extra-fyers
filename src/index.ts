@@ -4,9 +4,6 @@ export * as raw from './http';
 
 
 
-
-
-
 // TYPES
 // ======
 
@@ -31,36 +28,37 @@ export interface Profile {
 // GET-FUNDS
 // ---------
 
-// TODO: what do they exactly mean?
 /** Limits for equity/commodity fund. */
 export interface Fund {
   /** Limit at start of the day. */
   start: number,
+  /** Fund Transfer. */
+  deposits: number,
+  /** Realized Profit and Loss. */
+  realizedReturns: number,
+  /** Collaterals. */
+  collaterals: number,
+  /** Adhoc Limit. */
+  adhoc: number,
   /** Utilized Amount. */
   utilized: number,
+  /** Receivables. */
+  receivables: number,
   /** Available Balance. */
   available: number,
   /** Clear Balance. */
   clear: number,
   /** Total Balance. */
   total: number,
-  /** Adhoc Limit. */
-  adhoc: number,
-  /** Receivables. */
-  receivables: number,
-  /** Fund Transfer. */
-  fundTransfer: number,
-  /** Collaterals. */
-  collaterals: number,
-  /** Realized Profit and Loss. */
-  realizedReturns: number,
 }
 
 
 /** Balance available for the user for capital as well as the commodity market. */
-export interface GetFundsResponse extends Response {
-  /** Basic detals for all funds. */
-  fund_limit: [Fund],
+export interface Funds {
+  /** Fund limits for capital market. */
+  equity: Fund,
+  /** Fund limits for commodity market. */
+  commodity: Fund,
 }
 
 
@@ -110,9 +108,9 @@ export interface HoldingsOverall {
 
 
 /** Equity and mutual fund holdings which the user has in this demat account. */
-export interface GetHoldingsResponse extends Response {
+export interface Holdings {
   /** Details of each holding. */
-  holdings: [Holding],
+  details: Holding[],
   /** Overall status of holdings in this demat account. */
   overall: HoldingsOverall,
 }
@@ -188,16 +186,29 @@ export interface Order {
 }
 
 
-/** An order placed by the user in the current trading day. */
-export interface GetOrderRequest {
-  /** The unique order id assigned for each order. */
-  id: string,
+/** Overall status of orders for the current trading day. */
+export interface OrdersOverall {
+  /** Total number of orders present. */
+  count: number,
+  /** The original order qty. */
+  quantity: number,
+  /** The remaining qty. */
+  remainingQuantity: number,
+  /** The filled qty after partial trades. */
+  filledQuantity: number,
+  /** Disclosed quantity. */
+  disclosedQuantity: number,
+  /** Remaining disclosed quantity. */
+  remainingDisclosedQuantity: number,
 }
 
+
 /** All the orders placed by the user in the current trading day. */
-export interface GetOrdersResponse extends Response {
+export interface Orders {
   /** List of all orders places during the day. */
-  orderBook: [Order],
+  details: Order[],
+  /** Overall status of orders. */
+  overall: OrdersOverall,
 }
 
 
@@ -271,9 +282,9 @@ export interface PositionsOverall {
 
 
 /** Current open and closed positions for the current trading day. */
-export interface GetPositionsResponse extends Response {
+export interface Positions {
   /** List of all positions for the current trading day. */
-  netPositions: [Position],
+  details: Position[],
   /** Overall status of positions for the current trading day. */
   overall: PositionsOverall,
 }
@@ -317,10 +328,23 @@ export interface Trade {
 }
 
 
+/** Overall trades for the current trading day. */
+export interface TradesOverall {
+  /** Total number of trades. */
+  count: number,
+  /** The total traded qty. */
+  quantity: number,
+  /** The total traded value. */
+  value: number,
+}
+
+
 /** All the trades for the current day across all platforms and exchanges in the current trading day. */
-export interface GetTradesResponse extends Response {
-   /** List of all trades for the current trading day. */
-  tradeBook: [Trade]
+export interface Trades {
+  /** List of all trades for the current trading day. */
+  details: Trade[],
+  /** Overall trades for the current trading day. */
+  overall: TradesOverall,
 }
 
 
@@ -330,7 +354,7 @@ export interface GetTradesResponse extends Response {
 // -----------
 
 /** Defines an order to any exchange via Fyers. */
-export interface PlaceOrderRequest {
+export interface PlaceOrder {
   /** Eg: NSE:SBIN-EQ. */
   symbol: string,
   /** The quantity should be in multiples of lot size for derivatives. */
@@ -358,35 +382,17 @@ export interface PlaceOrderRequest {
 }
 
 
-/** Reponse attributes of placeOrder(). */
-export interface PlaceOrderResponse extends Response {
-  /** The order number of the placed order. */
-  id: string,
-}
-
-
-/** Response attributes of placeOrders(). */
-export interface PlaceOrdersResponse extends Response {
-  /** List of HTTP data for each order. */
-  data: [HttpResponseData<PlaceOrderResponse>]
-}
-
-
 
 
 // MODIFY-ORDER
 // ------------
 
 /** Defines an order modification request to Fyers. */
-export interface ModifyOrderRequest {
+export interface ModifyOrder {
   /** The unique order id assigned for each order. */
   id: string,
   /** The type of order. */
   type: string,
-  /** The order is buy or sell. */
-  side: string,
-  /** The product type. */
-  productType: string,
   /** The original order qty. */
   quantity: number,
   /** Disclosed quantity. */
@@ -395,76 +401,6 @@ export interface ModifyOrderRequest {
   limitPrice: number,
   /** The stop price for the order. */
   stopPrice: number,
-  /** Day or IOC. */
-  validity: string,
-  /** True when placing AMO order. */
-  offline: boolean,
-  /** The exchange in which order is placed. */
-  exchange: string,
-  /** Exchange instrument type. */
-  instrument: string,
-}
-
-
-/** Reponse attributes of modifyOrder(). */
-export interface ModifyOrderResponse extends Response {
-  /** The order number of the modified order. */
-  id: string,
-}
-
-
-/** Reponse attributes of modifyOrders(). */
-export interface ModifyOrdersResponse extends Response {
-  /** List of HTTP data for each order. */
-  data: HttpResponseData<ModifyOrderResponse>,
-}
-
-
-
-
-// CANCEL-ORDER
-// ------------
-
-/** Defines an order cancellation to any exchange via Fyers. */
-export interface CancelOrderRequest {
-  /** The order number of the placed order. */
-  id: string,
-}
-
-
-/** Reponse attributes of cancelOrder(). */
-export interface CancelOrderResponse extends Response {
-  /** The order number of the placed order. */
-  id: string,
-}
-
-
-/** Reponse attributes of cancelOrders(). */
-export interface CancelOrdersResponse extends Response {
-  /** List of HTTP data for each order. */
-  data: [HttpResponseData<CancelOrderResponse>]
-}
-
-
-
-
-// EXIT-POSITION
-// -------------
-
-/** Defines a exit position request to Fyers. */
-export interface ExitPositionRequest {
-  /** Mandatory. Eg: NSE:FCONSUMER-EQ-INTRADAY. */
-  id: string,
-}
-
-
-/** Reponse attributes of exitPosition(). */
-export interface ExitPositionResponse extends Response {
-}
-
-
-/** Reponse attributes of exitAllPositions(). */
-export interface ExitAllPositionsResponse extends Response {
 }
 
 
@@ -474,7 +410,7 @@ export interface ExitAllPositionsResponse extends Response {
 // ----------------
 
 /** Defines a convert position request to Fyers. */
-export interface ConvertPositionRequest {
+export interface ConvertPosition {
   /** Mandatory. Eg: 119031547242. */
   symbol: string,
   /** The side shows whether the position is long / short. */
@@ -485,13 +421,6 @@ export interface ConvertPositionRequest {
   fromProductType: string,
   /** The new product type. */
   toProductType: string,
-}
-
-
-/** Reponse attributes of convertPosition(). */
-export interface ConvertPositionResponse extends Response {
-  /** ? */
-  positionDetails?: number,
 }
 
 
@@ -513,110 +442,23 @@ export interface MarketStatus {
 }
 
 
-/** Current market status of all the exchanges and their segments. */
-export interface GetMarketStatusResponse extends Response {
-  /** List of statuses of various markets. */
-  marketStatus: [MarketStatus],
+/** Overall status of market segments. */
+export interface MarketsStatusOverall {
+  /** Total number of market segments. */
+  count: number,
+  /** Total number of open market segments. */
+  openCount: number,
+  /** Total number of closed market segments. */
+  closedCount: number,
 }
 
 
-
-
-// GET-SYMBOL-MASTER
-// -----------------
-
-export interface GetSymbolMasterRequest {
-  /** Name of the exchange (NSE, BSE, MCX). */
-  exchange: string,
-  /** The segment whose symbols are needed (CM, FO, CD, COM). */
-  segment: string,
-}
-
-
-
-
-// GENERATE-EDIS-TPIN
-// ------------------
-
-export interface GenerateEdisTpinResponse extends Response {
-  /** Unknown, seen to be empty. */
-  data: string
-}
-
-
-
-
-// GET-EDIS-TRANSACTIONS
-// ---------------------
-
-export interface EdisTransaction {
-  /** Transaction id. */
-  id: string
-  /** ISIN code of stock. */
-  isin: string,
-  /** Quantity to transact. */
-  quantity: number,
-  /** Quantity already transacted? */
-  remainingQuantity: number,
-  /** Transaction create date-time/ */
-  entryDate: string,
-  /** Transaction processing start date? */
-  startDate: string,
-  /** Transaction processing end date? */
-  endDate: string,
-  /** Source of transaction. */
-  source: string,
-  /** SUCCESS, FAILURE? */
-  status: string,
-  /** Unique client code? */
-  clientId: string,
-  /** NA. */
-  errorCode: string,
-  /** 0. */
-  errorCount: string,
-  /** Message. */
-  reason: string,
-}
-
-
-export interface GetEdisTransactionsResponse extends Response {
-  /** List of e-DIS transactions. */
-  data: [EdisTransaction]|string
-}
-
-
-
-
-// SUBMIT-EDIS-HOLDINGS
-// --------------------
-
-export interface EdisHolding {
-  isin: string,
-  quantity: number,
-}
-
-export interface SubmitEdisHoldingsRequest {
-  recordLst: [EdisHolding],
-}
-
-
-
-
-// INQUIRE-EDIS-TRANSACTION
-// ------------------------
-
-export interface InquireEdisTransactionRequest {
-  /** Transaction id. */
-  id: string
-}
-
-export interface EdisStatus {
-  FAILED_CNT: number,
-  SUCEESS_CNT: number,
-}
-
-export interface InquireEdisTransactionResponse extends Response {
-  data: EdisStatus,
+/** Market status of all the exchanges and their segments. */
+export interface MarketsStatus {
+  /** List of statuses of various market segments. */
+  details: MarketStatus[],
+  /** Overall status of market segments. */
+  overall: MarketsStatusOverall,
 }
 
 
@@ -626,7 +468,7 @@ export interface InquireEdisTransactionResponse extends Response {
 // ------------------
 
 /** Request for getting market history of a symbol. */
-export interface GetMarketHistoryRequest {
+export interface GetMarketHistory {
   /** Eg: NSE:RCOM-EQ. */
   symbol: string,
   /** The candle resolution in minutes. */
@@ -638,30 +480,11 @@ export interface GetMarketHistoryRequest {
   /** Indicating the end date of records. */
   to: string,
   /** Set cont flag 1 for continues data and future options. */
-  cont_flag: string,
+  continuous: boolean,
 }
 
 
-/** Current market history of a particular stock. */
-export interface GetMarketHistoryResponse extends Response {
-  /** List of candes in the format: [time, open, high, low, close, volume]. */
-  candles: [[number]],
-}
-
-
-
-
-// GET-MARKET-QUOTES
-// -----------------
-
-/** Request to retrieve the full market quotes for one or more symbols. */
-export interface GetMarketQuotesRequest {
-  /** Eg: NSE:RCOM-EQ, ... */
-  symbols: string,
-}
-
-
-/** Text candle in quotes. */
+/** Candle in market history, quotes. */
 export interface Candle {
   /** UNIX expoch time. */
   date: number,
@@ -678,8 +501,30 @@ export interface Candle {
 }
 
 
-/** Quote details of a particular symbol. */
-export interface MarketQuoteValue {
+/** Market history of a particular stock. */
+export interface MarketHistory {
+  /** List of candes. */
+  details: Candle[],
+  /** Overall status of market history. */
+  overall: Candle,
+}
+
+
+
+
+// GET-MARKET-QUOTES
+// -----------------
+
+/** Market quote details for a particular symbol. */
+export interface MarketQuote {
+  /** Symbol name provided by the user. */
+  symbol: string,
+  /** Short name for the symbol Eg: “SBIN-EQ”. */
+  name: string,
+  /** Name of the exchange. Eg: “NSE” or “BSE”. */
+  exchange: string,
+  /** Description of the symbol. */
+  description: string,
   /** Change value. */
   priceChange: number,
   /** Percentage of change between the current value and the previous day's market close. */
@@ -702,36 +547,10 @@ export interface MarketQuoteValue {
   closePrice: number,
   /** Volume traded. */
   volume: number,
-  /** Short name for the symbol Eg: “SBIN-EQ”. */
-  name: string,
-  /** Name of the exchange. Eg: “NSE” or “BSE”. */
-  exchange: string,
-  /** Description of the symbol. */
-  description: string,
-  /** Symbol name provided by the user. */
-  symbol: string,
   /** Today’s time. */
   date: number,
   /** Current time, open, high, low price and volume with HH:MM timestamp. */
   candle: Candle,
-}
-
-
-/** Market quote for a particular symbol. */
-export interface MarketQuote {
-  /** Name of symbol. */
-  n: string,
-  /** Status (ok). */
-  s: string,
-  /** Market quote details. */
-  v: MarketQuoteValue,
-}
-
-
-/** Response attributes for getMarketQuotes(). */
-export interface GetMarketQuotesResponse extends Response {
-  /** List of all market quotes. */
-  d: [MarketQuote]
 }
 
 
@@ -740,17 +559,8 @@ export interface GetMarketQuotesResponse extends Response {
 // GET-MARKET-DEPTH
 // ----------------
 
-/**
- * Request attributes for getMarketDepth().
- */
-export interface GetMarketDepthRequest {
-  /** Eg: NSE:RCOM-EQ. */
-  symbol: string,
-  /** Set the ohlcv_flag to 1 to get open, high, low, closing and volume quantity. */
-  ohlcv_flag: number,
-}
-
-export interface BidAsk {
+/** Open buy/sell orders at a particular price. */
+export interface MarketOffer {
   /** Bid/ask price. */
   price: number,
   /** Bid/ask volume. */
@@ -760,15 +570,16 @@ export interface BidAsk {
 }
 
 
+/** A measure of the supply and demand for a symbol. */
 export interface MarketDepth {
   /** Total buying quantity. */
   buyQuantity: number,
   /** Total selling quantity. */
   sellQuantity: number,
   /** Bidding price along with volume and total number of orders. */
-  buys: [BidAsk],
+  buyOffers: MarketOffer[],
   /** Offer price with volume and total number of orders. */
-  sells: [BidAsk],
+  sellOffers: MarketOffer[],
   /** Price at market opening time. */
   openPrice?: number,
   /** Highest price for the day. */
@@ -808,12 +619,74 @@ export interface MarketDepth {
 }
 
 
-/** Response attributes for getMarketDepth(). */
-export interface GetMarketDepthResponse extends Response {
-  /** Dictionary of all market quotes. */
-  d: { (symbol: string): MarketDepth }
+
+
+// GET-EDIS-TRANSACTIONS
+// ---------------------
+
+/** Details of an e-DIS transaction. */
+export interface EdisTransaction {
+  /** Transaction id. */
+  id: string
+  /** ISIN code of stock. */
+  isin: string,
+  /** Quantity to transact. */
+  quantity: number,
+  /** Quantity already transacted? */
+  remainingQuantity: number,
+  /** Transaction create date-time/ */
+  entryDate: string,
+  /** Transaction processing start date? */
+  startDate: string,
+  /** Transaction processing end date? */
+  endDate: string,
+  /** Source of transaction. */
+  source: string,
+  /** SUCCESS, FAILURE? */
+  status: string,
+  /** Unique client code? */
+  clientId: string,
+  /** Error code (NA). */
+  errorCode: string,
+  /** Error count (0). */
+  errorCount: string,
+  /** Message. */
+  reason: string,
 }
 
+
+/** Overall status of e-DIS transaction in this demat account. */
+export interface EdisTransactionsOverall {
+  /** Total number of transactions. */
+  count: number,
+  /** Quantity to transact. */
+  quantity: number,
+  /** Quantity already transacted? */
+  remainingQuantity: number,
+}
+
+
+/** Details of all e-DIS transactions. */
+export interface EdisTransactions {
+  /** List of e-DIS transactions. */
+  details: EdisTransaction[],
+  /** Overall status of transactions. */
+  overall: EdisTransactionsOverall,
+}
+
+
+
+
+// SUBMIT-EDIS-HOLDINGS
+// --------------------
+
+/** e-DIS securities held in a demat account. */
+export interface EdisHolding {
+  /** 12-digit alphanumeric code of specific symbol. */
+  isin: string,
+  /** Quantity of securities held. */
+  quantity: number,
+}
 
 
 

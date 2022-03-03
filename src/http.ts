@@ -497,10 +497,6 @@ export interface ModifyOrderRequest {
   id: string,
   /** The type of order. */
   type: number,
-  /** The order is buy or sell. */
-  side: number,
-  /** The product type. */
-  productType: string,
   /** The original order qty. */
   qty: number,
   /** Disclosed quantity. */
@@ -509,14 +505,6 @@ export interface ModifyOrderRequest {
   limitPrice: number,
   /** The stop price for the order. */
   stopPrice: number,
-  /** Day or IOC. */
-  orderValidity: string,
-  /** True when placing AMO order. */
-  offlineOrder: string,
-  /** The exchange in which order is placed. */
-  exchange: number,
-  /** Exchange instrument type. */
-  instrument: number,
 }
 
 
