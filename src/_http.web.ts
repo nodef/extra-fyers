@@ -1,19 +1,5 @@
-// SHA256
-// ------
-
-export async function sha256DigestHex(text: string): Promise<string> {
-  var data   = new TextEncoder().encode(text);
-  var buffer = await crypto.subtle.digest('SHA-256', data);
-  var bytes  = Array.from(new Uint8Array(buffer));
-  return bytes.map(b => b.toString(16).padStart(2, '0')).join('');
-  // Reference: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-}
-
-
-
-
-// HTTP
-// ----
+// REQUEST (TYPES)
+// ---------------
 
 export interface HttpHeaders {
   [key: string]: string,
@@ -33,6 +19,11 @@ export interface HttpRequestOptions {
 }
 
 
+
+
+// QUERY
+// -----
+
 export function queryString(data: object): string {
   if (data == null) return '';
   var a = new URLSearchParams();
@@ -41,6 +32,11 @@ export function queryString(data: object): string {
   return '?' + a.toString();
 }
 
+
+
+
+// XHR
+// ---
 
 function isXhrAborted(xhr: XMLHttpRequest): boolean {
   return xhr.readyState === XMLHttpRequest.UNSENT && xhr.status === 0;
@@ -85,6 +81,11 @@ function getXhrResponseError(xhr: XMLHttpRequest, response: string|object): Http
 }
 
 
+
+
+// HEADERS
+// -------
+
 function hasHeader(key: string, o: HttpRequestOptions): boolean {
   if (o.headers == null) return false;
   if (o.headers.hasOwnProperty(key)) return true;
@@ -104,6 +105,11 @@ function setHeaders(xhr: XMLHttpRequest, o: HttpRequestOptions): void {
   }
 }
 
+
+
+
+// REQUEST
+// -------
 
 function httpRequest(responseType: string, o: HttpRequestOptions): Promise<string|object> {
   return new Promise((resolve, reject) => {

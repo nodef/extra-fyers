@@ -1,11 +1,10 @@
-import crypto from 'crypto';
 import https from 'https';
 
 
 
 
-// TYPES (HTTP)
-// ------------
+// REQUEST (TYPES)
+// ---------------
 
 export interface HttpHeaders {
   [key: string]: string,
@@ -27,18 +26,8 @@ export interface HttpRequestOptions {
 
 
 
-// CRYPTO
-// ------
-
-export async function sha256DigestHex(text: string): Promise<string> {
-  return crypto.createHash('sha256').update(text).digest('hex');
-}
-
-
-
-
-// HTTP
-// ----
+// QUERY
+// -----
 
 export function queryString(data: object): string {
   if (data == null) return '';
@@ -47,6 +36,12 @@ export function queryString(data: object): string {
     a.append(k, data[k]);
   return '?' + a.toString();
 }
+
+
+
+
+// ERROR
+// -----
 
 function getHttpError(error: Error): HttpRequestError {
   var a  = error as HttpRequestError;
@@ -62,6 +57,11 @@ function getHttpResponseError(error: Error, code: number, response: string): Htt
   return a;
 }
 
+
+
+
+// HEADERS
+// -------
 
 function hasHeader(key: string, o: HttpRequestOptions): boolean {
   if (o.headers == null) return false;
@@ -79,6 +79,11 @@ function setHeaders(headers: HttpHeaders, o: HttpRequestOptions): void {
   }
 }
 
+
+
+
+// REQUEST
+// -------
 
 function httpRequest(o: HttpRequestOptions): Promise<string> {
   return new Promise((resolve, reject) => {
