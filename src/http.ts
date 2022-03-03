@@ -1153,7 +1153,7 @@ export function placeOrder(auth: Authorization, options: PlaceOrderRequest): Pro
  * @param options details of multiple orders [{symbol, qty, type, side, ...}]
  * @returns place status {data: [{statusCode, body: {id}, statusDescription}]}
  */
-export function placeOrders(auth: Authorization, options: [PlaceOrderRequest]): Promise<PlaceOrdersResponse> {
+export function placeOrders(auth: Authorization, options: PlaceOrderRequest[]): Promise<PlaceOrdersResponse> {
   return requestApi(auth, 'POST', 'orders-multi', null, options) as Promise<PlaceOrdersResponse>;
 }
 
@@ -1180,7 +1180,7 @@ export function modifyOrder(auth: Authorization, options: ModifyOrderRequest): P
  * @param options details of orders [{id, qty, type, side, ...}]
  * @returns modify status {data: [{statusCode, body: {id}, statusDescription}]}
  */
-export function modifyOrders(auth: Authorization, options: [ModifyOrderRequest]): Promise<ModifyOrdersResponse> {
+export function modifyOrders(auth: Authorization, options: ModifyOrderRequest[]): Promise<ModifyOrdersResponse> {
   return requestApi(auth, 'PUT', 'orders-multi', null, options) as Promise<ModifyOrdersResponse>;
 }
 
@@ -1202,7 +1202,7 @@ export function cancelOrder(auth: Authorization, options: CancelOrderRequest): P
  * @param options details of orders [{id}]
  * @returns cancel status {data: [{statusCode, body: {id}, statusDescription}]}
  */
-export function cancelOrders(auth: Authorization, options: [CancelOrderRequest]): Promise<CancelOrdersResponse> {
+export function cancelOrders(auth: Authorization, options: CancelOrderRequest[]): Promise<CancelOrdersResponse> {
   return requestApi(auth, 'DELETE', 'orders-multi', null, options) as Promise<CancelOrdersResponse>;
 }
 

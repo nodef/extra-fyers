@@ -1,3 +1,4 @@
+import {HttpRequestOptions} from './_http';
 import * as http from './http';
 
 
@@ -311,7 +312,7 @@ function toHoldings(x: http.GetHoldingsResponse): Holdings {
 
 /** Order placed by the user in the current trading day. */
 export interface Order {
-  /** The unique order id assigned for each order. */
+  /** The order id assigned for each order. */
   id: string,
   /** The symbol for which order is placed. */
   symbol: string,
@@ -750,7 +751,7 @@ function fromPlaceOrder(x: PlaceOrder): http.PlaceOrderRequest {
 
 /** Defines an order modification request to Fyers. */
 export interface ModifyOrder {
-  /** The unique order id assigned for each order. */
+  /** The order id assigned for each order. */
   id: string,
   /** The type of order. */
   type: string,
@@ -1324,7 +1325,7 @@ function fromEdisHolding(x: EdisHolding): http.EdisHolding {
  * @param options authorization step 1 details {client_id, redirect_uri, response_type, state}
  * @returns request step 1 for authorization
  */
-export function authorizationStep1(options: AuthorizationRequest1): RequestOptions {
+export function authorizationStep1(appId: string, redirectUrl: string, state: string="default"): RequestOptions {
   return requestStep(null, 'GET', 'generate-authcode', options, null);
 }
 
@@ -1346,31 +1347,31 @@ export function authorizationStep2(options: AuthorizationRequest2): RequestOptio
 
 /**
  * Get basic details of the client.
- * @param auth authorization {app_id, access_token}
- * @returns details of user's profile
+ * @param auth authorization {appId, accessToken}
+ * @returns details of user's profile {id, email, name, ...}
  */
-export function getProfile(auth: Authorization): Promise<GetProfileResponse> {
-  return requestApi(auth, 'GET', 'profile', null, null) as Promise<GetProfileResponse>;
+export async function getProfile(auth: Authorization): Promise<Profile> {
+  return toProfile(await http.getProfile(fromAuthorization(auth)));
 }
 
 
 /**
  * Get balance available for the user for capital as well as the commodity market.
- * @param auth authorization {app_id, access_token}
- * @returns details of user's funds
+ * @param auth authorization {appId, accessToken}
+ * @returns details of user's funds {equity: {start, ...}, commodity: {start, ...}}
  */
-export function getFunds(auth: Authorization): Promise<GetFundsResponse> {
-  return requestApi(auth, 'GET', 'funds', null, null) as Promise<GetFundsResponse>;
+export async function getFunds(auth: Authorization): Promise<Funds> {
+  return toFunds(await http.getFunds(fromAuthorization(auth)));
 }
 
 
 /**
  * Get the equity and mutual fund holdings which the user has in this demat account.
- * @param auth authorization {app_id, access_token}
+ * @param auth authorization {appId, accessToken}
  * @returns details of user's holdings
  */
-export function getHoldings(auth: Authorization): Promise<GetHoldingsResponse> {
-  return requestApi(auth, 'GET', 'holdings', null, null) as Promise<GetHoldingsResponse>;
+export async function getHoldings(auth: Authorization): Promise<Holdings> {
+  return toHoldings(await http.getHoldings(fromAuthorization(auth)));
 }
 
 
@@ -1381,42 +1382,43 @@ export function getHoldings(auth: Authorization): Promise<GetHoldingsResponse> {
 
 /**
  * Get details of an order placed in the current trading day.
- * @param auth authorization {app_id, access_token}
- * @param options order query {id}
- * @returns details of an order
+ * @param auth authorization {appId, accessToken}
+ * @param id order id
+ * @returns details of an order {id, symbol, ticker, ...}
  */
-export function getOrder(auth: Authorization, options: GetOrderRequest): Promise<GetOrdersResponse> {
-  return requestApi(auth, 'GET', 'orders', options, null) as Promise<GetOrdersResponse>;
+export async function getOrder(auth: Authorization, id: string): Promise<Order> {
+  var options: http.GetOrderRequest = {id};
+  return toOrder((await http.getOrder(fromAuthorization(auth), options)).orderBook[0]);
 }
 
 
 /**
  * Get details of all the orders placed in the current trading day.
- * @param auth authorization {app_id, access_token}
- * @returns details of orders
+ * @param auth authorization {appId, accessToken}
+ * @returns details of orders {details: [{id, ...}], overall: {count, ...}}
  */
-export function getOrders(auth: Authorization): Promise<GetOrdersResponse> {
-  return requestApi(auth, 'GET', 'orders', null, null) as Promise<GetOrdersResponse>;
+export async function getOrders(auth: Authorization): Promise<Orders> {
+  return toOrders(await http.getOrders(fromAuthorization(auth)));
 }
 
 
 /**
  * Get details of all the positions in the current trading day.
- * @param auth authorization {app_id, access_token}
- * @returns details of positions
+ * @param auth authorization {appId, accessToken}
+ * @returns details of positions {details: [{id, ...}], overall: {count, ...}}
  */
-export function getPositions(auth: Authorization): Promise<GetPositionsResponse> {
-  return requestApi(auth, 'GET', 'positions', null, null) as Promise<GetPositionsResponse>;
+export async function getPositions(auth: Authorization): Promise<Positions> {
+  return toPositions(await http.getPositions(fromAuthorization(auth)));
 }
 
 
 /**
  * Get details of all the trades in the current trading day.
- * @param auth authorization {app_id, access_token}
- * @returns details of trades
+ * @param auth authorization {appId, accessToken}
+ * @returns details of trades {details: [{id, ...}], overall: {count, ...}}
  */
-export function getTrades(auth: Authorization): Promise<GetTradesResponse> {
-  return requestApi(auth, 'GET', 'tradebook', null, null) as Promise<GetTradesResponse>;
+export async function getTrades(auth: Authorization): Promise<Trades> {
+  return toTrades(await http.getTrades(fromAuthorization(auth)));
 }
 
 
@@ -1427,23 +1429,25 @@ export function getTrades(auth: Authorization): Promise<GetTradesResponse> {
 
 /**
  * Place an order to any exchange via Fyers.
- * @param auth authorization {app_id, access_token}
- * @param options details of an order {symbol, qty, type, side, ...}
- * @returns unique order id
+ * @param auth authorization {appId, accessToken}
+ * @param order details of an order {symbol, qty, type, side, ...}
+ * @returns order id
  */
-export function placeOrder(auth: Authorization, options: PlaceOrderRequest): Promise<PlaceOrderResponse> {
-  return requestApi(auth, 'POST', 'orders', null, options) as Promise<PlaceOrderResponse>;
+export async function placeOrder(auth: Authorization, order: PlaceOrder): Promise<string> {
+  var options = fromPlaceOrder(order);
+  return (await http.placeOrder(fromAuthorization(auth), options)).id;
 }
 
 
 /**
  * Place multiple orders to any exchange via Fyers.
- * @param auth authorization {app_id, access_token}
- * @param options details of multiple orders [{symbol, qty, type, side, ...}]
- * @returns unique order id
+ * @param auth authorization {appId, accessToken}
+ * @param orders details of multiple orders [{symbol, qty, type, side, ...}]
+ * @returns unique order ids
  */
-export function placeOrders(auth: Authorization, options: [PlaceOrderRequest]): Promise<PlaceOrdersResponse> {
-  return requestApi(auth, 'POST', 'orders-multi', null, options) as Promise<PlaceOrdersResponse>;
+export async function placeOrders(auth: Authorization, orders: PlaceOrder[]): Promise<string[]> {
+  var options = orders.map(fromPlaceOrder);
+  return (await http.placeOrders(fromAuthorization(auth), options)).data.map(x => x.body.id);
 }
 
 
@@ -1454,103 +1458,147 @@ export function placeOrders(auth: Authorization, options: [PlaceOrderRequest]): 
 
 /**
  * Modifies an order placed on any exchange via Fyers.
- * @param auth authorization {app_id, access_token}
- * @param options details of order {id, qty, type, side, ...}
+ * @param auth authorization {appId, accessToken}
+ * @param order details of order {id, qty, type, side, ...}
  * @returns order id
  */
-export function modifyOrder(auth: Authorization, options: ModifyOrderRequest): Promise<ModifyOrderResponse> {
-  return requestApi(auth, 'PUT', 'orders', null, options) as Promise<ModifyOrderResponse>;
+export async function modifyOrder(auth: Authorization, order: ModifyOrder): Promise<string> {
+  var options = fromModifyOrder(order);
+  return (await http.modifyOrder(fromAuthorization(auth), options)).id;
 }
 
 
 /**
  * Modifies orders placed on any exchange via Fyers.
- * @param auth authorization {app_id, access_token}
- * @param options details of orders [{id, qty, type, side, ...}]
- * @returns order ids
+ * @param auth authorization {appId, accessToken}
+ * @param orders details of orders [{id, qty, type, side, ...}]
+ * @returns unique order ids
  */
-export function modifyOrders(auth: Authorization, options: [ModifyOrderRequest]): Promise<ModifyOrdersResponse> {
-  return requestApi(auth, 'PUT', 'orders-multi', null, options) as Promise<ModifyOrdersResponse>;
+export async function modifyOrders(auth: Authorization, orders: ModifyOrder[]): Promise<string[]> {
+  var options = orders.map(fromModifyOrder);
+  return (await http.modifyOrders(fromAuthorization(auth), options)).data.map(x => x.body.id);
 }
 
 
 /**
  * Cancels an order placed on any exchange via Fyers.
- * @param auth authorization {app_id, access_token}
- * @param options details of order {id}
+ * @param auth authorization {appId, accessToken}
+ * @param id order id
  * @returns order id
  */
-export function cancelOrder(auth: Authorization, options: CancelOrderRequest): Promise<CancelOrderResponse> {
-  return requestApi(auth, 'DELETE', 'orders', null, options) as Promise<CancelOrderResponse>;
+export async function cancelOrder(auth: Authorization, id: string): Promise<string> {
+  var options: http.CancelOrderRequest = {id};
+  return (await http.cancelOrder(fromAuthorization(auth), options)).id;
 }
 
 
 /**
  * Cancels orders placed on any exchange via Fyers.
- * @param auth authorization {app_id, access_token}
- * @param options details of orders [{id}]
- * @returns order ids
+ * @param auth authorization {appId, accessToken}
+ * @param ids unique order ids
+ * @returns unique order ids
  */
-export function cancelOrders(auth: Authorization, options: [CancelOrderRequest]): Promise<CancelOrdersResponse> {
-  return requestApi(auth, 'DELETE', 'orders-multi', null, options) as Promise<CancelOrdersResponse>;
+export async function cancelOrders(auth: Authorization, ids: string[]): Promise<string[]> {
+  var options: http.CancelOrderRequest[] = ids.map(id => ({id}));
+  return (await http.cancelOrders(fromAuthorization(auth), options)).data.map(x => x.body.id);
 }
 
 
 /**
  * Exits a position on the current trading day.
- * @param auth authorization {app_id, access_token}
- * @param options details of position {id}
- * @returns status
+ * @param auth authorization {appId, accessToken}
+ * @param id position id
+ * @returns position status
  */
-export function exitPosition(auth: Authorization, options: ExitPositionRequest): Promise<ExitPositionResponse> {
-  return requestApi(auth, 'DELETE', 'positions', null, options) as Promise<ExitPositionResponse>;
+export async function exitPosition(auth: Authorization, id: string): Promise<string> {
+  var options: http.ExitPositionRequest = {id};
+  return (await http.exitPosition(fromAuthorization(auth), options)).s;
 }
 
 
 /**
  * Exits all positions on the current trading day.
- * @param auth authorization {app_id, access_token}
- * @returns status
+ * @param auth authorization {appId, accessToken}
+ * @returns positions status
  */
-export function exitAllPositions(auth: Authorization): Promise<ExitAllPositionsResponse> {
-  return requestApi(auth, 'DELETE', 'positions', null, {}) as Promise<ExitAllPositionsResponse>;
+export async function exitAllPositions(auth: Authorization): Promise<string> {
+  return (await http.exitAllPositions(fromAuthorization(auth))).s;
 }
 
 
 /**
  * Converts a position on the current trading day.
- * @param auth authorization {app_id, access_token}
- * @param options details of position {symbol, positionSide, convertQty, ...}
- * @returns status
+ * @param auth authorization {appId, accessToken}
+ * @param conversion details of conversion {symbol, side, quantity, ...}
+ * @returns conversion status
  */
-export function convertPosition(auth: Authorization, options: ConvertPositionRequest): Promise<ConvertPositionResponse> {
-  return requestApi(auth, 'PUT', 'positions', null, options) as Promise<ConvertPositionResponse>;
+export async function convertPosition(auth: Authorization, conversion: ConvertPosition): Promise<string> {
+  var options = fromConvertPosition(conversion);
+  return (await http.convertPosition(fromAuthorization(auth), options)).s;
 }
 
 
 
 
-// BROKER-CONFIG
-// -------------
+// BROKER-CONFIG, DATA-API
+// -----------------------
 
 /**
  * Get the current market status of all the exchanges and their segments.
- * @param auth authorization {app_id, access_token}
- * @returns market status
+ * @param auth authorization {appId, accessToken}
+ * @returns markets status {details: [{exchange, ...}], overall: {count, ...}}
  */
-export function getMarketStatus(auth: Authorization): Promise<GetMarketStatusResponse> {
-  return requestApi(auth, 'GET', 'market-status', null, null) as Promise<GetMarketStatusResponse>;
+export async function getMarketStatus(auth: Authorization): Promise<MarketsStatus> {
+  return toMarketsStatus(await http.getMarketStatus(fromAuthorization(auth)));
 }
+
+
+/**
+ * Get the market history for a particular symbol.
+ * @param auth authorization {appId, accessToken}
+ * @param market market details {symbol, resolution, dateFormat, ...}
+ * @returns market history {details: [{date, ...}], overall: {dateFrom, ...}}
+ */
+export async function getMarketHistory(auth: Authorization, market: GetMarketHistory): Promise<MarketHistory> {
+  var options = fromGetMarketHistory(market);
+  return toMarketHistory(await http.getMarketHistory(fromAuthorization(auth), options));
+}
+
+
+/**
+ * Get the current market quotes for a set of symbols.
+ * @param auth authorization {appId, accessToken}
+ * @param symbols list of symbols
+ * @returns market quotes [{symbol, name, exchange, ...}]
+ */
+export async function getMarketQuotes(auth: Authorization, symbols: string[]): Promise<MarketQuote[]> {
+  var options: http.GetMarketQuotesRequest = {symbols: symbols.join()};
+  return (await http.getMarketQuotes(fromAuthorization(auth), options)).d.map(toMarketQuote);
+}
+
+
+/**
+ * Get the current market depth for a particular symbol.
+ * @param auth authorization {appId, accessToken}
+ * @param symbol symbol name
+ * @returns market depth {buyQuantity, sellQuantity, buyOffers, ...}
+ */
+export async function getMarketDepth(auth: Authorization, symbol: string): Promise<MarketDepth> {
+  var options: http.GetMarketDepthRequest = {symbol, ohlcv_flag: 1};
+  return toMarketDepth(await http.getMarketDepth(fromAuthorization(auth), options));
+}
+
 
 /**
  * Get all the latest symbols of all the exchanges from the symbol master files.
  * @param auth authorization (unused)
- * @param options details of symbol category {exchange, segment}
+ * @param exchange exchange name
+ * @param segment segment name
  * @returns symbol master file as text
  */
-export function getSymbolMaster(auth: null, options: GetSymbolMasterRequest): Promise<string> {
-  var {exchange, segment} = options;
-  return requestSymbols(null, 'GET', exchange + '_' + segment + '.csv', null, null);
+export function getSymbolMaster(auth: null, exchange: string, segment: string): Promise<string> {
+  var options: http.GetSymbolMasterRequest = {exchange, segment};
+  return http.getSymbolMaster(null, options);
 }
 
 
@@ -1560,62 +1608,47 @@ export function getSymbolMaster(auth: null, options: GetSymbolMasterRequest): Pr
 // ----
 
 /**
- * Generates e-DIS TPIN for validating/authorising transaction.
- * @param auth authorization {app_id, access_token}
- * @returns TPIN, an authorization code generated by CDSL/NSDL respectively, using which the customer validates/authorises the transaction
+ * Generate e-DIS TPIN for validating/authorising transaction.
+ * @param auth authorization {appId, accessToken}
+ * @returns optional data
  */
-export function generateEdisTpin(auth: Authorization): Promise<GenerateEdisTpinResponse> {
-  return requestApi(auth, 'GET', 'tpin', null, null) as Promise<GenerateEdisTpinResponse>;
-}
-
-export function getEdisTransactions(auth: Authorization): Promise<GetEdisTransactionsResponse> {
-  return requestApi(auth, 'GET', 'details', null, null) as Promise<GetEdisTransactionsResponse>;
-}
-
-export function submitEdisHoldingsStep(auth: Authorization, holdings: SubmitEdisHoldingsRequest): RequestOptions {
-  return requestStep(auth, 'POST', 'index', null, holdings);
-}
-
-export function inquireEdisTransaction(auth: Authorization, transaction: InquireEdisTransactionRequest): Promise<InquireEdisTransactionResponse> {
-  return requestApi(auth, 'POST', 'inquiry', null, transaction) as Promise<InquireEdisTransactionResponse>;
-}
-
-
-
-
-// DATA-API
-// --------
-
-/**
- * Get the current market history for a particular symbol.
- * @param auth authorization {app_id, access_token}
- * @param options market details {symbol, resolution, date_format, ...}
- * @returns market history
- */
-export function getMarketHistory(auth: Authorization, options: GetMarketHistoryRequest): Promise<GetMarketHistoryResponse> {
-  return requestData(auth, 'GET', 'history', options, null) as Promise<GetMarketHistoryResponse>;
+export async function generateEdisTpin(auth: Authorization): Promise<string> {
+  return (await http.generateEdisTpin(fromAuthorization(auth))).data;
 }
 
 
 /**
- * Get the current market quotes for a set of symbols.
- * @param auth authorization {app_id, access_token}
- * @param options market details {symbols}
- * @returns market quotes
+ * Get the necessary information regarding the holdings you have on your and also the Status of the holdings. If the “sell” for the particular holdings is a success or not.
+ * @param auth authorization {appId, accessToken}
+ * @returns list of e-DIS transactions {data: [{transactionId, internalTxnId, ...}]}
  */
-export function getMarketQuotes(auth: Authorization, options: GetMarketQuotesRequest): Promise<GetMarketQuotesResponse> {
-  return requestData(auth, 'GET', 'quotes', options, null) as Promise<GetMarketQuotesResponse>;
+export async function getEdisTransactions(auth: Authorization): Promise<EdisTransactions> {
+  return toEdisTransactions(await http.getEdisTransactions(fromAuthorization(auth)));
 }
 
 
 /**
- * Get the current market depth for a particular symbol.
- * @param auth authorization {app_id, access_token}
- * @param options market details {symbol, ohlcv_flag}
- * @returns market depth
+ * Redirect to CDSL page for login where you can submit your Holdings information and accordingly you can provide the same to exchange to Sell your holdings (browser only).
+ * @param auth authorization {appId, accessToken}
+ * @param holdings holding details {recordLst: [{isin_code, qty}]}
+ * @returns HTTP(s) request options (manual)
  */
-export function getMarketDepth(auth: Authorization, options: GetMarketDepthRequest): Promise<GetMarketDepthResponse> {
-  return requestData(auth, 'GET', 'depth', options, null) as Promise<GetMarketDepthResponse>;
+export function submitEdisHoldingsStep(auth: Authorization, holdings: EdisHolding[]): HttpRequestOptions {
+  var options: http.SubmitEdisHoldingsRequest = {recordLst: holdings.map(fromEdisHolding)};
+  return http.submitEdisHoldingsStep(fromAuthorization(auth), options);
+}
+
+
+/**
+ * Inquire the information/status of the provided transaction Id for the respective holdings you have on your end.
+ * @param auth authorization {appId, accessToken}
+ * @param id transaction id
+ * @returns edis status
+ */
+export async function inquireEdisTransaction(auth: Authorization, id: string): Promise<number> {
+  var options: http.InquireEdisTransactionRequest = {transactionId: id};
+  var a = (await http.inquireEdisTransaction(fromAuthorization(auth), options)).data;
+  return a.FAILED_CNT > 0? -a.FAILED_CNT : a.SUCEESS_CNT;
 }
 
 
@@ -1686,16 +1719,16 @@ export class Fyers implements Authorization {
 
   /**
    * Place an order to any exchange via Fyers.
-   * @param auth authorization {app_id, access_token}
+   * @param auth authorization {appId, accessToken}
    * @param options details of an order {symbol, qty, type, side, ...}
-   * @returns unique order id
+   * @returns order id
    */
   placeOrder(options: PlaceOrderRequest) { return placeOrder(this, options); }
 
   /**
    * Place multiple orders to any exchange via Fyers.
    * @param options details of multiple orders [{symbol, qty, type, side, ...}]
-   * @returns unique order id
+   * @returns order id
    */
   placeOrders(options: [PlaceOrderRequest]) { return placeOrders(this, options); }
 
