@@ -232,11 +232,11 @@ export function day2(desc: string): string {
 
 /** Exchange code. */
 export enum Exchange {
-  /** National Stock Exchange (NSE). */
+  /** National Stock Exchange. */
   NSE = 10,
-  /** Multi Commodity Exchange (MCX). */
+  /** Multi Commodity Exchange. */
   MCX = 11,
-  /** Bombay Stock Exchange (BSE). */
+  /** Bombay Stock Exchange. */
   BSE = 12,
 }
 
@@ -686,15 +686,15 @@ export function holdingType(desc: string): string {
 
 /** Product type code. */
 export enum ProductType {
-  /** Cash N Carry or Delivery Order, for equity only (CNC). */
+  /** Cash N Carry or Delivery Order, for equity only. */
   CNC      = "CNC",
-  /** Intraday Order, applicable for all segments (INTRADAY). */
+  /** Intraday Order, applicable for all segments. */
   Intraday = "INTRADAY",
-  /** Margin Order, applicable only for derivatives (MARGIN). */
+  /** Margin Order, applicable only for derivatives. */
   Margin   = "MARGIN",
-  /** Cover Order (CO). */
+  /** Cover Order. */
   Cover    = "CO",
-  /** Bracket Order (BO). */
+  /** Bracket Order. */
   Bracket  = "BO",
 }
 
@@ -746,58 +746,58 @@ export function productType(desc: string): string {
 /** Instrument type code. */
 export enum InstrumentType {
   // CM segment
-  /** Equity Shares (EQ). */
+  /** Equity Shares. */
   EQ = 0,
-  /** Preference Shares (PREFSHARES). */
+  /** Preference Shares. */
   PREFSHARES = 1,
-  /** Collateral-free Debt (DEBENTURES). */
+  /** Collateral-free Debt. */
   DEBENTURES = 2,
-  /** Warrants on Stock (WARRANTS). */
+  /** Warrants on Stock. */
   WARRANTS   = 3,
-  /** Miscellaneous (MISC). */
+  /** Miscellaneous. */
   MISC   = 4,
-  /** Stock Market Index (INDEX). */
+  /** Stock Market Index. */
   INDEX  = 10,
   // FO segment
-  /** Futures on Index (FUTIDX). */
+  /** Futures on Index. */
   FUTIDX = 11,
-  /** Futures on Volatility Index (FUTIVX). */
+  /** Futures on Volatility Index. */
   FUTIVX = 12,
-  /** Futures on Stock (FUTSTK). */
+  /** Futures on Stock. */
   FUTSTK = 13,
-  /** Options on Index (OPTIDX). */
+  /** Options on Index. */
   OPTIDX = 14,
-  /** Options on Stock (OPTSTK). */
+  /** Options on Stock. */
   OPTSTK = 15,
   // CD segment
-  /** Futures on Currency (FUTCUR). */
+  /** Futures on Currency. */
   FUTCUR = 16,
-  /** Futures on Government of India Treasury Bills (FUTIRT). */
+  /** Futures on Government of India Treasury Bills. */
   FUTIRT = 17,
-  /** Futures on Government of India Bonds (FUTIRC). */
+  /** Futures on Government of India Bonds. */
   FUTIRC = 18,
-  /** Options on Currency (OPTCUR). */
+  /** Options on Currency. */
   OPTCUR = 19,
-  /** Underlying on Currency (UNDCUR). */
+  /** Underlying on Currency. */
   UNDCUR = 20,
-  /** Underlying on Government of Bonds (UNDIRC). */
+  /** Underlying on Government of Bonds. */
   UNDIRC = 21,
-  /** Underlying on Government of India Treasury Bills (UNDIRT). */
+  /** Underlying on Government of India Treasury Bills. */
   UNDIRT = 22,
-  /** Underlying on 10 Year Notional coupon bearing GOI security (UNDIRD). */
+  /** Underlying on 10 Year Notional coupon bearing GOI security. */
   UNDIRD = 23,
-  /** Market-indexed Certificate of deposit (INDEX_CD). */
+  /** Market-indexed Certificate of deposit. */
   INDEX_CD = 24,
-  /** Futures on 10 Year Notional coupon bearing GOI security (FUTIRD). */
+  /** Futures on 10 Year Notional coupon bearing GOI security. */
   FUTIRD = 25,
   // COM segment
-  /** Futures on Commodity Index (FUTIDX). */
+  /** Futures on Commodity Index. */
 //FUTIDX = 11,
-  /** Futures on Commodity (FUTCOM) */
+  /** Futures on Commodity */
   FUTCOM = 30,
-  /** Options on Commodity Futures (OPTFUT). */
+  /** Options on Commodity Futures. */
   OPTFUT = 31,
-  /** Options on Commodity (OPTCOM). */
+  /** Options on Commodity. */
   OPTCOM = 32,
 }
 
