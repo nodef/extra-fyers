@@ -6,6 +6,98 @@ import * as http from './http';
 // TYPES
 // ======
 
+// AUTHORIZATION
+// -------------
+
+/** Attributes required for authorization of all requests. */
+export interface Authorization {
+  /** This is the app_id which you have received after creating the app. */
+  appId: string,
+  /** This value will be used for all the requests. */
+  accessToken: string,
+}
+
+
+function fromAuthorization(x: Authorization): http.Authorization {
+  return {
+    app_id:       x.appId,
+    access_token: x.accessToken,
+  };
+}
+
+
+/** Authorization step 1 request. */
+export interface AuthorizationStep1Request {
+  /** This is the app_id which you have received after creating the app. */
+  clientId: string,
+  /** This is where the user will be redirected after successful login. */
+  redirectUrl: string,
+  /** The same value will be returned after successful login to the redirect uri. */
+  state: string,
+}
+
+
+function fromAuthorizationStep1Request(x: AuthorizationStep1Request): http.AuthorizationStep1Request {
+  return {
+    client_id:     x.clientId,
+    redirect_uri:  x.redirectUrl,
+    response_type: "code",
+    state: x.state,
+  };
+}
+
+
+/** Authorization step 1 response. */
+export interface AuthorizationStep1Response {
+  /** String value which will be used to generate the access_token. */
+  authorizationCode: string,
+  /** This value is returned as is from the first request. */
+  state: string,
+}
+
+
+function toAuthorizationStep1Response(x: http.AuthorizationStep1Response): AuthorizationStep1Response {
+  return {
+    authorizationCode: x.auth_code,
+    state: x.state,
+  };
+}
+
+
+/** Authorization step 2 request. */
+export interface AuthorizationStep2Request {
+  /** SHA-256 of `api_id:app_secret` in hex. */
+  appHash: string,
+  /** This is the auth_code which is received from the first step. */
+  authorizationCode: string,
+}
+
+
+function fromAuthorizationStep2Request(x: AuthorizationStep2Request): http.AuthorizationStep2Request {
+  return {
+    grant_type: "authorization_code",
+    appIdHash:  x.appHash,
+    code:       x.authorizationCode,
+  };
+}
+
+
+/** Authorization step 2 response. */
+export interface AuthorizationStep2Response {
+  /** This value will be used for all the subsequent requests. */
+  accessToken: string,
+}
+
+
+function toAuthorizationStep2Response(x: http.AuthorizationStep2Response): AuthorizationStep2Response {
+  return {
+    accessToken: x.access_token,
+  };
+}
+
+
+
+
 // GET-PROFILE
 // -----------
 
