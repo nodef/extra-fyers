@@ -7,14 +7,14 @@ export * as raw from './http';
 
 
 
+// TYPES
+// ======
 
-// TYPES (GET-PROFILE)
-// -------------------
+// GET-PROFILE
+// -----------
 
-/**
- * Basic details of the client.
- */
- export interface GetProfileResult {
+/** Basic details of the client. */
+export interface Profile {
   /** The client id of the fyers user. */
   id: string,
   /** Email address of the client. */
@@ -28,40 +28,36 @@ export * as raw from './http';
 
 
 
-// TYPES (GET-FUNDS)
-// -----------------
+// GET-FUNDS
+// ---------
 
-/**
- * Basic details for particular fund.
- */
+// TODO: what do they exactly mean?
+/** Limits for equity/commodity fund. */
 export interface Fund {
-  /** Unique identity for particular fund. */
-  id: string,
-  /** Each title represents a heading of the ledger. */
-  title: string,
-  /** The amount in the capital ledger for the above-mentioned title. */
-  equityAmount: number,
-  /** The amount in the commodity ledger for the above-mentioned title. */
-  commodityAmount: number,
-}
-
-export interface Details {
+  /** Limit at start of the day. */
   start: number,
-  adhoc: number,
-  receivables: number,
-  fundTransfer: number,
-  collaterals: number,
-  realizedPl: number,
+  /** Utilized Amount. */
   utilized: number,
-  clear: number,
-  total: number,
+  /** Available Balance. */
   available: number,
+  /** Clear Balance. */
+  clear: number,
+  /** Total Balance. */
+  total: number,
+  /** Adhoc Limit. */
+  adhoc: number,
+  /** Receivables. */
+  receivables: number,
+  /** Fund Transfer. */
+  fundTransfer: number,
+  /** Collaterals. */
+  collaterals: number,
+  /** Realized Profit and Loss. */
+  realizedReturns: number,
 }
 
 
-/**
- * Balance available for the user for capital as well as the commodity market.
- */
+/** Balance available for the user for capital as well as the commodity market. */
 export interface GetFundsResponse extends Response {
   /** Basic detals for all funds. */
   fund_limit: [Fund],
@@ -70,12 +66,10 @@ export interface GetFundsResponse extends Response {
 
 
 
-// TYPES (GET-HOLDINGS)
-// --------------------
+// GET-HOLDINGS
+// ------------
 
-/**
- * Details of each holding.
- */
+/** Details of each holding. */
 export interface Holding {
   /** 12-digit International Securities Identification Number. */
   isin: string,
@@ -100,9 +94,7 @@ export interface Holding {
 }
 
 
-/**
- * Overall status of holdings in this demat account.
- */
+/** Overall status of holdings in this demat account. */
 export interface HoldingsOverall {
   /** Total number of holdings present. */
   count: number,
@@ -117,9 +109,7 @@ export interface HoldingsOverall {
 }
 
 
-/**
- * Equity and mutual fund holdings which the user has in this demat account.
- */
+/** Equity and mutual fund holdings which the user has in this demat account. */
 export interface GetHoldingsResponse extends Response {
   /** Details of each holding. */
   holdings: [Holding],
@@ -130,12 +120,10 @@ export interface GetHoldingsResponse extends Response {
 
 
 
-// TYPES (GET-ORDERS)
-// ------------------
+// GET-ORDERS
+// ----------
 
-/**
- * Order placed by the user in the current trading day.
- */
+/** Order placed by the user in the current trading day. */
 export interface Order {
   /** The unique order id assigned for each order. */
   id: string,
@@ -200,17 +188,13 @@ export interface Order {
 }
 
 
-/**
- * An order placed by the user in the current trading day.
- */
- export interface GetOrderRequest {
+/** An order placed by the user in the current trading day. */
+export interface GetOrderRequest {
   /** The unique order id assigned for each order. */
   id: string,
 }
 
-/**
- * All the orders placed by the user in the current trading day.
- */
+/** All the orders placed by the user in the current trading day. */
 export interface GetOrdersResponse extends Response {
   /** List of all orders places during the day. */
   orderBook: [Order],
@@ -219,12 +203,10 @@ export interface GetOrdersResponse extends Response {
 
 
 
-// TYPES (GET-POSITIONS)
-// ---------------------
+// GET-POSITIONS
+// -------------
 
-/**
- * Current open and closed position for the current trading day.
- */
+/** Current open and closed position for the current trading day. */
 export interface Position {
   /** The unique value for each position. */
   id: string,
@@ -273,9 +255,7 @@ export interface Position {
 }
 
 
-/**
- * Overall status of positions for the current trading day.
- */
+/** Overall status of positions for the current trading day. */
 export interface PositionsOverall {
   /** Total number of positions present. */
   count: number,
@@ -290,9 +270,7 @@ export interface PositionsOverall {
 }
 
 
-/**
- * Current open and closed positions for the current trading day.
- */
+/** Current open and closed positions for the current trading day. */
 export interface GetPositionsResponse extends Response {
   /** List of all positions for the current trading day. */
   netPositions: [Position],
@@ -303,12 +281,10 @@ export interface GetPositionsResponse extends Response {
 
 
 
-// TYPES (GET-TRADES)
-// ------------------
+// GET-TRADES
+// ----------
 
-/**
- * Trade for the current day across all platforms and exchanges in the current trading day.
- */
+/** Trade for the current day across all platforms and exchanges in the current trading day. */
 export interface Trade {
   /** The unique id to sort the trades. */
   id: string,
@@ -341,9 +317,7 @@ export interface Trade {
 }
 
 
-/**
- * All the trades for the current day across all platforms and exchanges in the current trading day.
- */
+/** All the trades for the current day across all platforms and exchanges in the current trading day. */
 export interface GetTradesResponse extends Response {
    /** List of all trades for the current trading day. */
   tradeBook: [Trade]
@@ -352,12 +326,10 @@ export interface GetTradesResponse extends Response {
 
 
 
-// TYPES (PLACE-ORDER)
-// -------------------
+// PLACE-ORDER
+// -----------
 
-/**
- * Defines an order to any exchange via Fyers.
- */
+/** Defines an order to any exchange via Fyers. */
 export interface PlaceOrderRequest {
   /** Eg: NSE:SBIN-EQ. */
   symbol: string,
@@ -386,18 +358,14 @@ export interface PlaceOrderRequest {
 }
 
 
-/**
- * Reponse attributes of placeOrder().
- */
+/** Reponse attributes of placeOrder(). */
 export interface PlaceOrderResponse extends Response {
   /** The order number of the placed order. */
   id: string,
 }
 
 
-/**
- * Response attributes of placeOrders().
- */
+/** Response attributes of placeOrders(). */
 export interface PlaceOrdersResponse extends Response {
   /** List of HTTP data for each order. */
   data: [HttpResponseData<PlaceOrderResponse>]
@@ -406,12 +374,10 @@ export interface PlaceOrdersResponse extends Response {
 
 
 
-// TYPES (MODIFY-ORDER)
-// --------------------
+// MODIFY-ORDER
+// ------------
 
-/**
- * Defines an order modification request to Fyers.
- */
+/** Defines an order modification request to Fyers. */
 export interface ModifyOrderRequest {
   /** The unique order id assigned for each order. */
   id: string,
@@ -440,18 +406,14 @@ export interface ModifyOrderRequest {
 }
 
 
-/**
- * Reponse attributes of modifyOrder().
- */
+/** Reponse attributes of modifyOrder(). */
 export interface ModifyOrderResponse extends Response {
   /** The order number of the modified order. */
   id: string,
 }
 
 
-/**
- * Reponse attributes of modifyOrders().
- */
+/** Reponse attributes of modifyOrders(). */
 export interface ModifyOrdersResponse extends Response {
   /** List of HTTP data for each order. */
   data: HttpResponseData<ModifyOrderResponse>,
@@ -460,30 +422,24 @@ export interface ModifyOrdersResponse extends Response {
 
 
 
-// TYPES (CANCEL-ORDER)
-// --------------------
+// CANCEL-ORDER
+// ------------
 
-/**
- * Defines an order cancellation to any exchange via Fyers.
- */
+/** Defines an order cancellation to any exchange via Fyers. */
 export interface CancelOrderRequest {
   /** The order number of the placed order. */
   id: string,
 }
 
 
-/**
- * Reponse attributes of cancelOrder().
- */
+/** Reponse attributes of cancelOrder(). */
 export interface CancelOrderResponse extends Response {
   /** The order number of the placed order. */
   id: string,
 }
 
 
-/**
- * Reponse attributes of cancelOrders().
- */
+/** Reponse attributes of cancelOrders(). */
 export interface CancelOrdersResponse extends Response {
   /** List of HTTP data for each order. */
   data: [HttpResponseData<CancelOrderResponse>]
@@ -492,40 +448,32 @@ export interface CancelOrdersResponse extends Response {
 
 
 
-// TYPES (EXIT-POSITION)
-// ---------------------
+// EXIT-POSITION
+// -------------
 
-/**
- * Defines a exit position request to Fyers.
- */
+/** Defines a exit position request to Fyers. */
 export interface ExitPositionRequest {
   /** Mandatory. Eg: NSE:FCONSUMER-EQ-INTRADAY. */
   id: string,
 }
 
 
-/**
- * Reponse attributes of exitPosition().
- */
+/** Reponse attributes of exitPosition(). */
 export interface ExitPositionResponse extends Response {
 }
 
 
-/**
- * Reponse attributes of exitAllPositions().
- */
+/** Reponse attributes of exitAllPositions(). */
 export interface ExitAllPositionsResponse extends Response {
 }
 
 
 
 
-// TYPES (CONVERT-POSITION)
-// ------------------------
+// CONVERT-POSITION
+// ----------------
 
-/**
- * Defines a convert position request to Fyers.
- */
+/** Defines a convert position request to Fyers. */
 export interface ConvertPositionRequest {
   /** Mandatory. Eg: 119031547242. */
   symbol: string,
@@ -540,9 +488,7 @@ export interface ConvertPositionRequest {
 }
 
 
-/**
- * Reponse attributes of convertPosition().
- */
+/** Reponse attributes of convertPosition(). */
 export interface ConvertPositionResponse extends Response {
   /** ? */
   positionDetails?: number,
@@ -551,8 +497,8 @@ export interface ConvertPositionResponse extends Response {
 
 
 
-// TYPES (GET-MARKET-STATUS)
-// -------------------------
+// GET-MARKET-STATUS
+// -----------------
 
 /** Current market status of an exchange's segment. */
 export interface MarketStatus {
@@ -576,8 +522,8 @@ export interface GetMarketStatusResponse extends Response {
 
 
 
-// TYPES (GET-SYMBOL-MASTER)
-// -------------------------
+// GET-SYMBOL-MASTER
+// -----------------
 
 export interface GetSymbolMasterRequest {
   /** Name of the exchange (NSE, BSE, MCX). */
@@ -589,8 +535,8 @@ export interface GetSymbolMasterRequest {
 
 
 
-// TYPES (GENERATE-EDIS-TPIN)
-// --------------------------
+// GENERATE-EDIS-TPIN
+// ------------------
 
 export interface GenerateEdisTpinResponse extends Response {
   /** Unknown, seen to be empty. */
@@ -600,8 +546,8 @@ export interface GenerateEdisTpinResponse extends Response {
 
 
 
-// TYPES (GET-EDIS-TRANSACTIONS)
-// -----------------------------
+// GET-EDIS-TRANSACTIONS
+// ---------------------
 
 export interface EdisTransaction {
   /** Transaction id. */
@@ -641,8 +587,8 @@ export interface GetEdisTransactionsResponse extends Response {
 
 
 
-// TYPES (SUBMIT-EDIS-HOLDINGS)
-// ----------------------------
+// SUBMIT-EDIS-HOLDINGS
+// --------------------
 
 export interface EdisHolding {
   isin: string,
@@ -656,8 +602,8 @@ export interface SubmitEdisHoldingsRequest {
 
 
 
-// TYPES (INQUIRE-EDIS-TRANSACTION)
-// --------------------------------
+// INQUIRE-EDIS-TRANSACTION
+// ------------------------
 
 export interface InquireEdisTransactionRequest {
   /** Transaction id. */
@@ -676,8 +622,8 @@ export interface InquireEdisTransactionResponse extends Response {
 
 
 
-// TYPES (GET-MARKET-HISTORY)
-// --------------------------
+// GET-MARKET-HISTORY
+// ------------------
 
 /** Request for getting market history of a symbol. */
 export interface GetMarketHistoryRequest {
@@ -705,21 +651,17 @@ export interface GetMarketHistoryResponse extends Response {
 
 
 
-// TYPES (GET-MARKET-QUOTES)
-// -------------------------
+// GET-MARKET-QUOTES
+// -----------------
 
-/**
- * Request to retrieve the full market quotes for one or more symbols.
- */
+/** Request to retrieve the full market quotes for one or more symbols. */
 export interface GetMarketQuotesRequest {
   /** Eg: NSE:RCOM-EQ, ... */
   symbols: string,
 }
 
 
-/**
- * Text candle in quotes.
- */
+/** Text candle in quotes. */
 export interface Candle {
   /** UNIX expoch time. */
   date: number,
@@ -736,9 +678,7 @@ export interface Candle {
 }
 
 
-/**
- * Quote details of a particular symbol.
- */
+/** Quote details of a particular symbol. */
 export interface MarketQuoteValue {
   /** Change value. */
   priceChange: number,
@@ -777,9 +717,7 @@ export interface MarketQuoteValue {
 }
 
 
-/**
- * Market quote for a particular symbol.
- */
+/** Market quote for a particular symbol. */
 export interface MarketQuote {
   /** Name of symbol. */
   n: string,
@@ -790,9 +728,7 @@ export interface MarketQuote {
 }
 
 
-/**
- * Response attributes for getMarketQuotes().
- */
+/** Response attributes for getMarketQuotes(). */
 export interface GetMarketQuotesResponse extends Response {
   /** List of all market quotes. */
   d: [MarketQuote]
@@ -801,8 +737,8 @@ export interface GetMarketQuotesResponse extends Response {
 
 
 
-// TYPES (GET-MARKET-DEPTH)
-// ------------------------
+// GET-MARKET-DEPTH
+// ----------------
 
 /**
  * Request attributes for getMarketDepth().
@@ -872,9 +808,7 @@ export interface MarketDepth {
 }
 
 
-/**
- * Response attributes for getMarketDepth().
- */
+/** Response attributes for getMarketDepth(). */
 export interface GetMarketDepthResponse extends Response {
   /** Dictionary of all market quotes. */
   d: { (symbol: string): MarketDepth }
@@ -883,6 +817,9 @@ export interface GetMarketDepthResponse extends Response {
 
 
 
+
+// FUNCTIONS
+// =========
 
 // REQUEST
 // -------
@@ -1225,9 +1162,7 @@ export function getMarketDepth(auth: Authorization, options: GetMarketDepthReque
 // MAIN
 // ----
 
-/**
- * Container for storing authorization details.
- */
+/** Container for storing authorization details. */
 export class Fyers implements Authorization {
   app_id: string;
   access_token: string;
