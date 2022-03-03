@@ -1,5 +1,4 @@
-export * from './appendix';
-export * as raw from './http';
+import * as http from './http';
 
 
 
@@ -20,6 +19,16 @@ export interface Profile {
   name: string,
   /** PAN of the client. */
   pan: string,
+}
+
+
+function toProfile(x: http.GetProfileResponse): Profile {
+  return {
+    id:    x.fy_id,
+    email: x.email_id,
+    name:  x.name,
+    pan:   x.PAN,
+  };
 }
 
 
@@ -62,6 +71,58 @@ export interface Funds {
 }
 
 
+import FLT = http.FundLimitType;
+function toFunds(x: http.GetFundsResponse): Funds {
+  var e: Fund = {} as any;
+  var c: Fund = {} as any;
+  for (var l of x.fund_limit) {
+    switch (l.id) {
+      case FLT.Start:
+        e.start = l.equityAmount;
+        c.start = l.commodityAmount;
+        break;
+      case FLT.Deposits:
+        e.deposits = l.equityAmount;
+        c.deposits = l.commodityAmount;
+        break;
+      case FLT.RealizedReturns:
+        e.realizedReturns = l.equityAmount;
+        c.realizedReturns = l.commodityAmount;
+        break;
+      case FLT.Collaterals:
+        e.collaterals = l.equityAmount;
+        c.collaterals = l.commodityAmount;
+        break;
+      case FLT.Adhoc:
+        e.adhoc = l.equityAmount;
+        c.adhoc = l.commodityAmount;
+        break;
+      case FLT.Utilized:
+        e.utilized = l.equityAmount;
+        c.utilized = l.commodityAmount;
+        break;
+      case FLT.Receivables:
+        e.receivables = l.equityAmount;
+        c.receivables = l.commodityAmount;
+        break;
+      case FLT.Available:
+        e.available = l.equityAmount;
+        c.available = l.commodityAmount;
+        break;
+      case FLT.Clear:
+        e.clear = l.equityAmount;
+        c.clear = l.commodityAmount;
+        break;
+      case FLT.Total:
+        e.total = l.equityAmount;
+        c.total = l.commodityAmount;
+        break;
+    }
+  }
+  return {equity: e, commodity: c};
+}
+
+
 
 
 // GET-HOLDINGS
@@ -92,6 +153,22 @@ export interface Holding {
 }
 
 
+function toHolding(x: http.Holding): Holding {
+  return {
+    isin:     x.isin,
+    symbol:   x.symbol,
+    exchange: x.exchange,
+    type:     x.holdingType,
+    quantity: x.quantity,
+    remainingQuantity: x.remainingQuantity,
+    buyPrice:     x.costPrice,
+    currentValue: x.marketVal,
+    currentPrice: x.ltp,
+    returns:      x.pl,
+  };
+}
+
+
 /** Overall status of holdings in this demat account. */
 export interface HoldingsOverall {
   /** Total number of holdings present. */
@@ -107,12 +184,31 @@ export interface HoldingsOverall {
 }
 
 
+function toHoldingsOverall(x: http.HoldingsOverall): HoldingsOverall {
+  return {
+    count: x.count_total,
+    investedValue:  x.total_investment,
+    currentValue:   x.total_current_value,
+    returns:        x.total_pl,
+    returnsPercent: x.pnl_perc,
+  };
+}
+
+
 /** Equity and mutual fund holdings which the user has in this demat account. */
 export interface Holdings {
   /** Details of each holding. */
   details: Holding[],
   /** Overall status of holdings in this demat account. */
   overall: HoldingsOverall,
+}
+
+
+function toHoldings(x: http.GetHoldingsResponse): Holdings {
+  return {
+    details: x.holdings.map(toHolding),
+    overall: toHoldingsOverall(x.overall),
+  };
 }
 
 
@@ -149,16 +245,16 @@ export interface Order {
   status: string,
   /** True when placing AMO order. */
   offline: boolean,
+  /** The limit price for the order. */
+  limitPrice: number,
+  /** The stop price for the order. */
+  stopPrice: number,
   /** The original order qty. */
   quantity: number,
   /** The remaining qty. */
   remainingQuantity: number,
   /** The filled qty after partial trades. */
-  filledQuantity: number,
-  /** The limit price for the order. */
-  limitPrice: number,
-  /** The stop price for the order. */
-  stopPrice: number,
+  tradedQuantity: number,
   /** Disclosed quantity. */
   disclosedQuantity: number,
   /** Remaining disclosed quantity. */
@@ -166,7 +262,7 @@ export interface Order {
   /** Day or IOC. */
   validity: string,
   /** The order time as per DD-MMM-YYYY hh:mm:ss in IST. */
-  time: string,
+  date: string,
   /** The parent order id will be provided only for applicable orders. */
   parentId?: string,
   /** Price change from previous trading day. */
@@ -176,13 +272,49 @@ export interface Order {
   /** Last price of symbol. */
   currentPrice: number,
   /** The average traded price for the order. */
-  sellPrice: number,
+  tradedPrice: number,
   /** The error messages are shown here. */
   message: string,
   /** PAN of the client. */
   pan: string,
   /** The client id of the fyers user. */
   clientId: string,
+}
+
+
+function toOrder(x: http.Order): Order {
+  return {
+    id:     x.id,
+    symbol: x.symbol,
+    ticker: x.ex_sym,
+    description:  x.description,
+    segment:      x.segment,
+    instrument:   x.instrument,
+    exchange:     x.exchange,
+    type:         x.type,
+    side:         x.side,
+    productType:  x.productType,
+    source:       x.source,
+    status:       x.status,
+    offline:      x.offlineOrder,
+    limitPrice:   x.limitPrice,
+    stopPrice:    x.stopPrice,
+    quantity:     x.qty,
+    remainingQuantity: x.remainingQuantity,
+    tradedQuantity:    x.filledQty,
+    disclosedQuantity: x.discloseQty,
+    remainingDisclosedQuantity: x.dqQtyRem,
+    validity:     x.orderValidity,
+    date:         x.orderDateTime,
+    parentId:     x.parentId,
+    priceChange:  x.ch,
+    priceChangePercent: x.chp,
+    currentPrice: x.lp,
+    tradedPrice:  x.tradedPrice,
+    message:      x.message,
+    pan:          x.pan,
+    clientId:     x.clientId,
+  };
 }
 
 
@@ -195,11 +327,32 @@ export interface OrdersOverall {
   /** The remaining qty. */
   remainingQuantity: number,
   /** The filled qty after partial trades. */
-  filledQuantity: number,
+  tradedQuantity: number,
   /** Disclosed quantity. */
   disclosedQuantity: number,
   /** Remaining disclosed quantity. */
   remainingDisclosedQuantity: number,
+}
+
+
+function toOrdersOverall(x: http.Order[]): OrdersOverall {
+  var a: OrdersOverall = {
+    count: 0,
+    quantity: 0,
+    remainingQuantity: 0,
+    tradedQuantity: 0,
+    disclosedQuantity: 0,
+    remainingDisclosedQuantity: 0,
+  };
+  for (var o of x) {
+    a.count++;
+    a.quantity += o.qty;
+    a.remainingQuantity += o.remainingQuantity;
+    a.tradedQuantity    += o.filledQty;
+    a.disclosedQuantity += o.discloseQty;
+    a.remainingDisclosedQuantity += o.dqQtyRem;
+  }
+  return a;
 }
 
 
@@ -209,6 +362,14 @@ export interface Orders {
   details: Order[],
   /** Overall status of orders. */
   overall: OrdersOverall,
+}
+
+
+function toOrders(x: http.GetOrdersResponse): Orders {
+  return {
+    details: x.orderBook.map(toOrder),
+    overall: toOrdersOverall(x.orderBook),
+  };
 }
 
 
@@ -266,6 +427,34 @@ export interface Position {
 }
 
 
+function toPosition(x: http.Position): Position {
+  return {
+    id: x.id,
+    symbol:      x.symbol,
+    segment:     x.segment,
+    exchange:    x.exchange,
+    productType: x.productType,
+    side:        x.side,
+    quantity:    x.qty,
+    quantityMultiplier: x.qtyMulti_com,
+    buyPrice:     x.buyAvg,
+    buyQuantity:  x.buyQty,
+    buyValue:     x.buyVal,
+    sellPrice:    x.sellAvg,
+    sellQuantity: x.sellQty,
+    sellValue:    x.sellVal,
+    netPrice:     x.netAvg,
+    netQuantity:  x.netQty,
+    returns:      x.pl,
+    realizedReturns:   x.realized_profit,
+    unrealizedReturns: x.unrealized_profit,
+    crossCurrency: x.crossCurrency,
+    rbiRefRate:    x.rbiRefRate,
+    currentPrice:  x.ltp,
+  };
+}
+
+
 /** Overall status of positions for the current trading day. */
 export interface PositionsOverall {
   /** Total number of positions present. */
@@ -281,12 +470,31 @@ export interface PositionsOverall {
 }
 
 
+function toPositionsOverall(x: http.PositionsOverall): PositionsOverall {
+  return {
+    count:     x.count_total,
+    openCount: x.count_open,
+    returns:   x.pl_total,
+    realizedReturns:   x.pl_realized,
+    unrealizedReturns: x.pl_unrealized,
+  };
+}
+
+
 /** Current open and closed positions for the current trading day. */
 export interface Positions {
   /** List of all positions for the current trading day. */
   details: Position[],
   /** Overall status of positions for the current trading day. */
   overall: PositionsOverall,
+}
+
+
+function toPositions(x: http.GetPositionsResponse): Positions {
+  return {
+    details: x.netPositions.map(toPosition),
+    overall: toPositionsOverall(x.overall),
+  };
 }
 
 
@@ -328,6 +536,26 @@ export interface Trade {
 }
 
 
+function toTrade(x: http.Trade): Trade {
+  return {
+    id: x.id,
+    orderId:  x.orderNumber,
+    symbol:   x.symbol,
+    segment:  x.segment,
+    exchange: x.exchange,
+    side:     x.side,
+    productType: x.productType,
+    orderDate:   x.orderDateTime,
+    price:       x.tradePrice,
+    quantity:    x.tradedQty,
+    value:       x.tradeValue,
+    clientId:    x.clientId,
+    type:        x.transactionType,
+    orderType:   x.orderType,
+  };
+}
+
+
 /** Overall trades for the current trading day. */
 export interface TradesOverall {
   /** Total number of trades. */
@@ -336,6 +564,21 @@ export interface TradesOverall {
   quantity: number,
   /** The total traded value. */
   value: number,
+}
+
+
+function toTradesOverall(x: http.Trade[]): TradesOverall {
+  var a: TradesOverall = {
+    count: 0,
+    quantity: 0,
+    value: 0,
+  };
+  for (var t of x) {
+    a.count++;
+    a.quantity += t.tradedQty;
+    a.value    += t.tradeValue;
+  }
+  return a;
 }
 
 
@@ -348,6 +591,14 @@ export interface Trades {
 }
 
 
+function toTrades(x: http.GetTradesResponse): Trades {
+  return {
+    details: x.tradeBook.map(toTrade),
+    overall: toTradesOverall(x.tradeBook),
+  };
+}
+
+
 
 
 // PLACE-ORDER
@@ -357,8 +608,6 @@ export interface Trades {
 export interface PlaceOrder {
   /** Eg: NSE:SBIN-EQ. */
   symbol: string,
-  /** The quantity should be in multiples of lot size for derivatives. */
-  quantity: number,
   /** The type of order. */
   type: string,
   /** The order is buy or sell. */
@@ -369,6 +618,8 @@ export interface PlaceOrder {
   limitPrice: number,
   /** Provide valid price for Stop and Stoplimit orders. */
   stopPrice: number,
+  /** The quantity should be in multiples of lot size for derivatives. */
+  quantity: number,
   /** Allowed only for Equity. */
   disclosedQuantity: number,
   /** Day or IOC. */
@@ -379,6 +630,24 @@ export interface PlaceOrder {
   stopLoss: number,
   /** Provide valid price for BO orders. */
   takeProfit: number,
+}
+
+
+function fromPlaceOrder(x: PlaceOrder): http.PlaceOrderRequest {
+  return {
+    symbol: x.symbol,
+    type:   x.type,
+    side:   x.side,
+    productType:  x.productType,
+    limitPrice:   x.limitPrice,
+    stopPrice:    x.stopPrice,
+    qty:          x.quantity,
+    disclosedQty: x.disclosedQuantity,
+    validity:     x.validity,
+    offlineOrder: x.offline,
+    stopLoss:     x.stopLoss,
+    takeProfit:   x.takeProfit,
+  };
 }
 
 
@@ -404,6 +673,18 @@ export interface ModifyOrder {
 }
 
 
+function fromModifyOrder(x: ModifyOrder): http.ModifyOrderRequest {
+  return {
+    id:   x.id,
+    type: x.type,
+    qty:  x.quantity,
+    disclosedQty: x.disclosedQuantity,
+    limitPrice:   x.limitPrice,
+    stopPrice:    x.stopPrice,
+  };
+}
+
+
 
 
 // CONVERT-POSITION
@@ -421,6 +702,17 @@ export interface ConvertPosition {
   fromProductType: string,
   /** The new product type. */
   toProductType: string,
+}
+
+
+function fromConvertPosition(x: ConvertPosition): http.ConvertPositionRequest {
+  return {
+    symbol:       x.symbol,
+    positionSide: x.side,
+    convertQty:   x.quantity,
+    convertFrom:  x.fromProductType,
+    convertTo:    x.toProductType,
+  };
 }
 
 
@@ -442,6 +734,16 @@ export interface MarketStatus {
 }
 
 
+function toMarketStatus(x: http.MarketStatus): MarketStatus {
+  return {
+    exchange: x.exchange,
+    segment:  x.segment,
+    type:     x.market_type,
+    status:   x.status,
+  };
+}
+
+
 /** Overall status of market segments. */
 export interface MarketsStatusOverall {
   /** Total number of market segments. */
@@ -453,12 +755,34 @@ export interface MarketsStatusOverall {
 }
 
 
+function toMarketsStatusOverall(x: http.MarketStatus[]): MarketsStatusOverall {
+  var a: MarketsStatusOverall = {
+    count: 0,
+    openCount: 0,
+    closedCount: 0,
+  };
+  for (var s of x) {
+    a.count++;
+    if (s.status === 'OPEN') a.openCount++;
+    else a.closedCount++;
+  }
+}
+
+
 /** Market status of all the exchanges and their segments. */
 export interface MarketsStatus {
   /** List of statuses of various market segments. */
   details: MarketStatus[],
   /** Overall status of market segments. */
   overall: MarketsStatusOverall,
+}
+
+
+function toMarketsStatus(x: http.GetMarketStatusResponse): MarketsStatus {
+  return {
+    details: x.marketStatus.map(toMarketStatus),
+    overall: toMarketsStatusOverall(x.marketStatus),
+  };
 }
 
 
@@ -476,17 +800,29 @@ export interface GetMarketHistory {
   /** 0 to enter the epoch value. 1 to enter the date format as yyyy-mm-dd. */
   dateFormat: number,
   /** Indicating the start date of records (epoch, yyyy-mm-dd). */
-  from: string,
+  fromDate: string,
   /** Indicating the end date of records. */
-  to: string,
+  toDate: string,
   /** Set cont flag 1 for continues data and future options. */
   continuous: boolean,
 }
 
 
+function fromGetMarketHistory(x: GetMarketHistory): http.GetMarketHistoryRequest {
+  return {
+    symbol:      x.symbol,
+    resolution:  x.resolution,
+    date_format: x.dateFormat,
+    range_from:  x.fromDate,
+    range_to:    x.toDate,
+    cont_flag:   x.continuous,
+  };
+}
+
+
 /** Candle in market history, quotes. */
 export interface Candle {
-  /** UNIX expoch time. */
+  /** UNIX epoch time. */
   date: number,
   /** Open price. */
   openPrice: number,
@@ -501,12 +837,91 @@ export interface Candle {
 }
 
 
+import SCI = http.ShortCandleIndex;
+function toCandleShort(x: http.ShortCandle): Candle {
+  return {
+    date:       x[SCI.Time],
+    openPrice:  x[SCI.Open],
+    highPrice:  x[SCI.High],
+    lowPrice:   x[SCI.Low],
+    closePrice: x[SCI.Close],
+    volume:     x[SCI.Volume],
+  };
+}
+
+
+function toCandle(x: http.Candle): Candle {
+  return {
+    date:       x.t,
+    openPrice:  x.o,
+    highPrice:  x.h,
+    lowPrice:   x.l,
+    closePrice: x.c,
+    volume:     x.v,
+  };
+}
+
+
+/** Overall market history details. */
+export interface MarketHistoryOverall {
+  /** Start UNIX epoch time. */
+  fromDate: number,
+  /** Stop UNIX epoch time. */
+  toDate: number,
+  /** Open price. */
+  openPrice: number,
+  /** High price. */
+  highPrice: number,
+  /** Low price. */
+  lowPrice: number,
+  /** Close price. */
+  closePrice: number,
+  /** Volume. */
+  volume: number,
+}
+
+
+function toMarketHistoryOverall(x: http.ShortCandle[]): MarketHistoryOverall {
+  var a: MarketHistoryOverall = {
+    fromDate: 0,
+    toDate: 0,
+    openPrice: 0,
+    highPrice: 0,
+    lowPrice: 0,
+    closePrice: 0,
+    volume: 0,
+  };
+  if (x.length === 0) return a;
+  var l = x.length - 1;
+  a.fromDate   = x[0][SCI.Time];
+  a.toDate     = x[l][SCI.Time];
+  a.openPrice  = x[0][SCI.Open];
+  a.highPrice  = x[0][SCI.High];
+  a.lowPrice   = x[0][SCI.Low];
+  a.closePrice = x[l][SCI.Close];
+  for (var c of x) {
+    a.highPrice = Math.max(a.highPrice, c[SCI.High]);
+    a.lowPrice  = Math.min(a.lowPrice,  c[SCI.Low]);
+    a.volume    += c[SCI.Volume];
+  }
+  return a;
+}
+
+
 /** Market history of a particular stock. */
 export interface MarketHistory {
   /** List of candes. */
   details: Candle[],
   /** Overall status of market history. */
-  overall: Candle,
+  overall: MarketHistoryOverall,
+}
+
+
+function toMarketHistory(x: http.GetMarketHistoryResponse): MarketHistory {
+  return {
+    details: x.candles.map(toCandleShort),
+    overall: toMarketHistoryOverall(x.candles),
+  };
 }
 
 
@@ -554,6 +969,30 @@ export interface MarketQuote {
 }
 
 
+function toMarketQuote(x: http.MarketQuote): MarketQuote {
+  var v = x.v;
+  return {
+    symbol:   x.n,
+    name:     v.short_name,
+    exchange: v.exchange,
+    description:  v.description,
+    priceChange:  v.ch,
+    priceChangePercent: v.chp,
+    currentPrice: v.lp,
+    priceSpread:  v.spread,
+    sellPrice:  v.ask,
+    buyPrice:   v.bid,
+    openPrice:  v.open_price,
+    highPrice:  v.high_price,
+    lowPrice:   v.low_price,
+    closePrice: v.prev_close_price,
+    volume:     v.volume,
+    date:       v.tt,
+    candle:     toCandle(v.cmd),
+  };
+}
+
+
 
 
 // GET-MARKET-DEPTH
@@ -567,6 +1006,15 @@ export interface MarketOffer {
   volume: number,
   /** Orders? */
   orders: number,
+}
+
+
+function toMarketOffer(x: http.MarketOffer): MarketOffer {
+  return {
+    price:  x.price,
+    volume: x.volume,
+    orders: x.ord,
+  };
 }
 
 
@@ -590,16 +1038,16 @@ export interface MarketDepth {
   closePrice?: number,
   /** Volume traded. */
   volume?: number,
-  /** Percentage of change between the current value and the previous day's market close. */
-  priceChangePercent: number,
   /** Change value. */
   priceChange: number,
+  /** Percentage of change between the current value and the previous day's market close. */
+  priceChangePercent: number,
   /** Last traded quantity. */
-  tradeQuantity: number,
-  /** Last traded time. */
-  tradeDate: number,
+  tradedQuantity: number,
   /** Last traded price. */
-  tradePrice: number,
+  tradedPrice: number,
+  /** Last traded time. */
+  tradedDate: number,
   /** Average traded price. */
   netPrice: number,
   /** Lower circuit price. */
@@ -616,6 +1064,37 @@ export interface MarketDepth {
   previousOpenInterest: number,
   /** Change in open Interest percentage. */
   openInterestChangePercent: number,
+}
+
+
+function toMarketDepth(x: http.GetMarketDepthResponse): MarketDepth {
+  var ks = Object.keys(x.d);
+  if (ks.length === 0) return NULL;  // TODO: OK?
+  var v  = x.d[ks[0]];
+  return {
+    buyQuantity:  v.totalbuyqty,
+    sellQuantity: v.totalsellqty,
+    buyOffers:  v.bids.map(toMarketOffer),
+    sellOffers: v.ask.map(toMarketOffer),
+    openPrice:  v.o,
+    highPrice:  v.h,
+    lowPrice:   v.l,
+    closePrice: v.c,
+    volume:     v.v,
+    priceChange:        v.ch,
+    priceChangePercent: v.chp,
+    tradedQuantity: v.ltq,
+    tradedPrice:    v.ltq,
+    tradedDate:     v.ltt,
+    netPrice:       v.atp,
+    lowerCircuitPrice: v.lower_ckt,
+    upperCircuitPrice: v.upper_ckt,
+    expiryDate:   v.expiry,
+    openInterest: v.oi,
+    openInterestEnabled:  v.oiflag,
+    previousOpenInterest: v.pdoi,
+    openInterestChangePercent: v.oipercent,
+  };
 }
 
 
@@ -655,6 +1134,25 @@ export interface EdisTransaction {
 }
 
 
+function toEdisTransaction(x: http.EdisTransaction): EdisTransaction {
+  return {
+    id: x.transactionId,
+    isin:       x.isin,
+    quantity:   x.qty,
+    remainingQuantity: x.qty - x.qtyUtlize,
+    entryDate:  x.entryDate,
+    startDate:  x.startDate,
+    endDate:    x.endDate,
+    source:     x.source,
+    status:     x.status,
+    clientId:   x.clientId,
+    errorCode:  x.errCode,
+    errorCount: x.errorCount,
+    reason:     x.reason,
+  };
+}
+
+
 /** Overall status of e-DIS transaction in this demat account. */
 export interface EdisTransactionsOverall {
   /** Total number of transactions. */
@@ -666,12 +1164,36 @@ export interface EdisTransactionsOverall {
 }
 
 
+function toEdisTransactionsOverall(x: http.EdisTransaction[]): EdisTransactionsOverall {
+  var a: EdisTransactionsOverall = {
+    count: 0,
+    quantity: 0,
+    remainingQuantity: 0,
+  };
+  for (var t of x) {
+    a.count++;
+    a.quantity          += t.qty;
+    a.remainingQuantity += t.qty - t.qtyUtlize;
+  }
+  return a;
+}
+
+
 /** Details of all e-DIS transactions. */
 export interface EdisTransactions {
   /** List of e-DIS transactions. */
   details: EdisTransaction[],
   /** Overall status of transactions. */
   overall: EdisTransactionsOverall,
+}
+
+
+function toEdisTransactions(x: http.GetEdisTransactionsResponse): EdisTransactions {
+  var ts: http.EdisTransaction[] = x.data.length === 0? [] : x.data as any;
+  return {
+    details: ts.map(toEdisTransaction),
+    overall: toEdisTransactionsOverall(ts),
+  };
 }
 
 
@@ -686,6 +1208,14 @@ export interface EdisHolding {
   isin: string,
   /** Quantity of securities held. */
   quantity: number,
+}
+
+
+function fromEdisHolding(x: EdisHolding): http.EdisHolding {
+  return {
+    isin_code: x.isin,
+    qty:       x.quantity,
+  };
 }
 
 

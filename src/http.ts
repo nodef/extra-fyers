@@ -132,10 +132,35 @@ export interface GetProfileResponse extends Response {
 // GET-FUNDS
 // ---------
 
+/** Fund limit type (id) in funds response. */
+export enum FundLimitType {
+  /** Limit at start of the day. */
+  Start    = 9,
+  /** Fund Transfer. */
+  Deposits = 6,
+  /** Realized Profit and Loss. */
+  RealizedReturns = 4,
+  /** Collaterals. */
+  Collaterals = 5,
+  /** Adhoc Limit. */
+  Adhoc       = 8,
+  /** Utilized Amount. */
+  Utilized    = 2,
+  /** Receivables. */
+  Receivables = 7,
+  /** Available Balance. */
+  Available   = 10,
+  /** Clear Balance. */
+  Clear       = 3,
+  /** Total Balance. */
+  Total       = 1,
+}
+
+
 /** Limit details for particular fund. */
 export interface FundLimit {
   /** Unique identity for particular fund. */
-  id: string,
+  id: number,
   /** Each title represents a heading of the ledger. */
   title: string,
   /** The amount in the capital ledger for the above-mentioned title. */
@@ -248,7 +273,7 @@ export interface Order {
   /** The order number and status of the order. */
   orderNumStatus: number,
   /** True when placing AMO order. */
-  offlineOrder: boolean,
+  offlineOrder: string,
   /** The original order qty. */
   qty: number,
   /** The remaining qty. */
@@ -640,10 +665,31 @@ export interface GetMarketHistoryRequest {
 }
 
 
+/** Short candle used with market history [time, open, high, low, close, volume]. */
+export type ShortCandle = [number, number, number, number, number, number];
+
+
+/** Short candle array index. */
+export enum ShortCandleIndex {
+  /** Time. */
+  Time   = 0,
+  /** Open price. */
+  Open   = 1,
+  /** High price. */
+  High   = 2,
+  /** Low price. */
+  Low    = 3,
+  /** Close price. */
+  Close  = 4,
+  /** Traded volume. */
+  Volume = 5,
+}
+
+
 /** Market history of a particular stock response. */
 export interface GetMarketHistoryResponse extends Response {
-  /** List of candes in the format: [time, open, high, low, close, volume]. */
-  candles: [number, number, number, number, number, number][],
+  /** List of short candles. */
+  candles: ShortCandle[],
 }
 
 
