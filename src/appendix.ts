@@ -147,8 +147,8 @@ export function day2(desc: string): string {
 // -----------
 
 const OPTION_TYPE_DESCRIPTION: Map<string, string> = new Map([
-  ['CE', 'Call Option'],
-  ['PE', 'Put Option'],
+  ['CE', 'Call Option (CE)'],
+  ['PE', 'Put Option (PE)'],
 ]);
 
 
@@ -177,9 +177,9 @@ export function optionType(desc: string): string {
 // ---------
 
 const EXCHANGE_DESCRIPTION: Map<number, string> = new Map([
-  [10, 'NSE (National Stock Exchange)'],
-  [11, 'MCX (Multi Commodity Exchange)'],
-  [12, 'BSE (Bombay Stock Exchange)'],
+  [10, 'National Stock Exchange (NSE)'],
+  [11, 'Multi Commodity Exchange (MCX)'],
+  [12, 'Bombay Stock Exchange (BSE)'],
 ]);
 
 const EXCHANGE_CODE: Map<string, number> = new Map([
@@ -215,10 +215,10 @@ export function exchange(desc: string): number {
 // --------
 
 const SEGMENT_DESCRIPTION: Map<number, string> = new Map([
-  [10, 'Capital Market'],
-  [11, 'Equity Derivatives'],
-  [12, 'Currency Derivatives'],
-  [20, 'Commodity Derivatives'],
+  [10, 'Capital Market (CM)'],
+  [11, 'Equity Derivatives (FO)'],
+  [12, 'Currency Derivatives (CD)'],
+  [20, 'Commodity Derivatives (COM)'],
 ]);
 
 const SEGMENT_CODE: Map<string, number> = new Map([
@@ -368,11 +368,11 @@ export function instrumentType(desc: string): number {
 // -------------
 
 const PRODUCT_TYPE_DESCRIPTION: Map<string, string> = new Map([
-  ['CNC',      'For equity only'],
-  ['INTRADAY', 'Applicable for all segments'],
-  ['MARGIN',   'Applicable only for derivatives'],
-  ['CO',       'Cover Order'],
-  ['BO',       'Bracket Order'],
+  ['CNC',      'Cash N Carry or Delivery Order, for equity only (CNC)'],
+  ['INTRADAY', 'Intraday Order, applicable for all segments (INTRADAY)'],
+  ['MARGIN',   'Margin Order, applicable only for derivatives (MARGIN)'],
+  ['CO',       'Cover Order (CO)'],
+  ['BO',       'Bracket Order (BO)'],
 ]);
 
 const PRODUCT_TYPE_CODE: Map<string, string> = new Map([
@@ -588,7 +588,7 @@ export function holdingTypeDescription(code: string): string {
 }
 
 /**
- * Get order cource code.
+ * Get holding type code.
  * @param desc holding type description
  * @returns holding type code (T1, HLD)
  */
@@ -629,7 +629,7 @@ export function orderSourceDescription(code: string): string {
 }
 
 /**
- * Get order cource code.
+ * Get order source code.
  * @param desc order source description
  * @returns order source code (M, W, R, A, ITS)
  */
@@ -645,7 +645,7 @@ export function orderSource(desc: string): string {
 // ERRORS
 // ------
 
-const ERROR_MESSAGE : Map<number, string> = new Map([
+const ERROR_DESCRIPTION : Map<number, string> = new Map([
   [-209, 'Invalid order id'],
   [-101, 'Invalid order type'],
   [-305, 'For CO orders only market and limit orders are allowed'],
@@ -715,10 +715,10 @@ const ERROR_MESSAGE : Map<number, string> = new Map([
 
 
 /**
- * Get the error message.
+ * Get the error description.
  * @param code error code (-ve)
- * @returns error message
+ * @returns error description
  */
-export function errorMessage(code: number): string {
-  return ERROR_MESSAGE.get(code);
+export function errorDescription(code: number): string {
+  return ERROR_DESCRIPTION.get(code);
 }
