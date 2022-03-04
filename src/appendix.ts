@@ -603,6 +603,45 @@ export function orderType(desc: string): number {
 
 
 
+// ORDER-VALIDITY
+// --------------
+
+/** Order validity code. */
+export enum OrderValidity {
+  /** End of day validity (DAY). */
+  Day = "DAY",
+  /** Immediate or Cancel validity (IOC). */
+  IOC = "IOC",
+}
+
+
+const ORDER_VALIDITY_DESCRIPTION: Map<string, string> = new Map([
+  ["DAY", "End of day validity (DAY)"],
+  ["IOC", "Immediate or Cancel validity (IOC)"],
+]);
+
+
+/**
+ * Get order validity description.
+ * @param code order validity code (DAY, IOC)
+ * @returns order validity description
+ */
+export function orderValidityDescription(code: string): string {
+  return ORDER_VALIDITY_DESCRIPTION.get(code);
+}
+
+/**
+ * Get order validity code.
+ * @param desc order validity description
+ * @returns order validity code (DAY, IOC)
+ */
+export function orderValidity(desc: string): string {
+  return /ioc|imm/i.test(desc)? "IOC" : "DAY";
+}
+
+
+
+
 // OPTION-TYPE
 // -----------
 

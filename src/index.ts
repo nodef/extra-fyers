@@ -378,6 +378,42 @@ export function orderType(desc: string): OrderType {
 
 
 
+// ORDER-VALIDITY
+// --------------
+
+/** Order validity code. */
+export type OrderValidity = "DAY" | "IOC";
+
+
+function toOrderValidity(x: string): OrderValidity {
+  return x as OrderValidity;
+}
+
+function fromOrderValidity(x: OrderValidity): string {
+  return x;
+}
+
+/**
+ * Get order validity description.
+ * @param code order validity code (DAY, IOC)
+ * @returns order validity description
+ */
+export function orderValidityDescription(code: OrderValidity): string {
+  return appendix.orderValidity(fromOrderValidity(code));
+}
+
+/**
+ * Get order validity code.
+ * @param desc order validity description
+ * @returns order validity code (DAY, IOC)
+ */
+export function orderValidity(desc: string): OrderValidity {
+  return toOrderValidity(appendix.orderValidity(desc));
+}
+
+
+
+
 // OPTION-TYPE
 // -----------
 
@@ -432,13 +468,21 @@ export function optionType(desc: string): OptionType {
 export type HoldingType = "T1" | "HLD";
 
 
+function toHoldingType(x: string): HoldingType {
+  return x as HoldingType;
+}
+
+function fromHoldingType(x: HoldingType): string {
+  return x;
+}
+
 /**
  * Get holding type description.
  * @param code holding type code (T1, HLD)
  * @returns holding type description
  */
 export function holdingTypeDescription(code: HoldingType): string {
-  return appendix.holdingTypeDescription(code);
+  return appendix.holdingTypeDescription(fromHoldingType(code));
 }
 
 /**
@@ -447,7 +491,7 @@ export function holdingTypeDescription(code: HoldingType): string {
  * @returns holding type code (T1, HLD)
  */
 export function holdingType(desc: string): HoldingType {
-  return appendix.holdingType(desc) as HoldingType;
+  return toHoldingType(appendix.holdingType(desc));
 }
 
 
@@ -459,6 +503,14 @@ export function holdingType(desc: string): HoldingType {
 /** Product type code. */
 export type ProductType = "CNC" | "INTRADAY" | "MARGIN" | "CO" | "BO";
 
+
+function toProductType(x: string): ProductType {
+  return x as ProductType;
+}
+
+function fromProductType(x: ProductType): string {
+  return x;
+}
 
 /**
  * Get product type description.
@@ -810,9 +862,9 @@ export interface Holding {
   /** Eg: NSE:RCOM-EQ. */
   symbol: string,
   /** The exchange in which order is placed. */
-  exchange: string,
+  exchange: Exchange,
   /** Identify the type of holding. */
-  type: string,
+  type: HoldingType,
   /** The quantity of the symbol which the user has at the beginning of the day. */
   quantity: number,
   /** This reflects the quantity - the quantity sold during the day. */
@@ -832,8 +884,8 @@ function toHolding(x: http.Holding): Holding {
   return {
     isin:     x.isin,
     symbol:   x.symbol,
-    exchange: x.exchange,
-    type:     x.holdingType,
+    exchange: toExchange(x.exchange),
+    type:     toHoldingType(x.holdingType),
     quantity: x.quantity,
     remainingQuantity: x.remainingQuantity,
     buyPrice:     x.costPrice,
@@ -903,21 +955,21 @@ export interface Order {
   /** Description of symbol for which order is placed. */
   description: string,
   /** The segment this order is placed in. */
-  segment: string,
+  segment: Segment,
   /** Exchange instrument type. */
-  instrument: string,
+  instrument: InstrumentType,
   /** The exchange in which order is placed. */
-  exchange: string,
+  exchange: Exchange,
   /** The type of order. */
-  type: string,
+  type: OrderType,
   /** The order is buy or sell. */
-  side: string,
+  side: OrderSide,
   /** The product type. */
-  productType: string,
+  productType: ProductType,
   /** Source from where the order was placed. */
-  source: string,
+  source: OrderSource,
   /** The status of the order. */
-  status: string,
+  status: OrderStatus,
   /** True when placing AMO order. */
   offline: boolean,
   /** The limit price for the order. */
@@ -935,7 +987,7 @@ export interface Order {
   /** Remaining disclosed quantity. */
   remainingDisclosedQuantity: number,
   /** Day or IOC. */
-  validity: string,
+  validity: OrderValidity,
   /** The order time as per DD-MMM-YYYY hh:mm:ss in IST. */
   date: string,
   /** The parent order id will be provided only for applicable orders. */
@@ -963,15 +1015,15 @@ function toOrder(x: http.Order): Order {
     symbol: x.symbol,
     ticker: x.ex_sym,
     description:  x.description,
-    segment:      x.segment,
-    instrument:   x.instrument,
-    exchange:     x.exchange,
-    type:         x.type,
-    side:         x.side,
-    productType:  x.productType,
-    source:       x.source,
-    status:       x.status,
-    offline:      x.offlineOrder,
+    segment:      toSegment(x.segment),
+    instrument:   toInstrumentType(x.instrument),
+    exchange:     toExchange(x.exchange),
+    type:         toOrderType(x.type),
+    side:         toOrderSide(x.side),
+    productType:  toProductType(x.productType),
+    source:       toOrderSource(x.source),
+    status:       toOrderStatus(x.status),
+    offline:      x.offlineOrder === "True",
     limitPrice:   x.limitPrice,
     stopPrice:    x.stopPrice,
     quantity:     x.qty,
@@ -979,7 +1031,7 @@ function toOrder(x: http.Order): Order {
     tradedQuantity:    x.filledQty,
     disclosedQuantity: x.discloseQty,
     remainingDisclosedQuantity: x.dqQtyRem,
-    validity:     x.orderValidity,
+    validity:     toOrderValidity(x.orderValidity),
     date:         x.orderDateTime,
     parentId:     x.parentId,
     priceChange:  x.ch,
@@ -1060,13 +1112,13 @@ export interface Position {
   /** Eg: NSE:SBIN-EQ. */
   symbol: string,
   /** The segment in which the position is taken. */
-  segment: string,
+  segment: Segment,
   /** The exchange in which the position is taken. */
-  exchange: string,
+  exchange: Exchange,
   /** The product type of the position. */
-  productType: string,
+  productType: ProductType,
   /** The side shows whether the position is long / short. */
-  side: string,
+  side: PositionSide,
   /** Absolute value of net qty. */
   quantity: number,
   /** Incase of commodity positions, this multiplier is required for p&l calculation. */
@@ -1106,10 +1158,10 @@ function toPosition(x: http.Position): Position {
   return {
     id: x.id,
     symbol:      x.symbol,
-    segment:     x.segment,
-    exchange:    x.exchange,
-    productType: x.productType,
-    side:        x.side,
+    segment:     toSegment(x.segment),
+    exchange:    toExchange(x.exchange),
+    productType: toProductType(x.productType),
+    side:        toPositionSide(x.side),
     quantity:    x.qty,
     quantityMultiplier: x.qtyMulti_com,
     buyPrice:     x.buyAvg,
@@ -1123,7 +1175,7 @@ function toPosition(x: http.Position): Position {
     returns:      x.pl,
     realizedReturns:   x.realized_profit,
     unrealizedReturns: x.unrealized_profit,
-    crossCurrency: x.crossCurrency,
+    crossCurrency: x.crossCurrency === "Y",
     rbiRefRate:    x.rbiRefRate,
     currentPrice:  x.ltp,
   };
@@ -1187,13 +1239,13 @@ export interface Trade {
   /** Eg: NSE:SBIN-EQ. */
   symbol: string,
   /** The segment in which order is placed. */
-  segment: string,
+  segment: Segment,
   /** The exchange in which order is placed. */
-  exchange: string,
+  exchange: Exchange,
   /** The trade is buy or sell. */
-  side: string,
+  side: OrderSide,
   /** The product in which the order was placed. */
-  productType: string,
+  productType: ProductType,
   /** The time when the trade occured in “DD-MM-YYYY hh:mm:ss” format in IST. */
   orderDate: string,
   /** The traded price. */
@@ -1204,9 +1256,9 @@ export interface Trade {
   value: number,
   /** Client id. */
   clientId: string,
-  /** Buy, sell? */
+  /** TODO: Buy, sell? */
   type: string,
-  /** Buy, sell? */
+  /** TODO: Buy, sell? */
   orderType: string,
 }
 
@@ -1216,17 +1268,19 @@ function toTrade(x: http.Trade): Trade {
     id: x.id,
     orderId:  x.orderNumber,
     symbol:   x.symbol,
-    segment:  x.segment,
-    exchange: x.exchange,
-    side:     x.side,
-    productType: x.productType,
+    segment:  toSegment(x.segment),
+    exchange: toExchange(x.exchange),
+    side:     toOrderSide(x.side),
+    productType: toProductType(x.productType),
     orderDate:   x.orderDateTime,
     price:       x.tradePrice,
     quantity:    x.tradedQty,
     value:       x.tradeValue,
     clientId:    x.clientId,
-    type:        x.transactionType,
-    orderType:   x.orderType,
+    // TODO: Buy, sell?
+    type:        x.transactionType.toString(),
+    // TODO: Buy, sell?
+    orderType:   x.orderType.toString(),
   };
 }
 
@@ -1284,11 +1338,11 @@ export interface PlaceOrder {
   /** Eg: NSE:SBIN-EQ. */
   symbol: string,
   /** The type of order. */
-  type: string,
+  type: OrderType,
   /** The order is buy or sell. */
-  side: string,
+  side: OrderSide,
   /** The product in which the order was placed. */
-  productType: string,
+  productType: ProductType,
   /** Provide valid price for Limit and Stoplimit orders. */
   limitPrice: number,
   /** Provide valid price for Stop and Stoplimit orders. */
@@ -1298,7 +1352,7 @@ export interface PlaceOrder {
   /** Allowed only for Equity. */
   disclosedQuantity: number,
   /** Day or IOC. */
-  validity: string,
+  validity: OrderValidity,
   /** True when placing AMO order. */
   offline: boolean,
   /** Provide valid price for CO and BO orders. */
@@ -1311,15 +1365,15 @@ export interface PlaceOrder {
 function fromPlaceOrder(x: PlaceOrder): http.PlaceOrderRequest {
   return {
     symbol: x.symbol,
-    type:   x.type,
-    side:   x.side,
+    type:   fromOrderType(x.type),
+    side:   fromOrderSide(x.side),
     productType:  x.productType,
     limitPrice:   x.limitPrice,
     stopPrice:    x.stopPrice,
     qty:          x.quantity,
     disclosedQty: x.disclosedQuantity,
     validity:     x.validity,
-    offlineOrder: x.offline,
+    offlineOrder: x.offline? "True" : "False",
     stopLoss:     x.stopLoss,
     takeProfit:   x.takeProfit,
   };
@@ -1336,7 +1390,7 @@ export interface ModifyOrder {
   /** The order id assigned for each order. */
   id: string,
   /** The type of order. */
-  type: string,
+  type: OrderType,
   /** The original order qty. */
   quantity: number,
   /** Disclosed quantity. */
@@ -1351,7 +1405,7 @@ export interface ModifyOrder {
 function fromModifyOrder(x: ModifyOrder): http.ModifyOrderRequest {
   return {
     id:   x.id,
-    type: x.type,
+    type: fromOrderType(x.type),
     qty:  x.quantity,
     disclosedQty: x.disclosedQuantity,
     limitPrice:   x.limitPrice,
@@ -1370,23 +1424,23 @@ export interface ConvertPosition {
   /** Mandatory. Eg: 119031547242. */
   symbol: string,
   /** The side shows whether the position is long / short. */
-  side: string,
+  side: PositionSide,
   /** Quantity to be converted. Has to be in multiples of lot size for derivatives. */
   quantity: number,
   /** Existing productType (CNC positions cannot be converted). */
-  fromProductType: string,
+  fromProductType: ProductType,
   /** The new product type. */
-  toProductType: string,
+  toProductType: ProductType,
 }
 
 
 function fromConvertPosition(x: ConvertPosition): http.ConvertPositionRequest {
   return {
     symbol:       x.symbol,
-    positionSide: x.side,
+    positionSide: fromPositionSide(x.side),
     convertQty:   x.quantity,
-    convertFrom:  x.fromProductType,
-    convertTo:    x.toProductType,
+    convertFrom:  fromProductType(x.fromProductType),
+    convertTo:    fromProductType(x.toProductType),
   };
 }
 
@@ -1399,20 +1453,20 @@ function fromConvertPosition(x: ConvertPosition): http.ConvertPositionRequest {
 /** Current market status of an exchange's segment. */
 export interface MarketStatus {
   /** The exchange in which the position is taken. */
-  exchange: string,
+  exchange: Exchange,
   /** The segment in which the position is taken. */
-  segment: string,
-  /** The type of market: NL, MS, ES, ... */
+  segment: Segment,
+  /** TODO: The type of market: NL, MS, ES, ... */
   type: string,
-  /** Market status: OPEN, CLOSE. */
+  /** TODO: Market status: OPEN, CLOSE. */
   status: string,
 }
 
 
 function toMarketStatus(x: http.MarketStatus): MarketStatus {
   return {
-    exchange: x.exchange,
-    segment:  x.segment,
+    exchange: toExchange(x.exchange),
+    segment:  toSegment(x.segment),
     type:     x.market_type,
     status:   x.status,
   };
@@ -1441,6 +1495,7 @@ function toMarketsStatusOverall(x: http.MarketStatus[]): MarketsStatusOverall {
     if (s.status === 'OPEN') a.openCount++;
     else a.closedCount++;
   }
+  return a;
 }
 
 
@@ -1472,7 +1527,7 @@ export interface GetMarketHistory {
   symbol: string,
   /** The candle resolution in minutes. */
   resolution: string,
-  /** 0 to enter the epoch value. 1 to enter the date format as yyyy-mm-dd. */
+  /** TODO: 0 to enter the epoch value. 1 to enter the date format as yyyy-mm-dd. */
   dateFormat: number,
   /** Indicating the start date of records (epoch, yyyy-mm-dd). */
   fromDate: string,
@@ -1490,7 +1545,7 @@ function fromGetMarketHistory(x: GetMarketHistory): http.GetMarketHistoryRequest
     date_format: x.dateFormat,
     range_from:  x.fromDate,
     range_to:    x.toDate,
-    cont_flag:   x.continuous,
+    cont_flag:   x.continuous? "1" : "0",
   };
 }
 
@@ -1612,7 +1667,7 @@ export interface MarketQuote {
   /** Short name for the symbol Eg: “SBIN-EQ”. */
   name: string,
   /** Name of the exchange. Eg: “NSE” or “BSE”. */
-  exchange: string,
+  exchange: Exchange,
   /** Description of the symbol. */
   description: string,
   /** Change value. */
@@ -1649,7 +1704,7 @@ function toMarketQuote(x: http.MarketQuote): MarketQuote {
   return {
     symbol:   x.n,
     name:     v.short_name,
-    exchange: v.exchange,
+    exchange: v.exchange as Exchange,
     description:  v.description,
     priceChange:  v.ch,
     priceChangePercent: v.chp,
@@ -1744,7 +1799,7 @@ export interface MarketDepth {
 
 function toMarketDepth(x: http.GetMarketDepthResponse): MarketDepth {
   var ks = Object.keys(x.d);
-  if (ks.length === 0) return NULL;  // TODO: OK?
+  if (ks.length === 0) return null;  // TODO: OK?
   var v  = x.d[ks[0]];
   return {
     buyQuantity:  v.totalbuyqty,
