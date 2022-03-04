@@ -30,7 +30,7 @@ function fromAuthorization(x: Authorization): http.Authorization {
 /** Authorization step 1 request. */
 export interface AuthorizationStep1Request {
   /** This is the app_id which you have received after creating the app. */
-  clientId: string,
+  appId: string,
   /** This is where the user will be redirected after successful login. */
   redirectUrl: string,
   /** The same value will be returned after successful login to the redirect uri. */
@@ -40,7 +40,7 @@ export interface AuthorizationStep1Request {
 
 function fromAuthorizationStep1Request(x: AuthorizationStep1Request): http.AuthorizationStep1Request {
   return {
-    client_id:     x.clientId,
+    client_id:     x.appId,
     redirect_uri:  x.redirectUrl,
     response_type: "code",
     state: x.state,
@@ -1322,21 +1322,26 @@ function fromEdisHolding(x: EdisHolding): http.EdisHolding {
 
 /**
  * Get request step 1 for authorization.
- * @param options authorization step 1 details {client_id, redirect_uri, response_type, state}
+ * @param appId app_id which you have received after creating the app
+ * @param redirectUrl where the user will be redirected after login
+ * @param state same value will be returned after login to the redirect url
  * @returns request step 1 for authorization
  */
-export function authorizationStep1(appId: string, redirectUrl: string, state: string="default"): RequestOptions {
-  return requestStep(null, 'GET', 'generate-authcode', options, null);
+export function authorizationStep1(appId: string, redirectUrl: string, state: string="default"): HttpRequestOptions {
+  var options = fromAuthorizationStep1Request({appId, redirectUrl, state});
+  return http.authorizationStep1(options);
 }
 
 
 /**
  * Get request step 2 for authorization.
- * @param options authorization step 2 details {graph_type, appIdHash, code}
+ * @param appHash SHA-256 of `api_id:app_secret` in hex
+ * @param authorizationCode auth_code which is received from the first step
  * @returns request step 2 for authorization
  */
-export function authorizationStep2(options: AuthorizationRequest2): RequestOptions {
-  return requestStep(null, 'POST', 'validate-authcode', null, options);
+export function authorizationStep2(appHash: string, authorizationCode: string): HttpRequestOptions {
+  var options = fromAuthorizationStep2Request({appHash, authorizationCode});
+  return http.authorizationStep2(options);
 }
 
 
@@ -1368,7 +1373,7 @@ export async function getFunds(auth: Authorization): Promise<Funds> {
 /**
  * Get the equity and mutual fund holdings which the user has in this demat account.
  * @param auth authorization {appId, accessToken}
- * @returns details of user's holdings
+ * @returns details of user's holdings {details: [{isin, ...}], overall: {count, ...}}
  */
 export async function getHoldings(auth: Authorization): Promise<Holdings> {
   return toHoldings(await http.getHoldings(fromAuthorization(auth)));
@@ -1655,174 +1660,209 @@ export async function inquireEdisTransaction(auth: Authorization, id: string): P
 
 
 // MAIN
-// ----
+// ====
 
 /** Container for storing authorization details. */
 export class Fyers implements Authorization {
-  app_id: string;
-  access_token: string;
+  appId: string;
+  accessToken: string;
 
 
   /**
    * Create a container for storing authorization details.
-   * @param app_id unique app_id received after creating app
-   * @param access_token access token for the current trading day recieved after authorization
+   * @param appId unique app_id received after creating app
+   * @param accessToken access token for the current trading day recieved after authorization
    */
-  constructor(app_id: string, access_token: string) {
-    this.app_id       = app_id;
-    this.access_token = access_token;
+  constructor(appId: string, accessToken: string) {
+    this.appId       = appId;
+    this.accessToken = accessToken;
   }
 
 
   /**
+   * Get request step 1 for authorization.
+   * @param appId app_id which you have received after creating the app
+   * @param redirectUrl where the user will be redirected after login
+   * @param state same value will be returned after login to the redirect url
+   * @returns request step 1 for authorization
+   */
+  static authorizationStep1(appId: string, redirectUrl: string, state: string="default"): HttpRequestOptions {
+    return authorizationStep1(appId, redirectUrl, state);
+  }
+
+  /**
+   * Get request step 2 for authorization.
+   * @param appHash SHA-256 of `api_id:app_secret` in hex
+   * @param authorizationCode auth_code which is received from the first step
+   * @returns request step 2 for authorization
+   */
+  static authorizationStep2(appHash: string, authorizationCode: string): HttpRequestOptions {
+    return authorizationStep2(appHash, authorizationCode);
+  }
+
+  /**
    * Get basic details of the client.
-   * @returns details of user's profile
+   * @returns details of user's profile {id, email, name, ...}
    */
   getProfile() { return getProfile(this); }
 
   /**
-   * Get the equity and mutual fund holdings which the user has in this demat account.
-   * @returns details of user's holdings
+   * Get balance available for the user for capital as well as the commodity market.
+   * @returns details of user's funds {equity: {start, ...}, commodity: {start, ...}}
    */
   getFunds() { return getFunds(this); }
 
   /**
    * Get the equity and mutual fund holdings which the user has in this demat account.
-   * @returns details of user's holdings
+   * @returns details of user's holdings {details: [{isin, ...}], overall: {count, ...}}
    */
   getHoldings() { return getHoldings(this); }
 
   /**
    * Get details of an order placed in the current trading day.
-   * @param options order query {id}
-   * @returns details of an order
+   * @param id order id
+   * @returns details of an order {id, symbol, ticker, ...}
    */
-  getOrder(options: GetOrderRequest) { return getOrder(this, options); }
+  getOrder(id: string) { return getOrder(this, id); }
 
   /**
    * Get details of all the orders placed in the current trading day.
-   * @returns details of orders
+   * @returns details of orders {details: [{id, ...}], overall: {count, ...}}
    */
   getOrders() { return getOrders(this); }
 
   /**
    * Get details of all the positions in the current trading day.
-   * @returns details of positions
+   * @returns details of positions {details: [{id, ...}], overall: {count, ...}}
    */
   getPositions() { return getPositions(this); }
 
   /**
    * Get details of all the trades in the current trading day.
-   * @returns details of trades
+   * @returns details of trades {details: [{id, ...}], overall: {count, ...}}
    */
   getTrades() { return getTrades(this); }
 
   /**
    * Place an order to any exchange via Fyers.
-   * @param auth authorization {appId, accessToken}
-   * @param options details of an order {symbol, qty, type, side, ...}
+   * @param order details of an order {symbol, qty, type, side, ...}
    * @returns order id
    */
-  placeOrder(options: PlaceOrderRequest) { return placeOrder(this, options); }
+  placeOrder(order: PlaceOrder) { return placeOrder(this, order); }
 
   /**
    * Place multiple orders to any exchange via Fyers.
-   * @param options details of multiple orders [{symbol, qty, type, side, ...}]
-   * @returns order id
+   * @param orders details of multiple orders [{symbol, qty, type, side, ...}]
+   * @returns unique order ids
    */
-  placeOrders(options: [PlaceOrderRequest]) { return placeOrders(this, options); }
+  placeOrders(orders: PlaceOrder[]) { return placeOrders(this, orders); }
 
   /**
    * Modifies an order placed on any exchange via Fyers.
-   * @param options details of order {id, qty, type, side, ...}
+   * @param order details of order {id, qty, type, side, ...}
    * @returns order id
    */
-  modifyOrder(options: ModifyOrderRequest) { return modifyOrder(this, options); }
+  modifyOrder(order: ModifyOrder) { return modifyOrder(this, order); }
 
   /**
    * Modifies orders placed on any exchange via Fyers.
-   * @param options details of orders [{id, qty, type, side, ...}]
-   * @returns order ids
+   * @param orders details of orders [{id, qty, type, side, ...}]
+   * @returns unique order ids
    */
-  modifyOrders(options: [ModifyOrderRequest]) { return modifyOrders(this, options); }
+  modifyOrders(orders: ModifyOrder[]) { return modifyOrders(this, orders); }
 
   /**
    * Cancels an order placed on any exchange via Fyers.
-   * @param options details of order {id}
+   * @param id order id
    * @returns order id
    */
-  cancelOrder(options: CancelOrderRequest) { return cancelOrder(this, options); }
+  cancelOrder(id: string) { return cancelOrder(this, id); }
 
   /**
    * Cancels orders placed on any exchange via Fyers.
-   * @param options details of orders [{id}]
-   * @returns order ids
+   * @param ids unique order ids
+   * @returns unique order ids
    */
-  cancelOrders(options: [CancelOrderRequest]) { return cancelOrders(this, options); }
+  cancelOrders(ids: string[]) { return cancelOrders(this, ids); }
 
   /**
    * Exits a position on the current trading day.
-   * @param options details of position {id}
-   * @returns status
+   * @param id position id
+   * @returns position status
    */
-  exitPosition(options: ExitPositionRequest) { return exitPosition(this, options); }
+  exitPosition(id: string) { return exitPosition(this, id); }
 
   /**
    * Exits all positions on the current trading day.
-   * @returns status
+   * @returns positions status
    */
   exitAllPositions() { return exitAllPositions(this); }
 
   /**
    * Converts a position on the current trading day.
-   * @param options details of position {symbol, positionSide, convertQty, ...}
-   * @returns status
+   * @param conversion details of conversion {symbol, side, quantity, ...}
+   * @returns conversion status
    */
-  convertPosition(options: ConvertPositionRequest) { return convertPosition(this, options); }
+  convertPosition(conversion: ConvertPosition) { return convertPosition(this, conversion); }
 
   /**
    * Get the current market status of all the exchanges and their segments.
-   * @returns market status
+   * @returns markets status {details: [{exchange, ...}], overall: {count, ...}}
    */
   getMarketStatus() { return getMarketStatus(this); }
 
   /**
-   * Get all the latest symbols of all the exchanges from the symbol master files.
-   * @param options details of symbol category {exchange, segment}
-   * @returns symbol master file as text
+   * Get the market history for a particular symbol.
+   * @param market market details {symbol, resolution, dateFormat, ...}
+   * @returns market history {details: [{date, ...}], overall: {dateFrom, ...}}
    */
-  static getSymbolMaster(options: GetSymbolMasterRequest) { return getSymbolMaster(null, options); }
-
-  /**
-   * Generates e-DIS TPIN for validating/authorising transaction.
-   * @returns TPIN, an authorization code generated by CDSL/NSDL respectively, using which the customer validates/authorises the transaction
-   */
-  generateEdisTpin() { return generateEdisTpin(this); }
-
-  getEdisTransactions() { return getEdisTransactions(this); }
-
-  submitEdisHoldingsStep(options: SubmitEdisHoldingsRequest) { return submitEdisHoldingsStep(this, options); }
-
-  inquireEdisTransaction(options: InquireEdisTransactionRequest) { return inquireEdisTransaction(this, options); }
-
-  /**
-   * Get the current market history for a particular symbol.
-   * @param options market details {symbol, resolution, date_format, ...}
-   * @returns market history
-   */
-  getMarketHistory(options: GetMarketHistoryRequest) { return getMarketHistory(this, options); }
+  getMarketHistory(market: GetMarketHistory) { return getMarketHistory(this, market); }
 
   /**
    * Get the current market quotes for a set of symbols.
-   * @param options market details {symbols}
-   * @returns market quotes
+   * @param symbols list of symbols
+   * @returns market quotes [{symbol, name, exchange, ...}]
    */
-  getMarketQuotes(options: GetMarketQuotesRequest) { return getMarketQuotes(this, options); }
+  getMarketQuotes(symbols: string[]) { return getMarketQuotes(this, symbols); }
 
   /**
    * Get the current market depth for a particular symbol.
-   * @param options market details {symbol, ohlcv_flag}
-   * @returns market depth
+   * @param symbol symbol name
+   * @returns market depth {buyQuantity, sellQuantity, buyOffers, ...}
    */
-  getMarketDepth(options: GetMarketDepthRequest) { return getMarketDepth(this, options); }
+  getMarketDepth(symbol: string) { return getMarketDepth(this, symbol); }
+
+  /**
+   * Get all the latest symbols of all the exchanges from the symbol master files.
+   * @param exchange exchange name
+   * @param segment segment name
+   * @returns symbol master file as text
+   */
+  static getSymbolMaster(exchange: string, segment: string) { return getSymbolMaster(null, exchange, segment); }
+
+  /**
+   * Generate e-DIS TPIN for validating/authorising transaction.
+   * @returns optional data
+   */
+  generateEdisTpin() { return generateEdisTpin(this); }
+
+  /**
+   * Get the necessary information regarding the holdings you have on your and also the Status of the holdings. If the “sell” for the particular holdings is a success or not.
+   * @returns list of e-DIS transactions {data: [{transactionId, internalTxnId, ...}]}
+   */
+  getEdisTransactions() { return getEdisTransactions(this); }
+
+  /**
+   * Redirect to CDSL page for login where you can submit your Holdings information and accordingly you can provide the same to exchange to Sell your holdings (browser only).
+   * @param holdings holding details {recordLst: [{isin_code, qty}]}
+   * @returns HTTP(s) request options (manual)
+   */
+  submitEdisHoldingsStep(holdings: EdisHolding[]) { return submitEdisHoldingsStep(this, holdings); }
+
+  /**
+   * Inquire the information/status of the provided transaction Id for the respective holdings you have on your end.
+   * @param id transaction id
+   * @returns edis status
+   */
+  inquireEdisTransaction(id: string) { return inquireEdisTransaction(this, id); }
 }
