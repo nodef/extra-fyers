@@ -1,11 +1,593 @@
 import {HttpRequestOptions} from './_http';
+import * as appendix from './appendix';
 import * as http from './http';
 
 
 
 
+// APPENDIX
+// ========
+
+// ERROR, YEAR2, MONTH3, MONTH1, DAY2
+// ----------------------------------
+
+export {errorDescription}          from './appendix';
+export {year2Description, year2}   from './appendix';
+export {month3Description, month3} from './appendix';
+export {month1Description, month1} from './appendix';
+export {day2Description, day2}     from './appendix';
+
+
+
+
+// EXCHANGE
+// --------
+
+/** Exchange code. */
+export type Exchange = "NSE" | "MCX" | "BSE";
+
+
+const TO_EXCHANGE: Map<number, Exchange> = new Map([
+  [10, "NSE"],
+  [11, "MCX"],
+  [12, "BSE"],
+]);
+
+const FROM_EXCHANGE: Map<Exchange, number> = new Map([
+  ["NSE", 10],
+  ["MCX", 11],
+  ["BSE", 12],
+]);
+
+
+function toExchange(x: number): Exchange {
+  return TO_EXCHANGE.get(x);
+}
+
+function fromExchange(x: Exchange): number {
+  return FROM_EXCHANGE.get(x);
+}
+
+/**
+ * Get exchange description.
+ * @param code exchange code (NSE, MCX, BSE)
+ * @returns exchange description
+ */
+export function exchangeDescription(code: Exchange): string {
+  return appendix.exchangeDescription(fromExchange(code));
+}
+
+/**
+ * Get exchange code.
+ * @param desc exchange description
+ * @returns exchange code (NSE, MCX, BSE)
+ */
+export function exchange(desc: string): Exchange {
+  return toExchange(appendix.exchange(desc));
+}
+
+
+
+
+// SEGMENT
+// -------
+
+/** Segment code. */
+export type Segment = "CM" | "FO" | "CD" | "COM";
+
+
+const TO_SEGMENT: Map<number, Segment> = new Map([
+  [10, "CM"],
+  [11, "FO"],
+  [12, "CD"],
+  [20, "COM"],
+]);
+
+const FROM_SEGMENT: Map<string, number> = new Map([
+  ["CM",  10],
+  ["FO",  11],
+  ["CD",  12],
+  ["COM", 20],
+]);
+
+
+function toSegment(x: number): Segment {
+  return TO_SEGMENT.get(x);
+}
+
+function fromSegment(x: Segment): number {
+  return FROM_SEGMENT.get(x);
+}
+
+/**
+ * Get segment description.
+ * @param code segment code (CM, FO, CD, COM)
+ * @returns segment description
+ */
+export function segmentDescription(code: Segment): string {
+  return appendix.segmentDescription(fromSegment(code));
+}
+
+/**
+ * Get segment code.
+ * @param desc segment description
+ * @returns segment code (CM, FO, CD, COM)
+ */
+export function segment(desc: string): Segment {
+  return toSegment(appendix.segment(desc));
+}
+
+
+
+
+// POSITION-SIDE
+// -------------
+
+/** Position side code. */
+export type PositionSide = "LONG" | "SHORT" | "CLOSED";
+
+
+const TO_POSITION_SIDE: Map<number, PositionSide> = new Map([
+  [1,  "LONG"],
+  [-1, "SHORT"],
+  [0,  "CLOSED"],
+]);
+
+const FROM_POSITION_SIDE: Map<PositionSide, number> = new Map([
+  ["LONG",   1],
+  ["SHORT", -1],
+  ["CLOSED", 0],
+]);
+
+
+function toPositionSide(x: number): PositionSide {
+  return TO_POSITION_SIDE.get(x);
+}
+
+function fromPositionSide(x: PositionSide): number {
+  return FROM_POSITION_SIDE.get(x);
+}
+
+/**
+ * Get position side description.
+ * @param code position side code (LONG, SHORT, CLOSED)
+ * @returns position side description
+ */
+export function positionSideDescription(code: PositionSide): string {
+  return appendix.positionSideDescription(fromPositionSide(code));
+}
+
+/**
+ * Get position side code.
+ * @param desc position side description
+ * @returns position side code (LONG, SHORT, CLOSED)
+ */
+export function positionSide(desc: string): PositionSide {
+  return toPositionSide(appendix.positionSide(desc));
+}
+
+
+
+
+// ORDER-SIDE
+// ----------
+
+/** Order side code. */
+export type OrderSide = "BUY" | "SELL";
+
+
+const TO_ORDER_SIDE: Map<number, OrderSide> = new Map([
+  [1,  "BUY"],
+  [-1, "SELL"],
+]);
+
+const FROM_ORDER_SIDE: Map<OrderSide, number> = new Map([
+  ["BUY",   1],
+  ["SELL", -1],
+]);
+
+
+function toOrderSide(x: number): OrderSide {
+  return TO_ORDER_SIDE.get(x);
+}
+
+function fromOrderSide(x: OrderSide): number {
+  return FROM_ORDER_SIDE.get(x);
+}
+
+/**
+ * Get order side description.
+ * @param code order side code (BUY, SELL)
+ * @returns order side description
+ */
+export function orderSideDescription(code: OrderSide): string {
+  return appendix.orderSideDescription(fromOrderSide(code));
+}
+
+/**
+ * Get order side code.
+ * @param desc order side description
+ * @returns order side code (BUY, SELL)
+ */
+export function orderSide(desc: string): OrderSide {
+  return toOrderSide(appendix.orderSide(desc));
+}
+
+
+
+
+// ORDER-SOURCE
+// ------------
+
+/** Order source code. */
+export type OrderSource = "MOBILE" | "WEB" | "ONE" | "ADMIN" | "API";
+
+
+const TO_ORDER_SOURCE: Map<string, OrderSource> = new Map([
+  ["M",   "MOBILE"],
+  ["W",   "WEB"],
+  ["R",   "ONE"],
+  ["A",   "ADMIN"],
+  ["ITS", "API"],
+]);
+
+const FROM_ORDER_SOURCE: Map<OrderSource, string> = new Map([
+  ["MOBILE", "M"],
+  ["WEB",    "W"],
+  ["ONE",    "R"],
+  ["ADMIN",  "A"],
+  ["API",    "ITS"],
+]);
+
+
+function toOrderSource(x: string): OrderSource {
+  return TO_ORDER_SOURCE.get(x);
+}
+
+function fromOrderSource(x: OrderSource): string {
+  return FROM_ORDER_SOURCE.get(x);
+}
+
+/**
+ * Get order source description.
+ * @param code order source code (MOBILE, WEB, ONE, ADMIN, API)
+ * @returns order source description
+ */
+export function orderSourceDescription(code: OrderSource): string {
+  return appendix.orderSourceDescription(fromOrderSource(code));
+}
+
+/**
+ * Get order source code.
+ * @param desc order source description
+ * @returns order source code (MOBILE, WEB, ONE, ADMIN, API)
+ */
+export function orderSource(desc: string): OrderSource {
+  return toOrderSource(appendix.orderSource(desc));
+}
+
+
+
+
+// ORDER-STATUS
+// ------------
+
+/** Order status code. */
+export type OrderStatus = "CANCELLED" | "TRADED" | "TRANSIT" | "REJECTED" | "PENDING" | "EXPIRED";
+
+
+const TO_ORDER_STATUS: Map<number, OrderStatus> = new Map([
+  [1, "CANCELLED"],
+  [2, "TRADED"],
+//[3, "UNUSED"],
+  [4, "TRANSIT"],
+  [5, "REJECTED"],
+  [6, "PENDING"],
+  [7, "EXPIRED"],
+]);
+
+const FROM_ORDER_STATUS: Map<OrderStatus, number> = new Map([
+  ["CANCELLED", 1],
+  ["TRADED",    2],
+//["UNUSED",    3],
+  ["TRANSIT",   4],
+  ["REJECTED",  5],
+  ["PENDING",   6],
+  ["EXPIRED",   7],
+]);
+
+
+function toOrderStatus(x: number): OrderStatus {
+  return TO_ORDER_STATUS.get(x);
+}
+
+function fromOrderStatus(x: OrderStatus): number {
+  return FROM_ORDER_STATUS.get(x);
+}
+
+/**
+ * Get order status description.
+ * @param code order status code (CANCELLED, TRADED, TRANSIT, REJECTED, PENDING, EXPIRED)
+ * @returns order status description
+ */
+export function orderStatusDescription(code: OrderStatus): string {
+  return appendix.orderStatusDescription(fromOrderStatus(code));
+}
+
+/**
+ * Get order status code.
+ * @param desc order status description
+ * @returns order status code (CANCELLED, TRADED, TRANSIT, REJECTED, PENDING, EXPIRED)
+ */
+export function orderStatus(desc: string): OrderStatus {
+  return toOrderStatus(appendix.orderStatus(desc));
+}
+
+
+
+
+// ORDER-TYPE
+// ----------
+
+/** Order type code. */
+export type OrderType = "LIMIT" | "MARKET" | "SL-MARKET" | "SL-LIMIT";
+
+
+const TO_ORDER_TYPE: Map<number, OrderType> = new Map([
+  [1, "LIMIT"],
+  [2, "MARKET"],
+  [3, "SL-MARKET"],
+  [4, "SL-LIMIT"],
+]);
+
+const FROM_ORDER_TYPE: Map<OrderType, number> = new Map([
+  ["LIMIT",     1],
+  ["MARKET",    2],
+  ["SL-MARKET", 3],
+  ["SL-LIMIT",  4],
+]);
+
+
+function toOrderType(x: number): OrderType {
+  return TO_ORDER_TYPE.get(x);
+}
+
+function fromOrderType(x: OrderType): number {
+  return FROM_ORDER_TYPE.get(x);
+}
+
+
+/**
+ * Get order type description.
+ * @param code order type code (LIMIT, MARKET, SL-MARKET, SL-LIMIT)
+ * @returns order type description
+ */
+export function orderTypeDescription(code: OrderType): string {
+  return appendix.orderTypeDescription(fromOrderType(code));
+}
+
+/**
+ * Get order type code.
+ * @param desc order type description
+ * @returns order type code (LIMIT, MARKET, SL-MARKET, SL-LIMIT)
+ */
+export function orderType(desc: string): OrderType {
+  return toOrderType(appendix.orderType(desc));
+}
+
+
+
+
+// OPTION-TYPE
+// -----------
+
+/** Option type code. */
+export type OptionType = "CALL" | "PUT";
+
+
+const TO_OPTION_TYPE: Map<string, OptionType> = new Map([
+  ["CE", "CALL"],
+  ["PE", "PUT"],
+]);
+
+const FROM_OPTION_TYPE: Map<OptionType, string> = new Map([
+  ["CALL", "CE"],
+  ["PUT",  "PE"],
+]);
+
+
+function toOptionType(x: string): OptionType {
+  return TO_OPTION_TYPE.get(x);
+}
+
+function fromOptionType(x: OptionType): string {
+  return FROM_OPTION_TYPE.get(x);
+}
+
+/**
+ * Get option type description.
+ * @param code option type code (CALL, PUT)
+ * @returns option type description
+ */
+export function optionTypeDescription(code: OptionType): string {
+  return appendix.optionTypeDescription(fromOptionType(code));
+}
+
+/**
+ * Get option type code.
+ * @param desc option type description
+ * @returns option type code (CALL, PUT)
+ */
+export function optionType(desc: string): OptionType {
+  return toOptionType(appendix.optionType(desc));
+}
+
+
+
+
+// HOLDING-TYPE
+// ------------
+
+/** Holding type code. */
+export type HoldingType = "T1" | "HLD";
+
+
+/**
+ * Get holding type description.
+ * @param code holding type code (T1, HLD)
+ * @returns holding type description
+ */
+export function holdingTypeDescription(code: HoldingType): string {
+  return appendix.holdingTypeDescription(code);
+}
+
+/**
+ * Get holding type code.
+ * @param desc holding type description
+ * @returns holding type code (T1, HLD)
+ */
+export function holdingType(desc: string): HoldingType {
+  return appendix.holdingType(desc) as HoldingType;
+}
+
+
+
+
+// PRODUCT-TYPE
+// ------------
+
+/** Product type code. */
+export type ProductType = "CNC" | "INTRADAY" | "MARGIN" | "CO" | "BO";
+
+
+/**
+ * Get product type description.
+ * @param code product type code (CNC, INTRADAY, MARGIN, CO, BO)
+ * @returns product type description
+ */
+export function productTypeDescription(code: ProductType): string {
+  return appendix.productTypeDescription(code);
+}
+
+/**
+ * Get product type code.
+ * @param desc product type description
+ * @returns product type code (CNC, INTRADAY, MARGIN, CO, BO)
+ */
+export function productType(desc: string): ProductType {
+  return appendix.productType(desc) as ProductType;
+}
+
+
+
+
+// INSTRUMENT-TYPE
+// ---------------
+
+/** Instrument type code. */
+export type InstrumentType =
+  "EQ" | "PREFSHARES" | "DEBENTURES" | "WARRANTS" | "MISC" | "INDEX" | // CM segment
+  "FUTIDX" | "FUTIVX" | "FUTSTK" | "OPTIDX" | "OPTSTK" | // FO segment
+  "FUTCUR" | "FUTIRT" | "FUTIRC" | "OPTCUR" | "UNDCUR" | "UNDIRC" | "UNDIRT" | "UNDIRD" | "INDEX_CD" | "FUTIRD" | // CD segment
+  "FUTCOM" | "OPTFUT" | "OPTCOM"; // COM segment
+
+
+const TO_INSTRUMENT_TYPE: Map<number, InstrumentType> = new Map([
+  // CM segment
+  [0,  "EQ"],
+  [1,  "PREFSHARES"],
+  [2,  "DEBENTURES"],
+  [3,  "WARRANTS"],
+  [4,  "MISC"],
+  [10, "INDEX"],
+  // FO segment
+  [11, "FUTIDX"],
+  [12, "FUTIVX"],
+  [13, "FUTSTK"],
+  [14, "OPTIDX"],
+  [15, "OPTSTK"],
+  // CD segment
+  [16, "FUTCUR"],
+  [17, "FUTIRT"],
+  [18, "FUTIRC"],
+  [19, "OPTCUR"],
+  [20, "UNDCUR"],
+  [21, "UNDIRC"],
+  [22, "UNDIRT"],
+  [23, "UNDIRD"],
+  [24, "INDEX_CD"],
+  [25, "FUTIRD"],
+  // COM segment
+//[11, "FUTIDX"],
+  [30, "FUTCOM"],
+  [31, "OPTFUT"],
+  [32, "OPTCOM"],
+]);
+
+const FROM_INSTRUMENT_TYPE: Map<InstrumentType, number> = new Map([
+  // CM segment
+  ["EQ", 0],
+  ["PREFSHARES", 1],
+  ["DEBENTURES", 2],
+  ["WARRANTS", 3],
+  ["MISC", 4],
+  ["INDEX", 10],
+  // FO segment
+  ["FUTIDX", 11],
+  ["FUTIVX", 12],
+  ["FUTSTK", 13],
+  ["OPTIDX", 14],
+  ["OPTSTK", 15],
+  // CD segment
+  ["FUTCUR", 16],
+  ["FUTIRT", 17],
+  ["FUTIRC", 18],
+  ["OPTCUR", 19],
+  ["UNDCUR", 20],
+  ["UNDIRC", 21],
+  ["UNDIRT", 22],
+  ["UNDIRD", 23],
+  ["INDEX_CD", 24],
+  ["FUTIRD", 25],
+  // COM segment
+//["FUTIDX", 11],
+  ["FUTCOM", 30],
+  ["OPTFUT", 31],
+  ["OPTCOM", 32],
+]);
+
+
+function toInstrumentType(x: number): InstrumentType {
+  return TO_INSTRUMENT_TYPE.get(x);
+}
+
+function fromInstrumentType(x: InstrumentType): number {
+  return FROM_INSTRUMENT_TYPE.get(x);
+}
+
+/**
+ * Get instrument type description.
+ * @param code instrument type code (EQ, PREFSHARES, DEBENTURES, ...)
+ * @returns instrument type description
+ */
+export function instrumentTypeDescription(code: InstrumentType): string {
+  return appendix.instrumentTypeDescription(fromInstrumentType(code));
+}
+
+/**
+ * Get instrument type code.
+ * @param desc instrument type description
+ * @returns instrument type code (EQ, PREFSHARES, DEBENTURES, ...)
+ */
+export function instrumentType(desc: string): InstrumentType {
+  return toInstrumentType(appendix.instrumentType(desc));
+}
+
+
+
+
 // TYPES
-// ======
+// =====
 
 // AUTHORIZATION
 // -------------

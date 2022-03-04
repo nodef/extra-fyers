@@ -1,5 +1,5 @@
-// ERRORS
-// ------
+// ERROR
+// -----
 
 const ERROR_DESCRIPTION : Map<number, string> = new Map([
   [-209, "Invalid order id"],
@@ -227,8 +227,8 @@ export function day2(desc: string): string {
 
 
 
-// EXCHANGES
-// ---------
+// EXCHANGE
+// --------
 
 /** Exchange code. */
 export enum Exchange {
@@ -276,8 +276,8 @@ export function exchange(desc: string): number {
 
 
 
-// SEGMENTS
-// --------
+// SEGMENT
+// -------
 
 /** Segment code. */
 export enum Segment {
@@ -332,8 +332,8 @@ export function segment(desc: string): number {
 
 
 
-// POSITION-SIDES
-// --------------
+// POSITION-SIDE
+// -------------
 
 /** Position side code. */
 export enum PositionSide {
@@ -381,8 +381,8 @@ export function positionSide(desc: string): number {
 
 
 
-// ORDER-SIDES
-// -----------
+// ORDER-SIDE
+// ----------
 
 /** Order side code. */
 export enum OrderSide {
@@ -416,7 +416,7 @@ export function orderSideDescription(code: number): string {
 /**
  * Get order side code.
  * @param desc order side description
- * @returns order size code (1, -1)
+ * @returns order side code (1, -1)
  */
 export function orderSide(desc: string): number {
   var key = desc.charAt(0).toUpperCase();
@@ -426,8 +426,8 @@ export function orderSide(desc: string): number {
 
 
 
-// ORDER-SOURCES
-// -------------
+// ORDER-SOURCE
+// ------------
 
 /** Order source code. */
 export enum OrderSource {
@@ -484,8 +484,8 @@ export function orderSource(desc: string): string {
 
 
 
-// ORDER-STATUSES
-// --------------
+// ORDER-STATUS
+// ------------
 
 /** Order status code. */
 export enum OrderStatus {
@@ -549,8 +549,8 @@ export function orderStatus(desc: string): number {
 
 
 
-// ORDER-TYPES
-// -----------
+// ORDER-TYPE
+// ----------
 
 /** Order type code. */
 export enum OrderType {
@@ -559,9 +559,9 @@ export enum OrderType {
   /** Market order. */
   Market = 2,
   /** Market order with stop loss (SL-M). */
-  StopLossMarket = 3,
+  SlMarket = 3,
   /** Limit order with stop loss (SL-L) */
-  StopLossLimit  = 4,
+  SlLimit  = 4,
 }
 
 
@@ -642,8 +642,8 @@ export function optionType(desc: string): string {
 
 
 
-// HOLDING-TYPES
-// -------------
+// HOLDING-TYPE
+// ------------
 
 /** Holding type code. */
 export enum HoldingType {
@@ -681,8 +681,8 @@ export function holdingType(desc: string): string {
 
 
 
-// PRODUCT-TYPES
-// -------------
+// PRODUCT-TYPE
+// ------------
 
 /** Product type code. */
 export enum ProductType {
@@ -740,8 +740,8 @@ export function productType(desc: string): string {
 
 
 
-// INSTRUMENT-TYPES
-// ----------------
+// INSTRUMENT-TYPE
+// ---------------
 
 /** Instrument type code. */
 export enum InstrumentType {
