@@ -90,8 +90,9 @@ function generateMain(fil, sym) {
 function publishRoot(sym) {
   fs.restoreFileSync('package.json', () => {
     var m = package.read();
-    if (sym) { m.name += '.web'; }
+    m.version  = package.nextUnpublishedVersion(m.name, m.version);
     m.keywords = keywords(srcts);
+    if (sym) { m.name += '.web'; }
     package.write('.', m);
     package.publish('.');
     package.publishGithub('.', owner);

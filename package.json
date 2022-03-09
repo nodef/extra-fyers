@@ -1,6 +1,6 @@
 {
   "name": "extra-fyers",
-  "version": "0.0.32",
+  "version": "0.0.33",
   "description": "A Javascript interface for FYERS API.",
   "main": "index.js",
   "module": "index.mjs",

@@ -1036,7 +1036,7 @@ function requestSymbols(auth: null, method: string, path: string, query: object|
  * @returns HTTP(s) request options for authorization step 1 (manual)
  */
 export function authorizationStep1(options: AuthorizationStep1Request): HttpRequestOptions {
-  return requestStep(null, 'GET', 'generate-authcode', options, null);
+  return requestStep(null, 'GET', API_URL + 'generate-authcode', options, null);
 }
 
 
@@ -1046,7 +1046,7 @@ export function authorizationStep1(options: AuthorizationStep1Request): HttpRequ
  * @returns HTTP(s) request options for authorization step 2 (manual)
  */
 export function authorizationStep2(options: AuthorizationStep2Request): HttpRequestOptions {
-  return requestStep(null, 'POST', 'validate-authcode', null, options);
+  return requestStep(null, 'POST', API_URL + 'validate-authcode', null, options);
 }
 
 

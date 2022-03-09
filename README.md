@@ -1,1 +1,5 @@
-A Javascript interface for FYERS API.
+A Javascript interface for FYERS API.<br>
+📦 [NPM](https://www.npmjs.com/package/extra-fyers),
+🌐 [Web](https://www.npmjs.com/package/extra-fyers.web),
+📜 [Files](https://unpkg.com/extra-fyers/),
+📰 [Docs](https://nodef.github.io/extra-fyers/).
