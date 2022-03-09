@@ -1,6 +1,9 @@
 import {HttpRequestOptions} from './_http';
+export {HttpHeaders, HttpRequestOptions} from './_http';
 import * as appendix from './appendix';
+export * as appendix from './appendix';
 import * as http from './http';
+export * as http from './http';
 
 
 
