@@ -107,7 +107,7 @@ function deployRoot() {
   cp.execLogSync(`tsc`);
   updateGithub();
   publishDocs(srcts);
-  generateDts(srcts);
+  // generateDts(srcts);
   generateMain(srcts, '');
   publishRoot('');
   generateMain(srcts, sym);
@@ -117,6 +117,6 @@ function deployRoot() {
 
 function main(a) {
   if (a[2] === 'deploy') deployRoot();
-  else { generateDts(srcts); generateMain(srcts, ''); }
+  else { /* generateDts(srcts); */ generateMain(srcts, ''); }
 }
 main(process.argv);

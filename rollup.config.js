@@ -1,7 +1,8 @@
+import alias from "@rollup/plugin-alias";
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
-import alias from "@rollup/plugin-alias";
 import cleanup from "rollup-plugin-cleanup";
+import dts from "rollup-plugin-dts";
 
 
 const E       = process.env;
@@ -11,6 +12,14 @@ const entries = !/web/i.test(E.TYPE)? [] : [
 
 
 export default [{
+  input: ".build/index.d.ts",
+  output: {
+    file: "index.d.ts",
+    format: "es",
+    exports: "auto"
+  },
+  plugins: [dts()]
+}, {
   input: ".build/index.js",
   output: {
     file: "index.js",
