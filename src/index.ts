@@ -1043,7 +1043,7 @@ function toOrder(x: http.Order): Order {
     currentPrice: x.lp,
     tradedPrice:  x.tradedPrice,
     message:      x.message,
-    pan:          x.pan || null,
+    pan:          x.pan      || null,
     clientId:     x.clientId || null,
   };
 }
@@ -1334,44 +1334,44 @@ export interface PlaceOrder {
   /** Eg: NSE:SBIN-EQ. */
   symbol: string,
   /** The type of order. */
-  type: OrderType,
+  type?: OrderType,
   /** The order is buy or sell. */
-  side: OrderSide,
+  side?: OrderSide,
   /** The product in which the order was placed. */
-  productType: ProductType,
+  productType?: ProductType,
   /** Provide valid price for Limit and Stoplimit orders. */
-  limitPrice: number,
+  limitPrice?: number,
   /** Provide valid price for Stop and Stoplimit orders. */
-  stopPrice: number,
+  stopPrice?: number,
   /** The quantity should be in multiples of lot size for derivatives. */
   quantity: number,
   /** Allowed only for Equity. */
-  disclosedQuantity: number,
+  disclosedQuantity?: number,
   /** Day or IOC. */
-  validity: OrderValidity,
+  validity?: OrderValidity,
   /** True when placing AMO order. */
-  offline: boolean,
+  offline?: boolean,
   /** Provide valid price for CO and BO orders. */
-  stopLoss: number,
+  stopLoss?: number,
   /** Provide valid price for BO orders. */
-  takeProfit: number,
+  takeProfit?: number,
 }
 
 
 function fromPlaceOrder(x: PlaceOrder): http.PlaceOrderRequest {
   return {
     symbol: x.symbol,
-    type:   fromOrderType(x.type),
-    side:   fromOrderSide(x.side),
-    productType:  x.productType,
-    limitPrice:   x.limitPrice,
-    stopPrice:    x.stopPrice,
+    type:   fromOrderType(x.type || "MARKET"),
+    side:   fromOrderSide(x.side || "BUY"),
+    productType:  x.productType  || "CNC",
+    limitPrice:   x.limitPrice   || 0,
+    stopPrice:    x.stopPrice    || 0,
     qty:          x.quantity,
-    disclosedQty: x.disclosedQuantity,
-    validity:     x.validity,
+    disclosedQty: x.disclosedQuantity || 0,
+    validity:     x.validity   || "DAY",
     offlineOrder: x.offline? "True" : "False",
-    stopLoss:     x.stopLoss,
-    takeProfit:   x.takeProfit,
+    stopLoss:     x.stopLoss   || 0,
+    takeProfit:   x.takeProfit || 0,
   };
 }
 
@@ -1388,13 +1388,13 @@ export interface ModifyOrder {
   /** The type of order. */
   type: OrderType,
   /** The original order qty. */
-  quantity: number,
+  quantity?: number,
   /** Disclosed quantity. */
-  disclosedQuantity: number,
+  disclosedQuantity?: number,
   /** The limit price for the order. */
-  limitPrice: number,
+  limitPrice?: number,
   /** The stop price for the order. */
-  stopPrice: number,
+  stopPrice?: number,
 }
 
 
@@ -1420,23 +1420,23 @@ export interface ConvertPosition {
   /** Mandatory. Eg: 119031547242. */
   symbol: string,
   /** The side shows whether the position is long / short. */
-  side: PositionSide,
+  side?: PositionSide,
   /** Quantity to be converted. Has to be in multiples of lot size for derivatives. */
   quantity: number,
   /** Existing productType (CNC positions cannot be converted). */
-  fromProductType: ProductType,
+  fromProductType?: ProductType,
   /** The new product type. */
-  toProductType: ProductType,
+  toProductType?: ProductType,
 }
 
 
 function fromConvertPosition(x: ConvertPosition): http.ConvertPositionRequest {
   return {
     symbol:       x.symbol,
-    positionSide: fromPositionSide(x.side),
+    positionSide: fromPositionSide(x.side || "LONG"),
     convertQty:   x.quantity,
-    convertFrom:  fromProductType(x.fromProductType),
-    convertTo:    fromProductType(x.toProductType),
+    convertFrom:  fromProductType(x.fromProductType || "INTRADAY"),
+    convertTo:    fromProductType(x.toProductType   || "CNC"),
   };
 }
 

@@ -109,7 +109,10 @@ function httpRequest(o: HttpRequestOptions): Promise<string> {
       res.on('end',   () => resolve(body));
     });
     req.on('error', e => reject(getHttpError(e)));
-    if (o.body != null) req.write(JSON.stringify(o.body));
+    if (o.body != null) {
+      req.useChunkedEncodingByDefault = true;
+      req.write(JSON.stringify(o.body));
+    }
     req.end();
   });
 }

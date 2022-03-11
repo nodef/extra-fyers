@@ -484,19 +484,19 @@ export interface PlaceOrderRequest {
   /** The product in which the order was placed. */
   productType: string,
   /** Provide valid price for Limit and Stoplimit orders. */
-  limitPrice: number,
+  limitPrice?: number,
   /** Provide valid price for Stop and Stoplimit orders. */
-  stopPrice: number,
+  stopPrice?: number,
   /** Allowed only for Equity. */
-  disclosedQty: number,
+  disclosedQty?: number,
   /** Day or IOC. */
   validity: string,
   /** True when placing AMO order. */
   offlineOrder: string,
   /** Provide valid price for CO and BO orders. */
-  stopLoss: number,
+  stopLoss?: number,
   /** Provide valid price for BO orders. */
-  takeProfit: number,
+  takeProfit?: number,
 }
 
 
@@ -526,13 +526,13 @@ export interface ModifyOrderRequest {
   /** The type of order. */
   type: number,
   /** The original order qty. */
-  qty: number,
+  qty?: number,
   /** Disclosed quantity. */
-  disclosedQty: number,
+  disclosedQty?: number,
   /** The limit price for the order. */
-  limitPrice: number,
+  limitPrice?: number,
   /** The stop price for the order. */
-  stopPrice: number,
+  stopPrice?: number,
 }
 
 
