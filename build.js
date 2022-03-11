@@ -87,10 +87,10 @@ function generateMain(fil, sym) {
 
 
 // Publish root package to NPM, GitHub.
-function publishRoot(sym) {
+function publishRoot(sym, ver=null) {
   fs.restoreFileSync('package.json', () => {
     var m = package.read();
-    m.version  = package.nextUnpublishedVersion(m.name, m.version);
+    m.version  = ver;
     m.keywords = keywords(srcts);
     if (sym) { m.name += '.web'; }
     package.write('.', m);
@@ -104,14 +104,15 @@ function publishRoot(sym) {
 function deployRoot() {
   var m   = package.read();
   var sym = path.symbolname(m.name);
+  var ver = package.nextUnpublishedVersion(m.name, m.version);
   cp.execLogSync(`tsc`);
   updateGithub();
   publishDocs(srcts);
   // generateDts(srcts);
   generateMain(srcts, '');
-  publishRoot('');
+  publishRoot('', ver);
   generateMain(srcts, sym);
-  publishRoot(sym);
+  publishRoot(sym, ver);
 }
 
 

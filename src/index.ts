@@ -1522,25 +1522,35 @@ export interface GetMarketHistory {
   /** Eg: NSE:RCOM-EQ. */
   symbol: string,
   /** The candle resolution in minutes. */
-  resolution: string,
-  /** TODO: 0 to enter the epoch value. 1 to enter the date format as yyyy-mm-dd. */
-  dateFormat: number,
+  resolution: number,
   /** Indicating the start date of records (epoch, yyyy-mm-dd). */
-  fromDate: string,
+  fromDate: number,
   /** Indicating the end date of records. */
-  toDate: string,
+  toDate: number,
   /** Set cont flag 1 for continues data and future options. */
   continuous: boolean,
 }
 
 
+/** List of valid candle resolutions in minutes. */
+const CANDLE_RESOLUTIONS = [1, 2, 3, 5, 10, 15, 20, 30, 60, 120, 240, 1440];
+
+function fromCandleResolution(x: number): string {
+  var R = 1, D = Infinity;
+  for (var r of CANDLE_RESOLUTIONS) {
+    var d = Math.abs(x - r);
+    if (d < D) { R = r; D = d; }
+  }
+  return R === 1440? 'D' : R.toString();
+}
+
 function fromGetMarketHistory(x: GetMarketHistory): http.GetMarketHistoryRequest {
   return {
     symbol:      x.symbol,
-    resolution:  x.resolution,
-    date_format: x.dateFormat,
-    range_from:  x.fromDate,
-    range_to:    x.toDate,
+    resolution:  fromCandleResolution(x.resolution),
+    date_format: 0,
+    range_from:  x.fromDate.toString(),
+    range_to:    x.toDate.toString(),
     cont_flag:   x.continuous? "1" : "0",
   };
 }

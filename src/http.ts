@@ -1264,7 +1264,7 @@ export function getMarketStatus(auth: Authorization): Promise<GetMarketStatusRes
  * @returns market history {candles: [[time, open, high, low, close, volume]]}
  */
 export function getMarketHistory(auth: Authorization, options: GetMarketHistoryRequest): Promise<GetMarketHistoryResponse> {
-  return requestData(auth, 'GET', 'history', options, null) as Promise<GetMarketHistoryResponse>;
+  return requestData(auth, 'GET', 'history/', options, null) as Promise<GetMarketHistoryResponse>;
 }
 
 
@@ -1275,7 +1275,7 @@ export function getMarketHistory(auth: Authorization, options: GetMarketHistoryR
  * @returns market quotes {d: [{n, s, v: {ch, chp, lp, spread, ...}}]}
  */
 export function getMarketQuotes(auth: Authorization, options: GetMarketQuotesRequest): Promise<GetMarketQuotesResponse> {
-  return requestData(auth, 'GET', 'quotes', options, null) as Promise<GetMarketQuotesResponse>;
+  return requestData(auth, 'GET', 'quotes/', options, null) as Promise<GetMarketQuotesResponse>;
 }
 
 
@@ -1286,7 +1286,7 @@ export function getMarketQuotes(auth: Authorization, options: GetMarketQuotesReq
  * @returns market depth {d: {<symbol>: {totalbuyqty, totalsellqty, bids}}}
  */
 export function getMarketDepth(auth: Authorization, options: GetMarketDepthRequest): Promise<GetMarketDepthResponse> {
-  return requestData(auth, 'GET', 'depth', options, null) as Promise<GetMarketDepthResponse>;
+  return requestData(auth, 'GET', 'depth/', options, null) as Promise<GetMarketDepthResponse>;
 }
 
 
