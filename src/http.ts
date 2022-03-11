@@ -105,7 +105,7 @@ export interface AuthorizationStep2Response extends Response {
 // -----------
 
 /** Basic details of the client. */
-export interface GetProfileResponse extends Response {
+export interface Profile {
   /** The client id of the fyers user. */
   fy_id: string,
   /** Email address of the client. */
@@ -124,6 +124,13 @@ export interface GetProfileResponse extends Response {
   pwd_change_date: string,
   /** Number of days until the current password expires. */
   pwd_to_expire: number,
+}
+
+
+/** Get profile response. */
+export interface GetProfileResponse extends Response {
+  /** Basic details of the client. */
+  data: Profile,
 }
 
 

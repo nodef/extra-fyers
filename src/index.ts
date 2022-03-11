@@ -753,11 +753,12 @@ export interface Profile {
 
 
 function toProfile(x: http.GetProfileResponse): Profile {
+  var d = x.data;
   return {
-    id:    x.fy_id,
-    email: x.email_id,
-    name:  x.name,
-    pan:   x.PAN,
+    id:    d.fy_id,
+    email: d.email_id,
+    name:  d.name,
+    pan:   d.PAN,
   };
 }
 
