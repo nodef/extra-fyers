@@ -1189,6 +1189,10 @@ export interface PositionsOverall {
   count: number,
   /** Total number of positions opened. */
   openCount: number,
+  /** Total buy value. */
+  buyValue: number,
+  /** Total sell value. */
+  sellValue: number,
   /** Total profit and losses. */
   returns: number,
   /** Profit and losses when the owned product is sold. */
@@ -1198,10 +1202,17 @@ export interface PositionsOverall {
 }
 
 
-function toPositionsOverall(x: http.PositionsOverall): PositionsOverall {
+function toPositionsOverall(xs: http.Position[], x: http.PositionsOverall): PositionsOverall {
+  var buyValue = 0, sellValue = 0;
+  for (var p of xs) {
+    buyValue  += p.buyVal;
+    sellValue += p.sellVal;
+  }
   return {
     count:     x.count_total,
     openCount: x.count_open,
+    buyValue,
+    sellValue,
     returns:   x.pl_total,
     realizedReturns:   x.pl_realized,
     unrealizedReturns: x.pl_unrealized,
@@ -1221,7 +1232,7 @@ export interface Positions {
 function toPositions(x: http.GetPositionsResponse): Positions {
   return {
     details: x.netPositions.map(toPosition),
-    overall: toPositionsOverall(x.overall),
+    overall: toPositionsOverall(x.netPositions, x.overall),
   };
 }
 

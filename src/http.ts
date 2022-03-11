@@ -16,7 +16,6 @@ export const SYMBOLS_URL: string = 'https://public.fyers.in/sym_details/';
 
 
 
-
 // TYPES
 // =====
 
