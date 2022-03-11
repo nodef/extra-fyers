@@ -1,6 +1,7 @@
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import alias from "@rollup/plugin-alias";
+import cleanup from "rollup-plugin-cleanup";
 
 
 const E       = process.env;
@@ -16,7 +17,7 @@ export default [{
     format: "cjs",
     exports: "auto"
   },
-  plugins: [alias({entries}), resolve(), commonjs()]
+  plugins: [alias({entries}), resolve(), commonjs(), cleanup({comments: "none"})]
 }, {
   input: ".build/index.js",
   output: {
@@ -24,5 +25,5 @@ export default [{
     format: "es",
     exports: "auto"
   },
-  plugins: [alias({entries}), resolve(), commonjs()]
+  plugins: [alias({entries}), resolve(), commonjs(), cleanup({comments: "none"})]
 }];
