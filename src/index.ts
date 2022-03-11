@@ -1025,7 +1025,7 @@ function toOrder(x: http.Order): Order {
     type:         toOrderType(x.type),
     side:         toOrderSide(x.side),
     productType:  toProductType(x.productType),
-    source:       toOrderSource(x.source),
+    source:       toOrderSource(x.source) || null,
     status:       toOrderStatus(x.status),
     offline:      x.offlineOrder === "True",
     limitPrice:   x.limitPrice,
@@ -1037,14 +1037,14 @@ function toOrder(x: http.Order): Order {
     remainingDisclosedQuantity: x.dqQtyRem,
     validity:     toOrderValidity(x.orderValidity),
     date:         x.orderDateTime,
-    parentId:     x.parentId,
+    parentId:     x.parentId || null,
     priceChange:  x.ch,
     priceChangePercent: x.chp,
     currentPrice: x.lp,
     tradedPrice:  x.tradedPrice,
     message:      x.message,
-    pan:          x.pan,
-    clientId:     x.clientId,
+    pan:          x.pan || null,
+    clientId:     x.clientId || null,
   };
 }
 
@@ -1117,8 +1117,6 @@ export interface Position {
   symbol: string,
   /** The segment in which the position is taken. */
   segment: Segment,
-  /** The exchange in which the position is taken. */
-  exchange: Exchange,
   /** The product type of the position. */
   productType: ProductType,
   /** The side shows whether the position is long / short. */
@@ -1163,7 +1161,6 @@ function toPosition(x: http.Position): Position {
     id: x.id,
     symbol:      x.symbol,
     segment:     toSegment(x.segment),
-    exchange:    toExchange(x.exchange),
     productType: toProductType(x.productType),
     side:        toPositionSide(x.side),
     quantity:    x.qty,
@@ -1250,6 +1247,8 @@ export interface Trade {
   side: OrderSide,
   /** The product in which the order was placed. */
   productType: ProductType,
+  /** The type of order. */
+  orderType: OrderType,
   /** The time when the trade occured in “DD-MM-YYYY hh:mm:ss” format in IST. */
   orderDate: string,
   /** The traded price. */
@@ -1260,10 +1259,6 @@ export interface Trade {
   value: number,
   /** Client id. */
   clientId: string,
-  /** TODO: Buy, sell? */
-  type: string,
-  /** TODO: Buy, sell? */
-  orderType: string,
 }
 
 
@@ -1274,17 +1269,14 @@ function toTrade(x: http.Trade): Trade {
     symbol:   x.symbol,
     segment:  toSegment(x.segment),
     exchange: toExchange(x.exchange),
-    side:     toOrderSide(x.side),
+    side:     toOrderSide(x.transactionType),
     productType: toProductType(x.productType),
+    orderType:   toOrderType(x.orderType),
     orderDate:   x.orderDateTime,
     price:       x.tradePrice,
     quantity:    x.tradedQty,
     value:       x.tradeValue,
     clientId:    x.clientId,
-    // TODO: Buy, sell?
-    type:        x.transactionType.toString(),
-    // TODO: Buy, sell?
-    orderType:   x.orderType.toString(),
   };
 }
 

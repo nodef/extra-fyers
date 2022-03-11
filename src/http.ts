@@ -348,8 +348,6 @@ export interface Position {
   symbol: string,
   /** The segment in which the position is taken. */
   segment: number,
-  /** The exchange in which the position is taken. */
-  exchange: number,
   /** The product type of the position. */
   productType: string,
   /** The side shows whether the position is long / short. */
@@ -441,9 +439,11 @@ export interface Trade {
   /** The exchange in which order is placed. */
   exchange: number,
   /** The trade is buy or sell. */
-  side: number,
+  transactionType: number,
   /** The product in which the order was placed. */
   productType: string,
+  /** The type of order. */
+  orderType: number,
   /** The time when the trade occured in “DD-MM-YYYY hh:mm:ss” format in IST. */
   orderDateTime: string,
   /** The traded price. */
@@ -454,10 +454,6 @@ export interface Trade {
   tradeValue: number,
   /** Client id. */
   clientId: string,
-  /** Buy, sell? */
-  transactionType: number,
-  /** Buy, sell? */
-  orderType: number,
   /** ? */
   row: number,
 }
