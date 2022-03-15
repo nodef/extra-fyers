@@ -875,12 +875,16 @@ export interface Holding {
   remainingQuantity: number,
   /** The original buy price of the holding. */
   buyPrice: number,
-  /** The Market value of the current holding. */
-  currentValue: number,
+  /** The original buy value of the holding. */
+  buyValue: number,
   /** LTP is the price from which the next sale of the stocks happens. */
   currentPrice: number,
+  /** The Market value of the current holding. */
+  currentValue: number,
   /** Profit and loss made. */
   returns: number,
+  /** Profit and loss percent made. */
+  returnsPercent: number,
 }
 
 
@@ -892,10 +896,12 @@ function toHolding(x: http.Holding): Holding {
     type:     toHoldingType(x.holdingType),
     quantity: x.quantity,
     remainingQuantity: x.remainingQuantity,
-    buyPrice:     x.costPrice,
-    currentValue: x.marketVal,
-    currentPrice: x.ltp,
-    returns:      x.pl,
+    buyPrice:       x.costPrice,
+    buyValue:       x.costPrice * x.quantity,
+    currentPrice:   x.ltp,
+    currentValue:   x.marketVal,
+    returns:        x.pl,
+    returnsPercent: x.pl / (x.costPrice * x.quantity),
   };
 }
 
@@ -904,6 +910,8 @@ function toHolding(x: http.Holding): Holding {
 export interface HoldingsOverall {
   /** Total number of holdings present. */
   count: number,
+  /** Total number of settled holdings (HLD). */
+  settledCount: number,
   /** Invested amount for the current holdings. */
   investedValue: number,
   /** The present value of the holdings. */
@@ -915,9 +923,13 @@ export interface HoldingsOverall {
 }
 
 
-function toHoldingsOverall(x: http.HoldingsOverall): HoldingsOverall {
+function toHoldingsOverall(xs: http.Holding[], x: http.HoldingsOverall): HoldingsOverall {
+  var settledCount = 0;
+  for (var h of xs)
+    if (h.holdingType === 'HLD') settledCount++;
   return {
     count: x.count_total,
+    settledCount,
     investedValue:  x.total_investment,
     currentValue:   x.total_current_value,
     returns:        x.total_pl,
@@ -938,7 +950,7 @@ export interface Holdings {
 function toHoldings(x: http.GetHoldingsResponse): Holdings {
   return {
     details: x.holdings.map(toHolding),
-    overall: toHoldingsOverall(x.overall),
+    overall: toHoldingsOverall(x.holdings, x.overall),
   };
 }
 
@@ -1053,6 +1065,10 @@ function toOrder(x: http.Order): Order {
 export interface OrdersOverall {
   /** Total number of orders present. */
   count: number,
+  /** Total number of open orders. */
+  openCount: number,
+  /** Total number of closed orders. */
+  closedCount: number,
   /** The original order qty. */
   quantity: number,
   /** The remaining qty. */
@@ -1066,9 +1082,12 @@ export interface OrdersOverall {
 }
 
 
+import OST = appendix.OrderStatus;
 function toOrdersOverall(x: http.Order[]): OrdersOverall {
   var a: OrdersOverall = {
     count: 0,
+    openCount: 0,
+    closedCount: 0,
     quantity: 0,
     remainingQuantity: 0,
     tradedQuantity: 0,
@@ -1077,12 +1096,14 @@ function toOrdersOverall(x: http.Order[]): OrdersOverall {
   };
   for (var o of x) {
     a.count++;
+    a.openCount += o.status === OST.Pending || o.status === OST.Transit? 1 : 0;
     a.quantity += o.qty;
     a.remainingQuantity += o.remainingQuantity;
     a.tradedQuantity    += o.filledQty;
     a.disclosedQuantity += o.discloseQty;
     a.remainingDisclosedQuantity += o.dqQtyRem;
   }
+  a.closedCount = a.count - a.openCount;
   return a;
 }
 
@@ -1189,6 +1210,8 @@ export interface PositionsOverall {
   count: number,
   /** Total number of positions opened. */
   openCount: number,
+  /** Total number of positions closed. */
+  closedCount: number,
   /** Total buy value. */
   buyValue: number,
   /** Total sell value. */
@@ -1209,8 +1232,9 @@ function toPositionsOverall(xs: http.Position[], x: http.PositionsOverall): Posi
     sellValue += p.sellVal;
   }
   return {
-    count:     x.count_total,
-    openCount: x.count_open,
+    count:       x.count_total,
+    openCount:   x.count_open,
+    closedCount: x.count_total - x.count_open,
     buyValue,
     sellValue,
     returns:   x.pl_total,
