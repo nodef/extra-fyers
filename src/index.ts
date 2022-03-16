@@ -1995,6 +1995,244 @@ function fromEdisHolding(x: EdisHolding): http.EdisHolding {
 // FUNCTIONS
 // =========
 
+// CHARGES
+// -------
+
+function charge(x: number, p: number) {
+  return 0.01 * Math.round(x * p);
+}
+
+function equityDeliveryBuyCharges(x: number) {
+  var sttctt = charge(x, 0.10);
+  var gst    = charge(x, 18.0);
+  var exch   = charge(x, 0.00325);
+  var stamp  = charge(x, 0.015);
+  var sebi   = charge(x, 0.0001);
+  return sttctt + gst + exch + stamp + sebi;
+}
+
+function equityDeliverySellCharges(x: number) {
+  var debit  = 7.00 + 5.50;
+  return debit + equityDeliveryBuyCharges(x);
+}
+
+/**
+ * Get equity delivery charges.
+ * @param side order side (BUY, SELL)
+ * @param value traded value
+ * @returns total charges including brokerage and taxes
+ */
+ export function equityDeliveryCharges(side: OrderSide, value: number) {
+  if (side === 'BUY') return equityDeliveryBuyCharges(value);
+  return equityDeliverySellCharges(value);
+}
+
+
+function equityIntradayBuyCharges(x: number) {
+  var broker = Math.min(20.00, charge(x, 0.03));
+  var gst    = charge(broker, 18.0);
+  var exch   = charge(x, 0.00325);
+  var stamp  = charge(x, 0.003);
+  var sebi   = charge(x, 0.0001);
+  return broker + gst + exch + stamp + sebi;
+}
+
+function equityIntradaySellCharges(x: number) {
+  var broker = Math.min(20.00, charge(x, 0.03));
+  var sttctt = charge(x, 0.025);
+  var gst    = charge(broker + sttctt, 18.0);
+  var exch   = charge(x, 0.00325);
+  var stamp  = charge(x, 0.003);
+  var sebi   = charge(x, 0.0001);
+  return broker + sttctt + gst + exch + stamp + sebi;
+}
+
+/**
+ * Get equity intraday charges.
+ * @param side order side (BUY, SELL)
+ * @param value traded value
+ * @returns total charges including brokerage and taxes
+ */
+ export function equityIntradayCharges(side: OrderSide, value: number) {
+  if (side === 'BUY') return equityIntradayBuyCharges(value);
+  return equityIntradaySellCharges(value);
+}
+
+
+function equityFuturesBuyCharges(x: number) {
+  var broker = Math.min(20.00, charge(x, 0.03));
+  var gst    = charge(broker, 18.0);
+  var exch   = charge(x, 0.0019);
+  var clear  = charge(x, 0.0005);
+  var stamp  = charge(x, 0.002);
+  var sebi   = charge(x, 0.0001);
+  return broker + gst + exch + clear + stamp + sebi;
+}
+
+function equityFuturesSellCharges(x: number) {
+  var broker = Math.min(20.00, charge(x, 0.03));
+  var sttctt = charge(x, 0.01);
+  var gst    = charge(broker + sttctt, 18.0);
+  var exch   = charge(x, 0.0019);
+  var clear  = charge(x, 0.0005);
+  var stamp  = charge(x, 0.002);
+  var sebi   = charge(x, 0.0001);
+  return broker + sttctt + gst + exch + clear + stamp + sebi;
+}
+
+/**
+ * Get equity futures charges.
+ * @param side order side (BUY, SELL)
+ * @param value traded value
+ * @returns total charges including brokerage and taxes
+ */
+ export function equityFuturesCharges(side: OrderSide, value: number) {
+  if (side === 'BUY') return equityFuturesBuyCharges(value);
+  return equityFuturesSellCharges(value);
+}
+
+
+function equityOptionsBuyCharges(x: number) {
+  var broker = 20.00;
+  var gst    = charge(broker, 18.0);
+  var exch   = charge(x, 0.053);
+  var clear  = charge(x, 0.009);
+  var stamp  = charge(x, 0.003);
+  var sebi   = charge(x, 0.0001);
+  return broker + gst + exch + clear + stamp + sebi;
+}
+
+function equityOptionsSellCharges(x: number) {
+  var broker = 20.00;
+  var sttctt = charge(x, 0.05);
+  var gst    = charge(broker + sttctt, 18.0);
+  var exch   = charge(x, 0.053);
+  var clear  = charge(x, 0.009);
+  var stamp  = charge(x, 0.003);
+  var sebi   = charge(x, 0.0001);
+  return broker + sttctt + gst + exch + clear + stamp + sebi;
+}
+
+/**
+ * Get equity options charges.
+ * @param side order side (BUY, SELL)
+ * @param value traded value
+ * @returns total charges including brokerage and taxes
+ */
+ export function equityOptionsCharges(side: OrderSide, value: number) {
+  if (side === 'BUY') return equityOptionsBuyCharges(value);
+  return equityOptionsSellCharges(value);
+}
+
+
+function currencyFuturesBuySellCharges(x: number) {
+  var broker = Math.min(20.00, charge(x, 0.03));
+  var gst    = charge(broker, 18.0);
+  var exch   = charge(x, 0.00115);
+  var clear  = charge(x, 0.0005);
+  var stamp  = charge(x, 0.0001);
+  var sebi   = charge(x, 0.0001);
+  return broker + gst + exch + clear + stamp + sebi;
+}
+
+/**
+ * Get currency futures charges.
+ * @param side order side (BUY, SELL)
+ * @param value traded value
+ * @returns total charges including brokerage and taxes
+ */
+ export function currencyFuturesCharges(side: OrderSide, value: number) {
+  return currencyFuturesBuySellCharges(value);
+}
+
+
+function currencyOptionsBuySellCharges(x: number) {
+  var broker = 20.00;
+  var gst    = charge(broker, 18.0);
+  var exch   = charge(x, 0.04);
+  var clear  = charge(x, 0.009);
+  var stamp  = charge(x, 0.0001);
+  var sebi   = charge(x, 0.0001);
+  return broker + gst + exch + clear + stamp + sebi;
+}
+
+/**
+ * Get currency options charges.
+ * @param side order side (BUY, SELL)
+ * @param value traded value
+ * @returns total charges including brokerage and taxes
+ */
+ export function currencyOptionsCharges(side: OrderSide, value: number) {
+  return currencyOptionsBuySellCharges(value);
+}
+
+
+function commodityFuturesBuyCharges(x: number) {
+  var broker = Math.min(20.00, charge(x, 0.03));
+  var gst    = charge(broker, 18.0);
+  var exch   = charge(x, 0.0026);
+  var clear  = charge(x, 0.0018);
+  var stamp  = charge(x, 0.002);
+  var sebi   = charge(x, 0.0001);
+  return broker + gst + exch + clear + stamp + sebi;
+}
+
+function commodityFuturesSellCharges(x: number) {
+  var broker = Math.min(20.00, charge(x, 0.03));
+  var sttctt = charge(x, 0.01);
+  var gst    = charge(broker + sttctt, 18.0);
+  var exch   = charge(x, 0.0026);
+  var clear  = charge(x, 0.0018);
+  var stamp  = charge(x, 0.002);
+  var sebi   = charge(x, 0.0001);
+  return broker + sttctt + gst + exch + clear + stamp + sebi;
+}
+
+/**
+ * Get commodity futures charges.
+ * @param side order side (BUY, SELL)
+ * @param value traded value
+ * @returns total charges including brokerage and taxes
+ */
+ export function commodityFuturesCharges(side: OrderSide, value: number) {
+  if (side === 'BUY') return commodityFuturesBuyCharges(value);
+  return commodityFuturesSellCharges(value);
+}
+
+
+function commodityOptionsBuyCharges(x: number) {
+  var broker = 20.00;
+  var gst    = charge(broker, 18.0);
+  var clear  = charge(x, 0.05);
+  var stamp  = charge(x, 0.0003);
+  var sebi   = charge(x, 0.0001);
+  return broker + gst + clear + stamp + sebi;
+}
+
+function commodityOptionsSellCharges(x: number) {
+  var broker = 20.00;
+  var sttctt = charge(x, 0.05);
+  var gst    = charge(broker + sttctt, 18.0);
+  var clear  = charge(x, 0.05);
+  var stamp  = charge(x, 0.0003);
+  var sebi   = charge(x, 0.0001);
+  return broker + sttctt + gst + clear + stamp + sebi;
+}
+
+/**
+ * Get commodity options charges.
+ * @param side order side (BUY, SELL)
+ * @param value traded value
+ * @returns total charges including brokerage and taxes
+ */
+ export function commodityOptionsCharges(side: OrderSide, value: number) {
+  if (side === 'BUY') return commodityOptionsBuyCharges(value);
+  return commodityOptionsSellCharges(value);
+}
+
+
+
+
 // AUTHORIZATION
 // -------------
 

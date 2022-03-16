@@ -139,7 +139,7 @@ export interface GetProfileResponse extends Response {
 // ---------
 
 /** Fund limit type (id) in funds response. */
-export enum FundLimitType {
+export const enum FundLimitType {
   /** Limit at start of the day. */
   Start    = 9,
   /** Fund Transfer. */
@@ -672,7 +672,7 @@ export type ShortCandle = [number, number, number, number, number, number];
 
 
 /** Short candle array index. */
-export enum ShortCandleIndex {
+export const enum ShortCandleIndex {
   /** Time. */
   Time   = 0,
   /** Open price. */

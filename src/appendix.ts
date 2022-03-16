@@ -231,7 +231,7 @@ export function day2(desc: string): string {
 // --------
 
 /** Exchange code. */
-export enum Exchange {
+export const enum Exchange {
   /** National Stock Exchange. */
   NSE = 10,
   /** Multi Commodity Exchange. */
@@ -280,7 +280,7 @@ export function exchange(desc: string): number {
 // -------
 
 /** Segment code. */
-export enum Segment {
+export const enum Segment {
   /** Capital Market (CM). */
   Capital    = 10,
   /** Equity Derivatives (FO). */
@@ -299,13 +299,6 @@ const SEGMENT_DESCRIPTION: Map<number, string> = new Map([
   [20, "Commodity Derivatives (COM)"],
 ]);
 
-const SEGMENT_CODE: Map<string, number> = new Map([
-  ["CM",  10],
-  ["FO",  11],
-  ["CD",  12],
-  ["COM", 20],
-]);
-
 
 /**
  * Get segment description.
@@ -322,12 +315,12 @@ export function segmentDescription(code: number): string {
  * @returns segment code (10, 11, 12, 20)
  */
 export function segment(desc: string): number {
-  var key = "CM";
-  if (/^com/i.test(desc)) key = "COM";
-  else if (/^cur/i.test(desc)) key = "CD";
-  else if (/der|fut|opt/i.test(desc)) key = "FO";
-  return SEGMENT_CODE.get(key);
+  if (/^com/i.test(desc)) return SM.Commodity;
+  else if (/^cur/i.test(desc)) return SM.Currency;
+  else if (/der|fut|opt/i.test(desc)) return SM.Derivative;
+  return SM.Capital;
 }
+import SM = Segment;
 
 
 
@@ -336,7 +329,7 @@ export function segment(desc: string): number {
 // -------------
 
 /** Position side code. */
-export enum PositionSide {
+export const enum PositionSide {
   /** Long position. */
   Long   =  1,
   /** Short position. */
@@ -385,7 +378,7 @@ export function positionSide(desc: string): number {
 // ----------
 
 /** Order side code. */
-export enum OrderSide {
+export const enum OrderSide {
   /** Buy order. */
   Buy  =  1,
   /** Sell order. */
@@ -430,7 +423,7 @@ export function orderSide(desc: string): number {
 // ------------
 
 /** Order source code. */
-export enum OrderSource {
+export const enum OrderSource {
   /** FYERS Mobile. */
   Mobile   = "M",
   /** FYERS Web. */
@@ -488,7 +481,7 @@ export function orderSource(desc: string): string {
 // ------------
 
 /** Order status code. */
-export enum OrderStatus {
+export const enum OrderStatus {
   /** Order has been cancelled. */
   Cancelled = 1,
   /** Order has been traded/filled. */
@@ -553,7 +546,7 @@ export function orderStatus(desc: string): number {
 // ----------
 
 /** Order type code. */
-export enum OrderType {
+export const enum OrderType {
   /** Limit order. */
   Limit  = 1,
   /** Market order. */
@@ -607,7 +600,7 @@ export function orderType(desc: string): number {
 // --------------
 
 /** Order validity code. */
-export enum OrderValidity {
+export const enum OrderValidity {
   /** End of day validity (DAY). */
   Day = "DAY",
   /** Immediate or Cancel validity (IOC). */
@@ -646,7 +639,7 @@ export function orderValidity(desc: string): string {
 // -----------
 
 /** Option type code. */
-export enum OptionType {
+export const enum OptionType {
   /** Call option. */
   Call = "CE",
   /** Put option. */
@@ -685,7 +678,7 @@ export function optionType(desc: string): string {
 // ------------
 
 /** Holding type code. */
-export enum HoldingType {
+export const enum HoldingType {
   /** The shares are purchased but not yet delivered to the demat account. */
   Purchased = "T1",
   /** The shares are purchased and are available in the demat account. */
@@ -724,7 +717,7 @@ export function holdingType(desc: string): string {
 // ------------
 
 /** Product type code. */
-export enum ProductType {
+export const enum ProductType {
   /** Cash N Carry or Delivery Order, for equity only. */
   CNC      = "CNC",
   /** Intraday Order, applicable for all segments. */
@@ -749,7 +742,6 @@ const PRODUCT_TYPE_DESCRIPTION: Map<string, string> = new Map([
 const PRODUCT_TYPE_CODE: Map<string, string> = new Map([
   ["D", "CNC"],
   ["I", "INTRADAY"],
-  ["M", "MARGIN"],
   ["M", "MARGIN"],
   ["C", "CO"],
   ["B", "BO"],
@@ -783,7 +775,7 @@ export function productType(desc: string): string {
 // ---------------
 
 /** Instrument type code. */
-export enum InstrumentType {
+export const enum InstrumentType {
   // CM segment
   /** Equity Shares. */
   EQ = 0,
@@ -873,38 +865,6 @@ const INSTRUMENT_TYPE_DESCRIPTION: Map<number, string> = new Map([
   [32, "Options on Commodity (OPTCOM)"],
 ]);
 
-const INSTRUMENT_TYPE_CODE: Map<string, number> = new Map([
-  // CM segment
-  ["EQ", 0],
-  ["PREFSHARES", 1],
-  ["DEBENTURES", 2],
-  ["WARRANTS", 3],
-  ["MISC", 4],
-  ["INDEX", 10],
-  // FO segment
-  ["FUTIDX", 11],
-  ["FUTIVX", 12],
-  ["FUTSTK", 13],
-  ["OPTIDX", 14],
-  ["OPTSTK", 15],
-  // CD segment
-  ["FUTCUR", 16],
-  ["FUTIRT", 17],
-  ["FUTIRC", 18],
-  ["OPTCUR", 19],
-  ["UNDCUR", 20],
-  ["UNDIRC", 21],
-  ["UNDIRT", 22],
-  ["UNDIRD", 23],
-  ["INDEX_CD", 24],
-  ["FUTIRD", 25],
-  // COM segment
-//["FUTIDX", 11],
-  ["FUTCOM", 30],
-  ["OPTFUT", 31],
-  ["OPTCOM", 32],
-]);
-
 
 /**
  * Get instrument type description.
@@ -921,38 +881,38 @@ export function instrumentTypeDescription(code: number): string {
  * @returns instrument type code (0-32)
  */
 export function instrumentType(desc: string): number {
-  var key = "EQ";
   var fut = /fut|future/i.test(desc);
   var opt = /opt|option/i.test(desc);
   var idx = /idx|index/i.test(desc);
   var und = /und|underlying/i.test(desc);
   // COM segment
   if (/com(\b|$)|commodit/i.test(desc)) {
-    if (opt) key = fut? "OPTFUT" : "OPTCOM";
-    else if (idx) key = "FUTIDX_COM";
-    else          key = "FUTCOM";
+    if (opt) return fut? IT.OPTFUT : IT.OPTCOM;
+    else if (idx) return IT.FUTIDX; // FUTIDX_COM
+    else          return IT.FUTCOM;
   }
   // CD segment
   else if (/(^|\b)und|cd(\b|$)|ir[cdt](\b|$)|cur|gov|bond|trea|coup/i.test(desc)) {
-    if (/irc(\b|$)|bond/i.test(desc))      key = und? "UNDIRC" : "FUTIRC";
-    else if (/ird(\b|$)|coup/i.test(desc)) key = und? "UNDIRD" : "FUTIRD";
-    else if (/irt(\b|$)|trea/i.test(desc)) key = und? "UNDIRT" : "FUTIRT";
-    else                key = idx? "INDEX_CD" : (opt? "OPTCUR" : "FUTCUR");
+    if (/irc(\b|$)|bond/i.test(desc))      return und? IT.UNDIRC : IT.FUTIRC;
+    else if (/ird(\b|$)|coup/i.test(desc)) return und? IT.UNDIRD : IT.FUTIRD;
+    else if (/irt(\b|$)|trea/i.test(desc)) return und? IT.UNDIRT : IT.FUTIRT;
+    else               return idx? IT.INDEX_CD : (opt? IT.OPTCUR : IT.FUTCUR);
   }
   // FO segment
   else if (fut || opt) {
-    if (/ivx|volatil/i.test(desc)) key = "FUTIVX";
-    else if (idx) key = opt? "OPTIDX" : "FUTIDX";
-    else          key = opt? "OPTSTK" : "FUTSTK";
+    if (/ivx|volatil/i.test(desc)) return IT.FUTIVX;
+    else if (idx) return opt? IT.OPTIDX : IT.FUTIDX;
+    else          return opt? IT.OPTSTK : IT.FUTSTK;
   }
   // CM segment
   else {
-    if (idx)                        key = "INDEX";
-    else if (/misc/i.test(desc))    key = "MISC";
-    else if (/warrant/i.test(desc)) key = "WARRANTS";
-    else if (/deb/i.test(desc))     key = "DEBENTURES";
-    else if (/pref/i.test(desc))    key = "PREFSHARES";
-    else                            key = "EQ";
+    if (idx)                        return IT.INDEX;
+    else if (/misc/i.test(desc))    return IT.MISC;
+    else if (/warrant/i.test(desc)) return IT.WARRANTS;
+    else if (/deb/i.test(desc))     return IT.DEBENTURES;
+    else if (/pref/i.test(desc))    return IT.PREFSHARES;
+    else                            return IT.EQ;
   }
-  return INSTRUMENT_TYPE_CODE.get(key);
+  return IT.EQ;
 }
+import IT = InstrumentType;
