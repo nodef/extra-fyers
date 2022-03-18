@@ -1128,8 +1128,8 @@ export function instrumentType(desc: string): InstrumentType {
 
 
 
-// AUTHORIZATION
-// -------------
+// LOGIN
+// -----
 
 /** Attributes required for authorization of all requests. */
 export interface Authorization {
@@ -1148,8 +1148,8 @@ function fromAuthorization(x: Authorization): http.Authorization {
 }
 
 
-/** Authorization step 1 request. */
-export interface AuthorizationStep1Request {
+/** Login step 1 request. */
+export interface LoginStep1Request {
   /** This is the app_id which you have received after creating the app. */
   appId: string,
   /** This is where the user will be redirected after successful login. */
@@ -1159,7 +1159,7 @@ export interface AuthorizationStep1Request {
 }
 
 
-function fromAuthorizationStep1Request(x: AuthorizationStep1Request): http.AuthorizationStep1Request {
+function fromLoginStep1Request(x: LoginStep1Request): http.LoginStep1Request {
   return {
     client_id:     x.appId,
     redirect_uri:  x.redirectUrl,
@@ -1169,8 +1169,8 @@ function fromAuthorizationStep1Request(x: AuthorizationStep1Request): http.Autho
 }
 
 
-/** Authorization step 1 response. */
-export interface AuthorizationStep1Response {
+/** Login step 1 response. */
+export interface LoginStep1Response {
   /** String value which will be used to generate the access_token. */
   authorizationCode: string,
   /** This value is returned as is from the first request. */
@@ -1178,7 +1178,7 @@ export interface AuthorizationStep1Response {
 }
 
 
-function toAuthorizationStep1Response(x: http.AuthorizationStep1Response): AuthorizationStep1Response {
+function toLoginStep1Response(x: http.LoginStep1Response): LoginStep1Response {
   return {
     authorizationCode: x.auth_code,
     state: x.state,
@@ -1186,8 +1186,8 @@ function toAuthorizationStep1Response(x: http.AuthorizationStep1Response): Autho
 }
 
 
-/** Authorization step 2 request. */
-export interface AuthorizationStep2Request {
+/** Login step 2 request. */
+export interface LoginStep2Request {
   /** SHA-256 of `api_id:app_secret` in hex. */
   appHash: string,
   /** This is the auth_code which is received from the first step. */
@@ -1195,7 +1195,7 @@ export interface AuthorizationStep2Request {
 }
 
 
-function fromAuthorizationStep2Request(x: AuthorizationStep2Request): http.AuthorizationStep2Request {
+function fromLoginStep2Request(x: LoginStep2Request): http.LoginStep2Request {
   return {
     grant_type: "authorization_code",
     appIdHash:  x.appHash,
@@ -1204,14 +1204,14 @@ function fromAuthorizationStep2Request(x: AuthorizationStep2Request): http.Autho
 }
 
 
-/** Authorization step 2 response. */
-export interface AuthorizationStep2Response {
+/** Login step 2 response. */
+export interface LoginStep2Response {
   /** This value will be used for all the subsequent requests. */
   accessToken: string,
 }
 
 
-function toAuthorizationStep2Response(x: http.AuthorizationStep2Response): AuthorizationStep2Response {
+function toLoginStep2Response(x: http.LoginStep2Response): LoginStep2Response {
   return {
     accessToken: x.access_token,
   };
@@ -2767,8 +2767,8 @@ class ApiError extends Error {
 // STATELESS INTERFACE
 // ===================
 
-// AUTHORIZATION
-// -------------
+// LOGIN
+// -----
 
 /**
  * Get request step 1 for authorization.
@@ -2777,8 +2777,8 @@ class ApiError extends Error {
  * @param state same value will be returned after login to the redirect url
  * @returns request step 1 for authorization
  */
-export function authorizationStep1(appId: string, redirectUrl: string, state: string="default"): HttpRequestOptions {
-  return http.authorizationStep1(fromAuthorizationStep1Request({appId, redirectUrl, state}));
+export function loginStep1(appId: string, redirectUrl: string, state: string="default"): HttpRequestOptions {
+  return http.loginStep1(fromLoginStep1Request({appId, redirectUrl, state}));
 }
 
 
@@ -2788,8 +2788,8 @@ export function authorizationStep1(appId: string, redirectUrl: string, state: st
  * @param authorizationCode auth_code which is received from the first step
  * @returns request step 2 for authorization
  */
-export function authorizationStep2(appHash: string, authorizationCode: string): HttpRequestOptions {
-  return http.authorizationStep2(fromAuthorizationStep2Request({appHash, authorizationCode}));
+export function loginStep2(appHash: string, authorizationCode: string): HttpRequestOptions {
+  return http.loginStep2(fromLoginStep2Request({appHash, authorizationCode}));
 }
 
 
@@ -3171,8 +3171,8 @@ export class Api implements Authorization {
    * @param state same value will be returned after login to the redirect url
    * @returns request step 1 for authorization
    */
-  static authorizationStep1(appId: string, redirectUrl: string, state: string="default"): HttpRequestOptions {
-    return authorizationStep1(appId, redirectUrl, state);
+  static loginStep1(appId: string, redirectUrl: string, state: string="default"): HttpRequestOptions {
+    return loginStep1(appId, redirectUrl, state);
   }
 
   /**
@@ -3181,8 +3181,8 @@ export class Api implements Authorization {
    * @param authorizationCode auth_code which is received from the first step
    * @returns request step 2 for authorization
    */
-  static authorizationStep2(appHash: string, authorizationCode: string): HttpRequestOptions {
-    return authorizationStep2(appHash, authorizationCode);
+  static loginStep2(appHash: string, authorizationCode: string): HttpRequestOptions {
+    return loginStep2(appHash, authorizationCode);
   }
 
   /**

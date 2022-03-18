@@ -46,8 +46,8 @@ export interface ProxyResponse<Body> {
 
 
 
-// AUTHORIZATION
-// -------------
+// LOGIN
+// -----
 
 /** Attributes required for authorization of all requests. */
 export interface Authorization {
@@ -58,8 +58,8 @@ export interface Authorization {
 }
 
 
-/** Authorization step 1 request. */
-export interface AuthorizationStep1Request {
+/** Login step 1 request. */
+export interface LoginStep1Request {
   /** This is the app_id which you have received after creating the app. */
   client_id: string,
   /** This is where the user will be redirected after successful login. */
@@ -71,8 +71,8 @@ export interface AuthorizationStep1Request {
 }
 
 
-/** Authorization step 1 response. */
-export interface AuthorizationStep1Response extends Response {
+/** Login step 1 response. */
+export interface LoginStep1Response extends Response {
   /** String value which will be used to generate the access_token. */
   auth_code: string,
   /** This value is returned as is from the first request. */
@@ -80,8 +80,8 @@ export interface AuthorizationStep1Response extends Response {
 }
 
 
-/** Authorization step 2 request. */
-export interface AuthorizationStep2Request {
+/** Login step 2 request. */
+export interface LoginStep2Request {
   /** This value must always be “authorization_code”. */
   grant_type: string,
   /** SHA-256 of `api_id:app_secret` in hex. */
@@ -91,8 +91,8 @@ export interface AuthorizationStep2Request {
 }
 
 
-/** Authorization step 2 response. */
-export interface AuthorizationStep2Response extends Response {
+/** Login step 2 response. */
+export interface LoginStep2Response extends Response {
   /** This value will be used for all the subsequent requests. */
   access_token: string,
 }
@@ -985,15 +985,15 @@ function requestSymbols(auth: null, method: string, path: string, query: object|
 
 
 
-// AUTHORIZATION
-// -------------
+// LOGIN
+// -----
 
 /**
  * Get request step 1 for authorization (browser only).
  * @param options authorization step 1 details {client_id, redirect_uri, response_type, state}
  * @returns HTTP(s) request options for authorization step 1 (manual)
  */
-export function authorizationStep1(options: AuthorizationStep1Request): HttpRequestOptions {
+export function loginStep1(options: LoginStep1Request): HttpRequestOptions {
   return requestStep(null, 'GET', API_URL + 'generate-authcode', options, null);
 }
 
@@ -1003,7 +1003,7 @@ export function authorizationStep1(options: AuthorizationStep1Request): HttpRequ
  * @param options authorization step 2 details {graph_type, appIdHash, code}
  * @returns HTTP(s) request options for authorization step 2 (manual)
  */
-export function authorizationStep2(options: AuthorizationStep2Request): HttpRequestOptions {
+export function loginStep2(options: LoginStep2Request): HttpRequestOptions {
   return requestStep(null, 'POST', API_URL + 'validate-authcode', null, options);
 }
 
