@@ -11,6 +11,7 @@ const outmjs = 'index.mjs';
 const outdts = 'index.d.ts';
 
 
+
 // Is given file a submodule?
 function isSubmodule(pth) {
   if (/^_|index.ts$/.test(pth)) return false;
@@ -19,17 +20,25 @@ function isSubmodule(pth) {
 }
 
 
-// Get additional keywords for main/sub package.
-function additionalKeywords(fil) {
+// Get filename keywords for main/sub package.
+function filenameKeywords(fil) {
   if (fil !== srcts) return [path.keywordname(fil)];
   return fs.readdirSync('src').filter(isSubmodule).map(path.keywordname);
+}
+
+
+// Get export keywords for main/sub package.
+function exportKeywords(fil) {
+  var txt  = fs.readFileTextSync(`src/${fil}`);
+  var exps = javascript.exportSymbols(txt);
+  return exps.map(e => path.keywordname(e.name));
 }
 
 
 // Get keywords for main/sub package.
 function keywords(fil) {
   var m = package.read('.');
-  var s = new Set([...m.keywords, ...additionalKeywords(fil)]);
+  var s = new Set([...m.keywords, ...filenameKeywords(fil), ...exportKeywords(fil)]);
   return Array.from(s);
 }
 
@@ -81,31 +90,93 @@ function generateMain(fil, sym) {
 
 
 // Publish root package to NPM, GitHub.
-function publishRoot(sym, ver=null) {
+function publishRoot(sym, ver) {
   fs.restoreFileSync('package.json', () => {
     var m = package.read();
     m.version  = ver;
     m.keywords = keywords(srcts);
     if (sym) { m.name += '.web'; }
-    package.write('.', m);
-    package.publish('.');
-    package.publishGithub('.', owner);
+    fs.restoreFileSync('README.md', () => {
+      var txt = fs.readFileTextSync('README.md');
+      if (sym) txt = txt.replace(/\[Files\]\((.*?)\/\)/g, '[Files]($1.web/)');
+      fs.writeFileTextSync('README.md', txt);
+      package.write('.', m);
+      package.publish('.');
+      package.publishGithub('.', owner);
+    });
+  });
+}
+
+
+// Get sub package description.
+function subDescription(nam) {
+  if (!fs.existsSync(`wiki/${nam}.md`)) return '';
+  var txt = fs.readFileTextSync(`wiki/${nam}.md`);
+  return txt.replace(/\n[\s\S]*/g, '').replace(/<br>/g, '');
+}
+
+
+// Publish sub package to NPM, GitHub.
+function publishSub(nam, sym, ver) {
+  fs.restoreFileSync('package.json', () => {
+    var m    = package.read();
+    var desc = `${m.description.slice(0, -1)} {${nam}}.`;
+    m.name = `@${m.name}/${nam}`;
+    m.description = subDescription(nam) || desc;
+    m.version  = ver;
+    m.keywords = keywords(`${nam}.ts`);
+    if (sym) { m.name += '.web'; }
+    fs.restoreFileSync('README.md', () => {
+      var txt = fs.readFileTextSync('README.md');
+      if (sym) txt = txt.replace(/\[Files\]\((.*?)\/\)/g, '[Files]($1.web/)');
+      fs.writeFileTextSync('README.md', txt);
+      package.write('.', m);
+      package.publish('.');
+      package.publishGithub('.', owner);
+    });
   });
 }
 
 
 // Deploy root package to NPM, GitHub.
-function deployRoot() {
+function deployRoot(ver) {
   var m   = package.read();
   var sym = path.symbolname(m.name);
-  var ver = package.nextUnpublishedVersion(m.name, m.version);
-  cp.execLogSync(`tsc`);
-  updateGithub();
-  publishDocs(srcts);
   generateMain(srcts, '');
   publishRoot('', ver);
   generateMain(srcts, sym);
   publishRoot(sym, ver);
+}
+
+
+// Deploy sub package to NPM, GitHub.
+function deploySub(ver) {
+  var m = package.read();
+  for (var f of fs.readdirSync('src')) {
+    if (/^_|index\.ts/.test(f)) continue;
+    var nam = f.replace(/\..*/, '');
+    var sym = path.symbolname(`${m.name}-${nam}`);
+    fs.restoreFileSync('README.md', () => {
+      var md = `wiki/${nam}.md`;
+      if (fs.existsSync(md)) fs.copyFileSync(md, 'README.md');
+      generateMain(f, '');
+      publishSub(nam, '', ver);
+      generateMain(f, sym);
+      publishSub(nam, sym, ver);
+    });
+  }
+}
+
+
+// Deploy root, sub packages to NPM, GitHub.
+function deployAll() {
+  var m   = package.read();
+  var ver = package.nextUnpublishedVersion(m.name, m.version);
+  cp.execLogSync(`tsc`);
+  updateGithub();
+  publishDocs(srcts);
+  deployRoot(ver);
+  deploySub(ver);
 }
 
 
@@ -231,7 +302,7 @@ function docsLinkReference(sym, pre, repo) {
   var root = `https://${owner}.github.io/${repo}`;
   var name = sym.name;
   var pred = pre? `${pre}.` : '';
-  var prem = pre? `${root}modules/${pre}.html` : 'modules.html';
+  var prem = pre? `modules/${pre}.html` : 'modules.html';
   switch (d.kind) {
     case 'interface': return `[${name}]: ${root}/interfaces/${pred}${name}.html`;
     case 'class':     return `[${name}]: ${root}/classes/${pred}${name}.html`;
@@ -267,13 +338,13 @@ function updateMarkdownLinkReferences() {
 
 // Update markdowns README, wiki.
 function updateMarkdown() {
-  updateMarkdownIndex(/class|(async\s+)?function\*?/);
+  updateMarkdownIndex(/const|class|(async\s+)?function\*?/);
   updateMarkdownLinkReferences();
 }
 
 
 function main(a) {
-  if (a[2] === 'deploy') deployRoot();
+  if (a[2] === 'deploy') deployAll();
   else if (a[2] === 'wiki') generateWiki();
   else if (a[2] === 'markdown') updateMarkdown();
   else generateMain(srcts, '');

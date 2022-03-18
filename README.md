@@ -1,10 +1,10 @@
 A Javascript interface for FYERS API.<br>
-📦 [NPM](https://www.npmjs.com/package/extra-fyers),
+📦 [Node.js](https://www.npmjs.com/package/extra-fyers),
 🌐 [Web](https://www.npmjs.com/package/extra-fyers.web),
 📜 [Files](https://unpkg.com/extra-fyers/),
 📰 [Docs](https://nodef.github.io/extra-fyers/).
 
-The objective of this package is to provide a cleaner interface to FYERS API.
+The objective of this package is to provide a cleaner interface to [FYERS API].
 The `http` namespace provides the same interface as FYERS HTTP API. The top
 namespace (global functions, classes) provide a [facade] for this HTTP API
 and provides additional utility functions, such as calculating charges.
@@ -20,12 +20,13 @@ The goals for the future include adding support for processing symbol master
 files (for getting a list of symbols and associated ISIN, description), and
 providing support for websocket interface.
 
-This package is available in both *Node.js* (`extra-fyers`) and *Web*
-(`extra-fyers.web`) formats. The web format is exposed as `extra_fyers`
-standalone variable and can be loaded from [jsDelivr CDN].
+This package is available in both *Node.js* and *Web* formats. The web format
+is exposed as `extra_fyers` standalone variable and can be loaded from
+[jsDelivr CDN].
 
 > Stability: [Experimental](https://www.youtube.com/watch?v=L1j93RnIxEo).
 
+[FYERS API]: https://myapi.fyers.in/docs/
 [facade]: https://en.wikipedia.org/wiki/Facade_pattern
 [jsDelivr CDN]: https://cdn.jsdelivr.net/npm/extra-fyers.web/index.js
 
@@ -122,6 +123,26 @@ main();
 | [submitEdisHoldingsStep] | Redirect to CDSL page for login where you can submit your Holdings information and accordingly you can provide the same to exchange to Sell your holdings (browser only). |
 | [inquireEdisTransaction] | Inquire the information/status of the provided transaction Id for the respective holdings you have on your end. |
 | [Api] | Container for storing authorization details. |
+
+<br>
+<br>
+
+
+## References
+
+- [FYERS API Docs](https://myapi.fyers.in/docs/)
+- [FYERS Community](https://community.fyers.in/)
+- [The Kite Connect API Javascript client - v4](https://kite.trade/docs/kiteconnectjs/v3/index.html)
+- [Intermarket Trading System (ITS)](https://www.investopedia.com/terms/i/intermarket-trading-system.asp)
+- [What are stop loss orders and how to use them?](https://support.zerodha.com/category/trading-and-markets/margin-leverage-and-product-and-order-types/articles/what-are-stop-loss-orders-and-how-to-use-them)
+- [How to use Stoploss-limit(SL) order like a Stoploss-Market(SLM) order?](https://support.zerodha.com/category/trading-and-markets/margin-leverage-and-product-and-order-types/articles/how-to-use-sl-l-order-like-a-sl-m-order)
+- [What is disclosed quantity feature and how to use it?](https://support.zerodha.com/category/trading-and-markets/kite-web-and-mobile/articles/what-is-disclosed-quantity-feature-and-how-to-use-it)
+- [What are cover orders and how to use them?](https://support.zerodha.com/category/trading-and-markets/product-and-order-types/order/articles/what-are-cover-orders-and-how-to-use-them)
+- [What does CNC, MIS and NRML mean?](https://support.zerodha.com/category/trading-and-markets/margin-leverage-and-product-and-order-types/articles/what-does-cnc-mis-and-nrml-mean)
+- [What is UNDCUR,UNDIRC, UNDIRT, UNDIRT in CDs? And what its use](https://tradingqna.com/t/what-is-undcur-undirc-undirt-undirt-in-cds-and-what-its-use/756)
+- [Can some one tell me what is FUTIRC?](https://tradingqna.com/t/can-some-one-tell-me-what-is-futirc/34069)
+- [I want to know in nifty f & o what is futidx, futivx, futstk?](https://tradingqna.com/t/i-want-to-know-in-nifty-f-o-what-is-futidx-futivx-futstk/2367)
+- [What Is a Rally?](https://www.investopedia.com/terms/r/rally.asp)
 
 <br>
 <br>
