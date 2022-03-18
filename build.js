@@ -109,8 +109,60 @@ function deployRoot() {
 }
 
 
+function jsdocSymbolMarkdown(sym, pre, repo) {
+  var x   = jsdoc.parse(sym.jsdoc);
+  var nam = pre? `${pre}.${sym.name}`   : sym.name;
+  var pkg = pre? `@${repo}/${sym.name}` : repo;
+  var sig = `${nam}(${x.params.map(p => p.name).join(', ')})`;
+  var len = Math.max(...x.params.map(p => p.name.length)) + 2;
+  var par = x.params.map(p => `// ${(p.name+':').padEnd(len, ' ')}${p.description}`).join('\n');
+  return `${x.description}<br>\n` +
+    `📦 [NPM](https://www.npmjs.com/package/${pkg}),\n` +
+    `🌐 [Web](https://www.npmjs.com/package/${pkg}.web),\n` +
+    `📜 [Files](https://unpkg.com/${pkg}/),\n` +
+    `📰 [Docs](https://nodef.github.io/${repo}/).\n\n` +
+    `> Similar: [${nam}].\n\n` +
+    `<br>\n\n` +
+    '```javascript\n' +
+    `${sig};\n` +
+    `${par}\n` +
+    '```\n\n' +
+    '```javascript\n' +
+    `const ${nam} = require("${repo}");\n\n` +
+    `${nam}(...);\n` +
+    `// → OUTPUT\n` +
+    '```\n\n' +
+    '<br>\n' +
+    '<br>\n\n\n' +
+    `## References\n\n` +
+    `- [Example](https://www.example.com/)\n\n` +
+    `[${nam}]: https://github.com/${owner}/${repo}/wiki/${nam}\n`
+}
+
+
+function generateWiki() {
+  var m = package.read('.');
+  for (var f of fs.readdirSync('src')) {
+    if (f.startsWith('_')) continue;
+    var nam = f.replace(/\..*/, '');
+    var pre = f === 'index.ts'? '' : nam;
+    var txt = fs.readFileTextSync(`src/${f}`);
+    var esyms = javascript.exportSymbols(txt);
+    var jsyms = javascript.jsdocSymbols(txt);
+    var jmap  = new Map(jsyms.map(x => [x.name, x]));
+    for (var e of esyms) {
+      var out = `wiki/${pre}${e.name}.md`;
+      if (fs.existsSync(out) && fs.readFileTextSync(out).length > 0) continue;
+      if (!jmap.has(e.name)) { fs.writeFileTextSync(out, ''); continue; }
+      fs.writeFileTextSync(out, jsdocSymbolMarkdown(jmap.get(e.name), pre, m.name));
+    }
+  }
+}
+
+
 function main(a) {
   if (a[2] === 'deploy') deployRoot();
+  if (a[2] === 'wiki') generateWiki();
   else generateMain(srcts, '');
 }
 main(process.argv);
