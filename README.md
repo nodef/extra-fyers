@@ -11,6 +11,10 @@ A Javascript interface for FYERS API.<br>
 ## TODO
 
 ```
+ERROR DESCRIPTION = No error / Unknown error
+
+CE/PE
+
 SL-MARKET?
 SL-LIMIT?
 SLMARKET
@@ -23,4 +27,9 @@ const enum InternalProductType {
   CO       = "CO",
   BO       = "BO",
 }
+
+getSymbolMaster null auth?
+
+ERROR HANDLING - multiple?
+ERROR CLASS?
 ```
