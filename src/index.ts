@@ -94,7 +94,7 @@ const ERROR_DESCRIPTION : Map<number, string> = new Map([
  * @returns error description
  */
 function errorDescription(code: number): string {
-  return ERROR_DESCRIPTION.get(code);
+  return code < 0? ERROR_DESCRIPTION.get(code) || "Unknown error" : "No error";
 }
 
 

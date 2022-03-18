@@ -11,8 +11,6 @@ A Javascript interface for FYERS API.<br>
 ## TODO
 
 ```
-ERROR DESCRIPTION = No error / Unknown error
-
 CE/PE
 
 SL-MARKET?
