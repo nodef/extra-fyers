@@ -11,19 +11,6 @@ A Javascript interface for FYERS API.<br>
 ## TODO
 
 ```
-SL-MARKET?
-SL-LIMIT?
-SLMARKET
-SLLIMIT
-
-const enum InternalProductType {
-  CNC      = "CNC",
-  INTRADAY = "INTRADAY",
-  MARGIN   = "MARGIN",
-  CO       = "CO",
-  BO       = "BO",
-}
-
 getSymbolMaster null auth?
 PROCESS symbol master
 

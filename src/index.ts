@@ -661,42 +661,42 @@ export function orderStatus(desc: string): OrderStatus {
 // ----------
 
 /** Order type code. */
-export type OrderType = "LIMIT" | "MARKET" | "SL-MARKET" | "SL-LIMIT";
+export type OrderType = "LIMIT" | "MARKET" | "SL_MARKET" | "SL_LIMIT";
 
 const enum InternalOrderType {
-  LIMIT    = 1,
-  MARKET   = 2,
-  SLMARKET = 3,
-  SLLIMIT  = 4,
+  LIMIT     = 1,
+  MARKET    = 2,
+  SL_MARKET = 3,
+  SL_LIMIT  = 4,
 }
 
 
 const TO_ORDER_TYPE: Map<number, OrderType> = new Map([
   [1, "LIMIT"],
   [2, "MARKET"],
-  [3, "SL-MARKET"],
-  [4, "SL-LIMIT"],
+  [3, "SL_MARKET"],
+  [4, "SL_LIMIT"],
 ]);
 
 const FROM_ORDER_TYPE: Map<OrderType, number> = new Map([
   ["LIMIT",     1],
   ["MARKET",    2],
-  ["SL-MARKET", 3],
-  ["SL-LIMIT",  4],
+  ["SL_MARKET", 3],
+  ["SL_LIMIT",  4],
 ]);
 
 const ORDER_TYPE_DESCRIPTION: Map<OrderType, string> = new Map([
   ["LIMIT",     "Limit order"],
   ["MARKET",    "Market order"],
-  ["SL-MARKET", "Stop order (SL-M)"],
-  ["SL-LIMIT",  "Stoplimit order (SL-L)"],
+  ["SL_MARKET", "Stop order (SL-M)"],
+  ["SL_LIMIT",  "Stoplimit order (SL-L)"],
 ]);
 
 const ORDER_TYPE_CODE: Map<string, OrderType> = new Map([
   ["L", "LIMIT"],
   ["M", "MARKET"],
-  ["S", "SL-MARKET"],
-  ["R", "SL-LIMIT"],
+  ["S", "SL_MARKET"],
+  ["R", "SL_LIMIT"],
 ]);
 
 
@@ -711,7 +711,7 @@ function fromOrderType(x: OrderType): number {
 
 /**
  * Get order type description.
- * @param code order type code (LIMIT, MARKET, SL-MARKET, SL-LIMIT)
+ * @param code order type code (LIMIT, MARKET, SL_MARKET, SL_LIMIT)
  * @returns order type description
  */
  export function orderTypeDescription(code: OrderType): string {
@@ -721,7 +721,7 @@ function fromOrderType(x: OrderType): number {
 /**
  * Get order type code.
  * @param desc order type description
- * @returns order type code (LIMIT, MARKET, SL-MARKET, SL-LIMIT)
+ * @returns order type code (LIMIT, MARKET, SL_MARKET, SL_LIMIT)
  */
 export function orderType(desc: string): OrderType {
   var key = desc.charAt(0).toUpperCase();
