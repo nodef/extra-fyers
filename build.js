@@ -216,7 +216,7 @@ function updateMarkdownIndex(rkind) {
         else rows[rmap.get(key)][1] = val;
       }
       var top = '| ' + rows[0].join(' | ') + ' |\n';
-      var mid = '| ' = rows[0].map(r => ` ---- `).join(' | ') + ' |\n';
+      var mid = '| ' + rows[0].map(r => ` ---- `).join(' | ') + ' |\n';
       var bot = rows.slice(1).map(r => '| ' + r.join(' | ') + ' |\n').join('');
       return top + mid + bot;
     });
