@@ -584,6 +584,7 @@ const enum InternalOrderStatus {
   PENDING   = 6,
   EXPIRED   = 7,
 }
+import IOST = InternalOrderStatus;
 
 
 const TO_ORDER_STATUS: Map<number, OrderStatus> = new Map([
@@ -1302,50 +1303,63 @@ export interface Funds {
   commodity: Fund,
 }
 
+const enum InternalFundLimitType {
+  START    = 9,
+  DEPOSITS = 6,
+  REALIZEDRETURNS = 4,
+  COLLATERALS = 5,
+  ADHOC       = 8,
+  UTILIZED    = 2,
+  RECEIVABLES = 7,
+  AVAILABLE   = 10,
+  CLEAR       = 3,
+  TOTAL       = 1,
+}
+import IFLT = InternalFundLimitType;
 
-import FLT = http.FundLimitType;
+
 function toFunds(x: http.GetFundsResponse): Funds {
   var e: Fund = {} as any;
   var c: Fund = {} as any;
   for (var l of x.fund_limit) {
     switch (l.id) {
-      case FLT.Start:
+      case IFLT.START:
         e.start = l.equityAmount;
         c.start = l.commodityAmount;
         break;
-      case FLT.Deposits:
+      case IFLT.DEPOSITS:
         e.deposits = l.equityAmount;
         c.deposits = l.commodityAmount;
         break;
-      case FLT.RealizedReturns:
+      case IFLT.REALIZEDRETURNS:
         e.realizedReturns = l.equityAmount;
         c.realizedReturns = l.commodityAmount;
         break;
-      case FLT.Collaterals:
+      case IFLT.COLLATERALS:
         e.collaterals = l.equityAmount;
         c.collaterals = l.commodityAmount;
         break;
-      case FLT.Adhoc:
+      case IFLT.ADHOC:
         e.adhoc = l.equityAmount;
         c.adhoc = l.commodityAmount;
         break;
-      case FLT.Utilized:
+      case IFLT.UTILIZED:
         e.utilized = l.equityAmount;
         c.utilized = l.commodityAmount;
         break;
-      case FLT.Receivables:
+      case IFLT.RECEIVABLES:
         e.receivables = l.equityAmount;
         c.receivables = l.commodityAmount;
         break;
-      case FLT.Available:
+      case IFLT.AVAILABLE:
         e.available = l.equityAmount;
         c.available = l.commodityAmount;
         break;
-      case FLT.Clear:
+      case IFLT.CLEAR:
         e.clear = l.equityAmount;
         c.clear = l.commodityAmount;
         break;
-      case FLT.Total:
+      case IFLT.TOTAL:
         e.total = l.equityAmount;
         c.total = l.commodityAmount;
         break;
@@ -1583,7 +1597,6 @@ export interface OrdersOverall {
 }
 
 
-import IOST = InternalOrderStatus;
 function toOrdersOverall(x: http.Order[]): OrdersOverall {
   var a: OrdersOverall = {
     count: 0,
@@ -2067,8 +2080,18 @@ export interface GetMarketHistory {
   continuous: boolean,
 }
 
+const enum InternalShortCandleIndex {
+  TIME   = 0,
+  OPEN   = 1,
+  HIGH   = 2,
+  LOW    = 3,
+  CLOSE  = 4,
+  VOLUME = 5,
+}
+import ISCI = InternalShortCandleIndex;
 
-/** List of valid candle resolutions in minutes. */
+
+// List of valid candle resolutions in minutes.
 const CANDLE_RESOLUTIONS = [1, 2, 3, 5, 10, 15, 20, 30, 60, 120, 240, 1440];
 
 function fromCandleResolution(x: number): string {
@@ -2109,18 +2132,16 @@ export interface Candle {
 }
 
 
-import SCI = http.ShortCandleIndex;
 function toCandleShort(x: http.ShortCandle): Candle {
   return {
-    date:       x[SCI.Time],
-    openPrice:  x[SCI.Open],
-    highPrice:  x[SCI.High],
-    lowPrice:   x[SCI.Low],
-    closePrice: x[SCI.Close],
-    volume:     x[SCI.Volume],
+    date:       x[ISCI.TIME],
+    openPrice:  x[ISCI.OPEN],
+    highPrice:  x[ISCI.HIGH],
+    lowPrice:   x[ISCI.LOW],
+    closePrice: x[ISCI.CLOSE],
+    volume:     x[ISCI.VOLUME],
   };
 }
-
 
 function toCandle(x: http.Candle): Candle {
   return {
@@ -2165,16 +2186,16 @@ function toMarketHistoryOverall(x: http.ShortCandle[]): MarketHistoryOverall {
   };
   if (x.length === 0) return a;
   var l = x.length - 1;
-  a.fromDate   = x[0][SCI.Time];
-  a.toDate     = x[l][SCI.Time];
-  a.openPrice  = x[0][SCI.Open];
-  a.highPrice  = x[0][SCI.High];
-  a.lowPrice   = x[0][SCI.Low];
-  a.closePrice = x[l][SCI.Close];
+  a.fromDate   = x[0][ISCI.TIME];
+  a.toDate     = x[l][ISCI.TIME];
+  a.openPrice  = x[0][ISCI.OPEN];
+  a.highPrice  = x[0][ISCI.HIGH];
+  a.lowPrice   = x[0][ISCI.LOW];
+  a.closePrice = x[l][ISCI.CLOSE];
   for (var c of x) {
-    a.highPrice = Math.max(a.highPrice, c[SCI.High]);
-    a.lowPrice  = Math.min(a.lowPrice,  c[SCI.Low]);
-    a.volume    += c[SCI.Volume];
+    a.highPrice = Math.max(a.highPrice, c[ISCI.HIGH]);
+    a.lowPrice  = Math.min(a.lowPrice,  c[ISCI.LOW]);
+    a.volume    += c[ISCI.VOLUME];
   }
   return a;
 }
