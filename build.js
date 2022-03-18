@@ -1,7 +1,7 @@
 const os = require('os');
 const {child_process: cp, fs, path} = require('extra-build');
 const {git, github, package}        = require('extra-build');
-const {javascript, jsdoc}           = require('extra-build');
+const {javascript, jsdoc, markdown} = require('extra-build');
 
 
 const owner  = 'nodef';
@@ -109,6 +109,7 @@ function deployRoot() {
 }
 
 
+// Get markdown for JSDoc symbol.
 function jsdocSymbolMarkdown(sym, pre, repo) {
   var x   = jsdoc.parse(sym.jsdoc);
   var nam = pre? `${pre}.${sym.name}`   : sym.name;
@@ -140,29 +141,141 @@ function jsdocSymbolMarkdown(sym, pre, repo) {
 }
 
 
-function generateWiki() {
-  var m = package.read('.');
+// Process each source file.
+function forEachSourceFile(fn) {
   for (var f of fs.readdirSync('src')) {
     if (f.startsWith('_')) continue;
+    var txt = fs.readFileTextSync(`src/${f}`);
+    var exps = javascript.exportSymbols(txt);
+    var docs = javascript.jsdocSymbols(txt);
+    var dmap = new Map(docs.map(x => [x.name, x]));
+    fn(f, exps, dmap);
+  }
+}
+
+
+// Create empty wiki files for all exported symbols.
+function createWikiFiles() {
+  forEachSourceFile((f, exps) => {
     var nam = f.replace(/\..*/, '');
     var pre = f === 'index.ts'? '' : nam;
-    var txt = fs.readFileTextSync(`src/${f}`);
-    var esyms = javascript.exportSymbols(txt);
-    var jsyms = javascript.jsdocSymbols(txt);
-    var jmap  = new Map(jsyms.map(x => [x.name, x]));
-    for (var e of esyms) {
+    for (var e of exps) {
       var out = `wiki/${pre}${e.name}.md`;
-      if (fs.existsSync(out) && fs.readFileTextSync(out).length > 0) continue;
-      if (!jmap.has(e.name)) { fs.writeFileTextSync(out, ''); continue; }
-      fs.writeFileTextSync(out, jsdocSymbolMarkdown(jmap.get(e.name), pre, m.name));
+      if (fs.existsSync(out)) continue;
+      fs.writeFileTextSync(out, '');
     }
+  });
+}
+
+
+// Generate wiki file text for all exported symbols.
+function generateWikiFiles() {
+  var m = package.read('.');
+  forEachSourceFile((f, exps, dmap) => {
+    var nam = f.replace(/\..*/, '');
+    var pre = f === 'index.ts'? '' : nam;
+    for (var e of exps) {
+      var out = `wiki/${pre}${e.name}.md`;
+      if (!fs.existsSync(out)) continue;
+      if (fs.readFileTextSync(out).length > 0) continue;
+      if (!dmap.has(e.name)) continue;
+      var md = jsdocSymbolMarkdown(dmap.get(e.name), pre, m.name);
+      fs.writeFileTextSync(out, md);
+    }
+  });
+}
+
+
+// Generate wiki for all exported symbols.
+function generateWiki() {
+  createWikiFiles();
+  generateWikiFiles();
+}
+
+
+// Update index table for README, wiki.
+function updateMarkdownIndex(rkind) {
+  forEachSourceFile((f, exps, dmap) => {
+    var nam = f.replace(/\..*/, '');
+    var pre = f === 'index.ts'? '' : nam;
+    var out = pre? `wiki/${nam}.md` : 'README.md';
+    if (!fs.existsSync(out)) return;
+    var txt = fs.readFileTextSync(out);
+    txt = markdown.replaceTables(txt, (full, rows) => {
+      if (rows.length < 1 || rows[0].length < 2) return full;
+      rows = rows.map(r => [r[0].trim(), r[1].trim()]);
+      if (!/property/i.test(rows[0][0]))    return full;
+      if (!/description/i.test(rows[0][1])) return full;
+      var rmap = new Map(rows.map((r, i) => [r[0], i]));
+      for (var e of exps) {
+        if (!dmap.has(e.name)) continue;
+        if (!rkind.test(e.kind)) continue;
+        var key  = `[${e.name}]`;
+        var val = jsdoc.parse(dmap.get(e.name).jsdoc).description.trim();
+        if (!rmap.has(key)) rows.push([key, val]);
+        else rows[rmap.get(key)][1] = val;
+      }
+      var top = '| ' + rows[0].join(' | ') + ' |\n';
+      var mid = '| ' = rows[0].map(r => ` ---- `).join(' | ') + ' |\n';
+      var bot = rows.slice(1).map(r => '| ' + r.join(' | ') + ' |\n').join('');
+      return top + mid + bot;
+    });
+    fs.writeFileTextSync(out, txt);
+  });
+}
+
+
+// Get docs link reference for jsdoc symbol.
+function docsLinkReference(sym, pre, repo) {
+  var d    = jsdoc.parse(sym.jsdoc);
+  var root = `https://${owner}.github.io/${repo}`;
+  var name = sym.name;
+  var pred = pre? `${pre}.` : '';
+  var prem = pre? `${root}modules/${pre}.html` : 'modules.html';
+  switch (d.kind) {
+    case 'interface': return `[${name}]: ${root}/interfaces/${pred}${name}.html`;
+    case 'class':     return `[${name}]: ${root}/classes/${pred}${name}.html`;
+    default:          return `[${name}]: ${root}/${prem}#${name}`;
   }
+}
+
+
+// Update link references for README, wiki.
+function updateMarkdownLinkReferences() {
+  var m = package.read('.');
+  forEachSourceFile((f, exps, dmap) => {
+    var nam = f.replace(/\..*/, '');
+    var pre = f === 'index.ts'? '' : nam;
+    var out = pre? `wiki/${nam}.md` : 'README.md';
+    if (!fs.existsSync(out)) return;
+    var txt = fs.readFileTextSync(out);
+    txt = markdown.replaceLinkReferences(txt, (full, name) => {
+      if (!dmap.has(name)) return full;
+      return docsLinkReference(dmap.get(name), pre, m.name);
+    });
+    var lset = new Set(markdown.links(txt).filter(x => !x.url).map(x => x.ref || x.name));
+    var rset = new Set(markdown.linkReferences(txt).map(x => x.name));
+    for (var l of lset) {
+      if (rset.has(l)) continue;
+      if (!dmap.has(l)) continue;
+      txt += docsLinkReference(dmap.get(l), pre, m.name) + '\n';
+    }
+    fs.writeFileTextSync(out, txt);
+  });
+}
+
+
+// Update markdowns README, wiki.
+function updateMarkdown() {
+  updateMarkdownIndex(/class|(async\s+)?function\*?/);
+  updateMarkdownLinkReferences();
 }
 
 
 function main(a) {
   if (a[2] === 'deploy') deployRoot();
-  if (a[2] === 'wiki') generateWiki();
+  else if (a[2] === 'wiki') generateWiki();
+  else if (a[2] === 'markdown') updateMarkdown();
   else generateMain(srcts, '');
 }
 main(process.argv);
