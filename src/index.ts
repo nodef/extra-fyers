@@ -1,24 +1,246 @@
 import {HttpRequestOptions} from './_http';
-export {HttpHeaders, HttpRequestOptions} from './_http';
-import * as appendix from './appendix';
-export * as appendix from './appendix';
 import * as http from './http';
+
+
+
+
+// HTTP
+// ====
+
+export {HttpHeaders, HttpRequestOptions} from './_http';
 export * as http from './http';
 
 
 
 
-// APPENDIX
-// ========
+// BASICS
+// ======
 
-// ERROR, YEAR2, MONTH3, MONTH1, DAY2
-// ----------------------------------
+// ERROR
+// -----
 
-export {errorDescription}          from './appendix';
-export {year2Description, year2}   from './appendix';
-export {month3Description, month3} from './appendix';
-export {month1Description, month1} from './appendix';
-export {day2Description, day2}     from './appendix';
+const ERROR_DESCRIPTION : Map<number, string> = new Map([
+  [-209, "Invalid order id"],
+  [-101, "Invalid order type"],
+  [-305, "For CO orders only market and limit orders are allowed"],
+  [-323, "For BO orders only market and limit orders are allowed"],
+  [-308, "Invalid limit price"],
+  [-309, "Invalid stop price"],
+  [-310, "Invalid order quantity"],
+  [-311, "Invalid stop loss price"],
+  [-313, "Invalid order side of either buy or sell"],
+  [-314, "Invalid product type for the order"],
+  [-315, "Invalid price for stop limit order"],
+  [-316, "Invalid stop loss price for CO/BO orders"],
+  [-323, "Invalid stop loss value"],
+  [-325, "Ivalid target value (take_profit)"],
+  [-326, "Invalid order validity"],
+  [-327, "Invalid order disclosed quantity"],
+  [-328, "Invalid order offline flag"],
+  [-201, "Connection issue while processing your request"],
+  [-202, "Connection timed out"],
+  [-204, "Request wasnt processed"],
+  [-205, "Market wasnt able to accept or process the request"],
+  [-157, "User doesnt exist"],
+  [-159, "Invalid order number"],
+  [-161, "This order has already been cancelled"],
+  [-162, "This order has already traded"],
+  [-163, "Order modfication wasnt done successfully"],
+  [-164, "This order has already been rejected"],
+  [-390, "Invalid stop price"],
+  [-392, "Price is not in multiples of tick size"],
+  [-353, "API limit exceeded"],
+  [-372, "Invalid price"],
+  [-397, "Position quantity is zero"],
+  [-398, "No open positions"],
+  [-399, "No pending orders to be closed/cancelled"],
+  [-329, "Please check if exit positions is complete"],
+  [-373, "No permission"],
+  [-374, "Invalid authorization code (auth_code)"],
+  [-371, "Invalid SHA256 hash of (app_id:secret_key)"],
+  [-17,  "Invalid access token used for authentication"],
+  [-352, "Invalid app id"],
+  [-96,  "An unexpected error occurred when processing request"],
+  [-351, "Greater than 50 symbols"],
+  [-300, "Invalid symbol"],
+  [-310, "Invalid symbols"],
+  [-301, "Invalid resolution format"],
+  [-302, "Invalid historical timestamp from when you require data"],
+  [-303, "Invalid historical timestamp till when you require data"],
+  [-356, "The range_from value cannot be greater than range_to value"],
+  [-334, "Invalid key date format value"],
+  [-335, "Historical timestamp from when you require data not in epoch format"],
+  [-336, "Historical timestamp till when you require data not in epoch format"],
+  [-337, "Historical timestamp from when you require data not in YYYY-MM-DD format"],
+  [-338, "Historical timestamp till when you require data not in YYYY-MM-DD format"],
+  [-339, "The range cannot be more than 1 year for day resolution"],
+  [-341, "The range cannot be more than 100 days for 1 min resolution"],
+  [-343, "The range cannot be more than 100 days for 2 min resolution"],
+  [-344, "The range cannot be more than 100 days for 3 min resolution"],
+  [-345, "The range cannot be more than 100 days for 5 min resolution"],
+  [-346, "The range cannot be more than 100 days for 10 min resolution"],
+  [-347, "The range cannot be more than 100 days for 15 min resolution"],
+  [-348, "The range cannot be more than 100 days for 20 min resolution"],
+  [-349, "The range cannot be more than 100 days for 30 min resolution"],
+  [-353, "The range cannot be more than 100 days for 60 min resolution"],
+  [-354, "The range cannot be more than 100 days for 120 min resolution"],
+  [-355, "The range cannot be more than 100 days for 240 min resolution"],
+]);
+
+
+/**
+ * Get the error description.
+ * @param code error code (-ve)
+ * @returns error description
+ */
+function errorDescription(code: number): string {
+  return ERROR_DESCRIPTION.get(code);
+}
+
+
+
+
+// YEAR2
+// -----
+
+/**
+ * Get year2 description.
+ * @param code year2 code (YY)
+ * @returns year2 description
+ */
+function year2Description(code: string): string {
+  var val = parseInt(code, 10);
+  return val > 50? "19" + code : "20" + code;
+}
+
+/**
+ * Get year2 code.
+ * @param desc year2 description
+ * @returns year2 code (YY)
+ */
+function year2(desc: string): string {
+  return desc.substring(2);
+}
+
+
+
+
+// MONTH3
+// ------
+
+const MONTH3_DESCRIPTION: Map<string, string> = new Map([
+  ["JAN", "January"],
+  ["FEB", "February"],
+  ["MAR", "March"],
+  ["APR", "April"],
+  ["MAY", "May"],
+  ["JUN", "June"],
+  ["JUL", "July"],
+  ["AUG", "August"],
+  ["SEP", "September"],
+  ["OCT", "October"],
+  ["NOV", "November"],
+  ["DEC", "December"],
+]);
+
+
+/**
+ * Get month3 description.
+ * @param code month3 code (MMM)
+ * @returns month3 description
+ */
+function month3Description(code: string): string {
+  return MONTH3_DESCRIPTION.get(code);
+}
+
+/**
+ * Get month3 code.
+ * @param desc month3 description
+ * @returns month3 code (MMM)
+ */
+function month3(desc: string): string {
+  return desc.substring(0, 3).toUpperCase();
+}
+
+
+
+
+// MONTH1
+// ------
+
+const MONTH1_DESCRIPTION: Map<string, string> = new Map([
+  ["1", "January"],
+  ["2", "February"],
+  ["3", "March"],
+  ["4", "April"],
+  ["5", "May"],
+  ["6", "June"],
+  ["7", "July"],
+  ["8", "August"],
+  ["9", "September"],
+  ["O", "October"],
+  ["N", "November"],
+  ["D", "December"],
+]);
+
+const MONTH1_CODE: Map<string, string> = new Map([
+  ["JAN", "1"],
+  ["FEB", "2"],
+  ["MAR", "3"],
+  ["APR", "4"],
+  ["MAY", "5"],
+  ["JUN", "6"],
+  ["JUL", "7"],
+  ["AUG", "8"],
+  ["SEP", "9"],
+  ["OCT", "O"],
+  ["NOV", "N"],
+  ["DEC", "D"],
+]);
+
+
+/**
+ * Get month1 description.
+ * @param code month1 code (MMM)
+ * @returns month1 description
+ */
+function month1Description(code: string): string {
+  return MONTH1_DESCRIPTION.get(code);
+}
+
+/**
+ * Get month1 code.
+ * @param desc month1 description
+ * @returns month1 code (MMM)
+ */
+function month1(desc: string): string {
+  var key = desc.substring(0, 3).toUpperCase();
+  return MONTH1_CODE.get(key);
+}
+
+
+
+
+// DAY2
+// ----
+
+/**
+ * Get day2 description.
+ * @param code day2 code (DD)
+ * @returns day2 description
+ */
+function day2Description(code: string): string {
+  return code.replace(/^0+/, "");
+}
+
+/**
+ * Get day2 code.
+ * @param desc day2 description
+ * @returns day2 code (DD)
+ */
+function day2(desc: string): string {
+  return desc.padStart(2, "0");
+}
 
 
 
@@ -28,6 +250,12 @@ export {day2Description, day2}     from './appendix';
 
 /** Exchange code. */
 export type Exchange = "NSE" | "MCX" | "BSE";
+
+const enum InternalExchange {
+  NSE = 10,
+  MCX = 11,
+  BSE = 12,
+}
 
 
 const TO_EXCHANGE: Map<number, Exchange> = new Map([
@@ -40,6 +268,12 @@ const FROM_EXCHANGE: Map<Exchange, number> = new Map([
   ["NSE", 10],
   ["MCX", 11],
   ["BSE", 12],
+]);
+
+const EXCHANGE_DESCRIPTION: Map<Exchange, string> = new Map([
+  ["NSE", "National Stock Exchange"],
+  ["MCX", "Multi Commodity Exchange"],
+  ["BSE", "Bombay Stock Exchange"],
 ]);
 
 
@@ -56,8 +290,8 @@ function fromExchange(x: Exchange): number {
  * @param code exchange code (NSE, MCX, BSE)
  * @returns exchange description
  */
-export function exchangeDescription(code: Exchange): string {
-  return appendix.exchangeDescription(fromExchange(code));
+ export function exchangeDescription(code: Exchange): string {
+  return EXCHANGE_DESCRIPTION.get(code);
 }
 
 /**
@@ -66,7 +300,9 @@ export function exchangeDescription(code: Exchange): string {
  * @returns exchange code (NSE, MCX, BSE)
  */
 export function exchange(desc: string): Exchange {
-  return toExchange(appendix.exchange(desc));
+  if (/bse|native|bombay|mumbai/i.test(desc)) return "BSE";
+  if (/\bcom\b|mcx|multi/i.test(desc)) return "MCX";
+  return "NSE";
 }
 
 
@@ -77,6 +313,13 @@ export function exchange(desc: string): Exchange {
 
 /** Segment code. */
 export type Segment = "CM" | "FO" | "CD" | "COM";
+
+const enum InternalSegment {
+  CM  = 10,
+  FO  = 11,
+  CD  = 12,
+  COM = 20,
+}
 
 
 const TO_SEGMENT: Map<number, Segment> = new Map([
@@ -93,6 +336,13 @@ const FROM_SEGMENT: Map<string, number> = new Map([
   ["COM", 20],
 ]);
 
+const SEGMENT_DESCRIPTION: Map<Segment, string> = new Map([
+  ["CM",  "Capital Market"],
+  ["FO",  "Equity Derivatives"],
+  ["CD",  "Currency Derivatives"],
+  ["COM", "Commodity Derivatives"],
+]);
+
 
 function toSegment(x: number): Segment {
   return TO_SEGMENT.get(x);
@@ -107,8 +357,8 @@ function fromSegment(x: Segment): number {
  * @param code segment code (CM, FO, CD, COM)
  * @returns segment description
  */
-export function segmentDescription(code: Segment): string {
-  return appendix.segmentDescription(fromSegment(code));
+ export function segmentDescription(code: Segment): string {
+  return SEGMENT_DESCRIPTION.get(code);
 }
 
 /**
@@ -117,7 +367,10 @@ export function segmentDescription(code: Segment): string {
  * @returns segment code (CM, FO, CD, COM)
  */
 export function segment(desc: string): Segment {
-  return toSegment(appendix.segment(desc));
+  if (/\bcom\b|mcx|multi/i.test(desc)) return "COM";
+  if (/\bcd\b|curr/i.test(desc)) return "CD";
+  if (/\bfn?o\b|fut|opt|der/i.test(desc)) return "FO";
+  return "CM";
 }
 
 
@@ -128,6 +381,12 @@ export function segment(desc: string): Segment {
 
 /** Position side code. */
 export type PositionSide = "LONG" | "SHORT" | "CLOSED";
+
+const enum InternalPositionSide {
+  LONG   =  1,
+  SHORT  = -1,
+  CLOSED =  0,
+}
 
 
 const TO_POSITION_SIDE: Map<number, PositionSide> = new Map([
@@ -140,6 +399,12 @@ const FROM_POSITION_SIDE: Map<PositionSide, number> = new Map([
   ["LONG",   1],
   ["SHORT", -1],
   ["CLOSED", 0],
+]);
+
+const POSITION_SIDE_DESCRIPTION: Map<PositionSide, string> = new Map([
+  ["LONG",   "Long position"],
+  ["SHORT",  "Short position"],
+  ["CLOSED", "Closed position"],
 ]);
 
 
@@ -156,8 +421,8 @@ function fromPositionSide(x: PositionSide): number {
  * @param code position side code (LONG, SHORT, CLOSED)
  * @returns position side description
  */
-export function positionSideDescription(code: PositionSide): string {
-  return appendix.positionSideDescription(fromPositionSide(code));
+ export function positionSideDescription(code: PositionSide): string {
+  return POSITION_SIDE_DESCRIPTION.get(code);
 }
 
 /**
@@ -166,7 +431,9 @@ export function positionSideDescription(code: PositionSide): string {
  * @returns position side code (LONG, SHORT, CLOSED)
  */
 export function positionSide(desc: string): PositionSide {
-  return toPositionSide(appendix.positionSide(desc));
+  if (/up|buy|long|rally/i.test(desc)) return "LONG";
+  if (/down|sell|short|crash/i.test(desc)) return "SHORT";
+  return "CLOSED";
 }
 
 
@@ -178,6 +445,11 @@ export function positionSide(desc: string): PositionSide {
 /** Order side code. */
 export type OrderSide = "BUY" | "SELL";
 
+const enum InternalOrderSide {
+  BUY  =  1,
+  SELL = -1
+}
+
 
 const TO_ORDER_SIDE: Map<number, OrderSide> = new Map([
   [1,  "BUY"],
@@ -187,6 +459,11 @@ const TO_ORDER_SIDE: Map<number, OrderSide> = new Map([
 const FROM_ORDER_SIDE: Map<OrderSide, number> = new Map([
   ["BUY",   1],
   ["SELL", -1],
+]);
+
+const ORDER_SIDE_DESCRIPTION: Map<OrderSide, string> = new Map([
+  ["BUY",  "Buy"],
+  ["SELL", "Sell"],
 ]);
 
 
@@ -203,8 +480,8 @@ function fromOrderSide(x: OrderSide): number {
  * @param code order side code (BUY, SELL)
  * @returns order side description
  */
-export function orderSideDescription(code: OrderSide): string {
-  return appendix.orderSideDescription(fromOrderSide(code));
+ export function orderSideDescription(code: OrderSide): string {
+  return ORDER_SIDE_DESCRIPTION.get(code);
 }
 
 /**
@@ -213,7 +490,7 @@ export function orderSideDescription(code: OrderSide): string {
  * @returns order side code (BUY, SELL)
  */
 export function orderSide(desc: string): OrderSide {
-  return toOrderSide(appendix.orderSide(desc));
+  return /down|sell|short|crash/i.test(desc)? "SELL" : "BUY";
 }
 
 
@@ -224,6 +501,14 @@ export function orderSide(desc: string): OrderSide {
 
 /** Order source code. */
 export type OrderSource = "MOBILE" | "WEB" | "ONE" | "ADMIN" | "API";
+
+const enum InternalOrderSource {
+  MOBILE = "M",
+  WEB    = "W",
+  ONE    = "R",
+  ADMIN  = "A",
+  API    = "ITS",
+}
 
 
 const TO_ORDER_SOURCE: Map<string, OrderSource> = new Map([
@@ -242,6 +527,14 @@ const FROM_ORDER_SOURCE: Map<OrderSource, string> = new Map([
   ["API",    "ITS"],
 ]);
 
+const ORDER_SOURCE_DESCRIPTION: Map<OrderSource, string> = new Map([
+  ["MOBILE", "FYERS Mobile"],
+  ["WEB",    "FYERS Web"],
+  ["ONE",    "FYERS One"],
+  ["ADMIN",  "Admin"],
+  ["API",    "FYERS API"],
+]);
+
 
 function toOrderSource(x: string): OrderSource {
   return TO_ORDER_SOURCE.get(x);
@@ -256,8 +549,8 @@ function fromOrderSource(x: OrderSource): string {
  * @param code order source code (MOBILE, WEB, ONE, ADMIN, API)
  * @returns order source description
  */
-export function orderSourceDescription(code: OrderSource): string {
-  return appendix.orderSourceDescription(fromOrderSource(code));
+ export function orderSourceDescription(code: OrderSource): string {
+  return ORDER_SOURCE_DESCRIPTION.get(code);
 }
 
 /**
@@ -266,7 +559,11 @@ export function orderSourceDescription(code: OrderSource): string {
  * @returns order source code (MOBILE, WEB, ONE, ADMIN, API)
  */
 export function orderSource(desc: string): OrderSource {
-  return toOrderSource(appendix.orderSource(desc));
+  if (/its|api|sys/i.test(desc)) return "API";
+  if (/one|desk/i.test(desc)) return "ONE";
+  if (/mob|app/i.test(desc))  return "MOBILE";
+  if (/admin/i.test(desc))    return "ADMIN";
+  return "WEB";
 }
 
 
@@ -277,6 +574,16 @@ export function orderSource(desc: string): OrderSource {
 
 /** Order status code. */
 export type OrderStatus = "CANCELLED" | "TRADED" | "TRANSIT" | "REJECTED" | "PENDING" | "EXPIRED";
+
+const enum InternalOrderStatus {
+  CANCELLED = 1,
+  TRADED    = 2,
+  UNUSED    = 3,
+  TRANSIT   = 4,
+  REJECTED  = 5,
+  PENDING   = 6,
+  EXPIRED   = 7,
+}
 
 
 const TO_ORDER_STATUS: Map<number, OrderStatus> = new Map([
@@ -299,6 +606,24 @@ const FROM_ORDER_STATUS: Map<OrderStatus, number> = new Map([
   ["EXPIRED",   7],
 ]);
 
+const ORDER_STATUS_DESCRIPTION: Map<OrderStatus, string> = new Map([
+  ["CANCELLED", "Cancelled"],
+  ["TRADED",    "Traded / Filled"],
+  ["TRANSIT",   "Transit"],
+  ["REJECTED",  "Rejected"],
+  ["PENDING",   "Pending"],
+  ["EXPIRED",   "Expired"],
+]);
+
+const ORDER_STATUS_CODE: Map<string, OrderStatus> = new Map([
+  ["C", "CANCELLED"],
+  ["F", "TRADED"],
+  ["T", "TRANSIT"],
+  ["R", "REJECTED"],
+  ["P", "PENDING"],
+  ["E", "EXPIRED"],
+]);
+
 
 function toOrderStatus(x: number): OrderStatus {
   return TO_ORDER_STATUS.get(x);
@@ -310,20 +635,22 @@ function fromOrderStatus(x: OrderStatus): number {
 
 /**
  * Get order status description.
- * @param code order status code (CANCELLED, TRADED, TRANSIT, REJECTED, PENDING, EXPIRED)
+ * @param code order status code (CANCELLED, TRADED, ...)
  * @returns order status description
  */
-export function orderStatusDescription(code: OrderStatus): string {
-  return appendix.orderStatusDescription(fromOrderStatus(code));
+ export function orderStatusDescription(code: OrderStatus): string {
+  return ORDER_STATUS_DESCRIPTION.get(code);
 }
 
 /**
  * Get order status code.
  * @param desc order status description
- * @returns order status code (CANCELLED, TRADED, TRANSIT, REJECTED, PENDING, EXPIRED)
+ * @returns order status code (CANCELLED, TRADED, ...)
  */
 export function orderStatus(desc: string): OrderStatus {
-  return toOrderStatus(appendix.orderStatus(desc));
+  var key = desc.charAt(0).toUpperCase();
+  if (/traded/i.test(desc)) key = "F";
+  return ORDER_STATUS_CODE.get(key);
 }
 
 
@@ -334,6 +661,13 @@ export function orderStatus(desc: string): OrderStatus {
 
 /** Order type code. */
 export type OrderType = "LIMIT" | "MARKET" | "SL-MARKET" | "SL-LIMIT";
+
+const enum InternalOrderType {
+  LIMIT    = 1,
+  MARKET   = 2,
+  SLMARKET = 3,
+  SLLIMIT  = 4,
+}
 
 
 const TO_ORDER_TYPE: Map<number, OrderType> = new Map([
@@ -348,6 +682,20 @@ const FROM_ORDER_TYPE: Map<OrderType, number> = new Map([
   ["MARKET",    2],
   ["SL-MARKET", 3],
   ["SL-LIMIT",  4],
+]);
+
+const ORDER_TYPE_DESCRIPTION: Map<OrderType, string> = new Map([
+  ["LIMIT",     "Limit order"],
+  ["MARKET",    "Market order"],
+  ["SL-MARKET", "Stop order (SL-M)"],
+  ["SL-LIMIT",  "Stoplimit order (SL-L)"],
+]);
+
+const ORDER_TYPE_CODE: Map<string, OrderType> = new Map([
+  ["L", "LIMIT"],
+  ["M", "MARKET"],
+  ["S", "SL-MARKET"],
+  ["R", "SL-LIMIT"],
 ]);
 
 
@@ -365,8 +713,8 @@ function fromOrderType(x: OrderType): number {
  * @param code order type code (LIMIT, MARKET, SL-MARKET, SL-LIMIT)
  * @returns order type description
  */
-export function orderTypeDescription(code: OrderType): string {
-  return appendix.orderTypeDescription(fromOrderType(code));
+ export function orderTypeDescription(code: OrderType): string {
+  return ORDER_TYPE_DESCRIPTION.get(code);
 }
 
 /**
@@ -375,7 +723,9 @@ export function orderTypeDescription(code: OrderType): string {
  * @returns order type code (LIMIT, MARKET, SL-MARKET, SL-LIMIT)
  */
 export function orderType(desc: string): OrderType {
-  return toOrderType(appendix.orderType(desc));
+  var key = desc.charAt(0).toUpperCase();
+  if (/s.+l(?!oss)/i.test(desc)) key = "R";
+  return ORDER_TYPE_CODE.get(key);
 }
 
 
@@ -386,6 +736,17 @@ export function orderType(desc: string): OrderType {
 
 /** Order validity code. */
 export type OrderValidity = "DAY" | "IOC";
+
+const enum InternalOrderValidity {
+  DAY = "DAY",
+  IOC = "IOC",
+}
+
+
+const ORDER_VALIDITY_DESCRIPTION: Map<OrderValidity, string> = new Map([
+  ["DAY", "End of day validity"],
+  ["IOC", "Immediate or Cancel validity"],
+]);
 
 
 function toOrderValidity(x: string): OrderValidity {
@@ -401,8 +762,8 @@ function fromOrderValidity(x: OrderValidity): string {
  * @param code order validity code (DAY, IOC)
  * @returns order validity description
  */
-export function orderValidityDescription(code: OrderValidity): string {
-  return appendix.orderValidity(fromOrderValidity(code));
+ export function orderValidityDescription(code: OrderValidity): string {
+  return ORDER_VALIDITY_DESCRIPTION.get(code);
 }
 
 /**
@@ -411,7 +772,7 @@ export function orderValidityDescription(code: OrderValidity): string {
  * @returns order validity code (DAY, IOC)
  */
 export function orderValidity(desc: string): OrderValidity {
-  return toOrderValidity(appendix.orderValidity(desc));
+  return /ioc|cancel|immediate/i.test(desc)? "IOC" : "DAY";
 }
 
 
@@ -423,6 +784,11 @@ export function orderValidity(desc: string): OrderValidity {
 /** Option type code. */
 export type OptionType = "CALL" | "PUT";
 
+const enum InternalOptionType {
+  CALL = "CE",
+  PUT  = "PE",
+}
+
 
 const TO_OPTION_TYPE: Map<string, OptionType> = new Map([
   ["CE", "CALL"],
@@ -432,6 +798,11 @@ const TO_OPTION_TYPE: Map<string, OptionType> = new Map([
 const FROM_OPTION_TYPE: Map<OptionType, string> = new Map([
   ["CALL", "CE"],
   ["PUT",  "PE"],
+]);
+
+const OPTION_TYPE_DESCRIPTION: Map<OptionType, string> = new Map([
+  ["CALL", "Call Option (CE)"],
+  ["PUT", "Put Option (PE)"],
 ]);
 
 
@@ -448,17 +819,17 @@ function fromOptionType(x: OptionType): string {
  * @param code option type code (CALL, PUT)
  * @returns option type description
  */
-export function optionTypeDescription(code: OptionType): string {
-  return appendix.optionTypeDescription(fromOptionType(code));
+ export function optionTypeDescription(code: OptionType): string {
+  return OPTION_TYPE_DESCRIPTION.get(code);
 }
 
 /**
  * Get option type code.
  * @param desc option type description
- * @returns option type code (CALL, PUT)
+ * @returns option type code (CE, PE)
  */
 export function optionType(desc: string): OptionType {
-  return toOptionType(appendix.optionType(desc));
+  return /pe|put|sell/i.test(desc)? "PUT" : "CALL";
 }
 
 
@@ -469,6 +840,17 @@ export function optionType(desc: string): OptionType {
 
 /** Holding type code. */
 export type HoldingType = "T1" | "HLD";
+
+const enum InternalHoldingType {
+  T1  = "T1",
+  HLD = "HLD",
+}
+
+
+const HOLDING_TYPE_DESCRIPTION: Map<HoldingType, string> = new Map([
+  ["T1",  "The shares are purchased but not yet delivered to the demat account"],
+  ["HLD", "The shares are purchased and are available in the demat account"],
+]);
 
 
 function toHoldingType(x: string): HoldingType {
@@ -484,8 +866,8 @@ function fromHoldingType(x: HoldingType): string {
  * @param code holding type code (T1, HLD)
  * @returns holding type description
  */
-export function holdingTypeDescription(code: HoldingType): string {
-  return appendix.holdingTypeDescription(fromHoldingType(code));
+ export function holdingTypeDescription(code: HoldingType): string {
+  return HOLDING_TYPE_DESCRIPTION.get(code);
 }
 
 /**
@@ -494,7 +876,7 @@ export function holdingTypeDescription(code: HoldingType): string {
  * @returns holding type code (T1, HLD)
  */
 export function holdingType(desc: string): HoldingType {
-  return toHoldingType(appendix.holdingType(desc));
+  return /un|not|pend|t1/i.test(desc)? "T1" : "HLD";
 }
 
 
@@ -505,6 +887,31 @@ export function holdingType(desc: string): HoldingType {
 
 /** Product type code. */
 export type ProductType = "CNC" | "INTRADAY" | "MARGIN" | "CO" | "BO";
+
+const enum InternalProductType {
+  CNC      = "CNC",
+  INTRADAY = "INTRADAY",
+  MARGIN   = "MARGIN",
+  CO       = "CO",
+  BO       = "BO",
+}
+
+
+const PRODUCT_TYPE_DESCRIPTION: Map<ProductType, string> = new Map([
+  ["CNC",      "Cash N Carry or Delivery Order, for equity only"],
+  ["INTRADAY", "Intraday Order, applicable for all segments"],
+  ["MARGIN",   "Margin Order, applicable only for derivatives"],
+  ["CO",       "Cover Order"],
+  ["BO",       "Bracket Order"],
+]);
+
+const PRODUCT_TYPE_CODE: Map<string, ProductType> = new Map([
+  ["D", "CNC"],
+  ["I", "INTRADAY"],
+  ["M", "MARGIN"],
+  ["C", "CO"],
+  ["B", "BO"],
+]);
 
 
 function toProductType(x: string): ProductType {
@@ -520,8 +927,8 @@ function fromProductType(x: ProductType): string {
  * @param code product type code (CNC, INTRADAY, MARGIN, CO, BO)
  * @returns product type description
  */
-export function productTypeDescription(code: ProductType): string {
-  return appendix.productTypeDescription(code);
+ export function productTypeDescription(code: ProductType): string {
+  return PRODUCT_TYPE_DESCRIPTION.get(code);
 }
 
 /**
@@ -530,7 +937,9 @@ export function productTypeDescription(code: ProductType): string {
  * @returns product type code (CNC, INTRADAY, MARGIN, CO, BO)
  */
 export function productType(desc: string): ProductType {
-  return appendix.productType(desc) as ProductType;
+  var key = desc.charAt(0).toUpperCase();
+  if (/cnc|cash|carry|deliver/i.test(desc)) key = "D";
+  return PRODUCT_TYPE_CODE.get(key);
 }
 
 
@@ -545,6 +954,38 @@ export type InstrumentType =
   "FUTIDX" | "FUTIVX" | "FUTSTK" | "OPTIDX" | "OPTSTK" | // FO segment
   "FUTCUR" | "FUTIRT" | "FUTIRC" | "OPTCUR" | "UNDCUR" | "UNDIRC" | "UNDIRT" | "UNDIRD" | "INDEX_CD" | "FUTIRD" | // CD segment
   "FUTCOM" | "OPTFUT" | "OPTCOM"; // COM segment
+
+const enum InternalInstrumentType {
+  // CM segment
+  EQ = 0,
+  PREFSHARES = 1,
+  DEBENTURES = 2,
+  WARRANTS   = 3,
+  MISC   = 4,
+  INDEX  = 10,
+  // FO segment
+  FUTIDX = 11,
+  FUTIVX = 12,
+  FUTSTK = 13,
+  OPTIDX = 14,
+  OPTSTK = 15,
+  // CD segment
+  FUTCUR = 16,
+  FUTIRT = 17,
+  FUTIRC = 18,
+  OPTCUR = 19,
+  UNDCUR = 20,
+  UNDIRC = 21,
+  UNDIRT = 22,
+  UNDIRD = 23,
+  INDEX_CD = 24,
+  FUTIRD = 25,
+  // COM segment
+//FUTIDX = 11,
+  FUTCOM = 30,
+  OPTFUT = 31,
+  OPTCOM = 32,
+}
 
 
 const TO_INSTRUMENT_TYPE: Map<number, InstrumentType> = new Map([
@@ -611,6 +1052,38 @@ const FROM_INSTRUMENT_TYPE: Map<InstrumentType, number> = new Map([
   ["OPTCOM", 32],
 ]);
 
+const INSTRUMENT_TYPE_DESCRIPTION: Map<InstrumentType, string> = new Map([
+  // CM segment
+  ["EQ",     "Equity Shares"],
+  ["PREFSHARES", "Preference Shares"],
+  ["DEBENTURES", "Collateral-free Debt"],
+  ["WARRANTS",   "Warrants on Stock"],
+  ["MISC",   "Miscellaneous"],
+  ["INDEX",  "Stock Market Index"],
+  // FO segment
+  ["FUTIDX", "Futures on Index"],
+  ["FUTIVX", "Futures on Volatility Index"],
+  ["FUTSTK", "Futures on Stock"],
+  ["OPTIDX", "Options on Index"],
+  ["OPTSTK", "Options on Stock"],
+  // CD segment
+  ["FUTCUR", "Futures on Currency"],
+  ["FUTIRT", "Futures on Government of India Treasury Bills"],
+  ["FUTIRC", "Futures on Government of India Bonds"],
+  ["OPTCUR", "Options on Currency"],
+  ["UNDCUR", "Underlying on Currency"],
+  ["UNDIRC", "Underlying on Government of Bonds"],
+  ["UNDIRT", "Underlying on Government of India Treasury Bills"],
+  ["UNDIRD", "Underlying on 10 Year Notional coupon bearing GOI security"],
+  ["INDEX_CD", "Market-indexed Certificate of deposit"],
+  ["FUTIRD", "Futures on 10 Year Notional coupon bearing GOI security"],
+  // COM segment
+//["FUTIDX_COM", "Futures on Commodity Index"],
+  ["FUTCOM", "Futures on Commodity"],
+  ["OPTFUT", "Options on Commodity Futures"],
+  ["OPTCOM", "Options on Commodity"],
+]);
+
 
 function toInstrumentType(x: number): InstrumentType {
   return TO_INSTRUMENT_TYPE.get(x);
@@ -622,27 +1095,55 @@ function fromInstrumentType(x: InstrumentType): number {
 
 /**
  * Get instrument type description.
- * @param code instrument type code (EQ, PREFSHARES, DEBENTURES, ...)
+ * @param code instrument type code
  * @returns instrument type description
  */
-export function instrumentTypeDescription(code: InstrumentType): string {
-  return appendix.instrumentTypeDescription(fromInstrumentType(code));
+ export function instrumentTypeDescription(code: InstrumentType): string {
+  return INSTRUMENT_TYPE_DESCRIPTION.get(code);
 }
 
 /**
  * Get instrument type code.
  * @param desc instrument type description
- * @returns instrument type code (EQ, PREFSHARES, DEBENTURES, ...)
+ * @returns instrument type code
  */
 export function instrumentType(desc: string): InstrumentType {
-  return toInstrumentType(appendix.instrumentType(desc));
+  var fut = /fut|future/i.test(desc);
+  var opt = /opt|option/i.test(desc);
+  var idx = /idx|index/i.test(desc);
+  var und = /und|underlying/i.test(desc);
+  // COM segment
+  if (/com(\b|$)|commodit/i.test(desc)) {
+    if (opt) return fut? "OPTFUT" : "OPTCOM";
+    else if (idx) return "FUTIDX"; // FUTIDX_COM
+    else          return "FUTCOM";
+  }
+  // CD segment
+  else if (/(^|\b)und|cd(\b|$)|ir[cdt](\b|$)|cur|gov|bond|trea|coup/i.test(desc)) {
+    if (/irc(\b|$)|bond/i.test(desc))      return und? "UNDIRC" : "FUTIRC";
+    else if (/ird(\b|$)|coup/i.test(desc)) return und? "UNDIRD" : "FUTIRD";
+    else if (/irt(\b|$)|trea/i.test(desc)) return und? "UNDIRT" : "FUTIRT";
+    else                return idx? "INDEX_CD" : (opt? "OPTCUR" : "FUTCUR");
+  }
+  // FO segment
+  else if (fut || opt) {
+    if (/ivx|volatil/i.test(desc)) return "FUTIVX";
+    else if (idx) return opt? "OPTIDX" : "FUTIDX";
+    else          return opt? "OPTSTK" : "FUTSTK";
+  }
+  // CM segment
+  else {
+    if (idx)                        return "INDEX";
+    else if (/misc/i.test(desc))    return "MISC";
+    else if (/warrant/i.test(desc)) return "WARRANTS";
+    else if (/deb/i.test(desc))     return "DEBENTURES";
+    else if (/pref/i.test(desc))    return "PREFSHARES";
+  }
+  return "EQ";
 }
 
 
 
-
-// TYPES
-// =====
 
 // AUTHORIZATION
 // -------------
@@ -1082,7 +1583,7 @@ export interface OrdersOverall {
 }
 
 
-import OST = appendix.OrderStatus;
+import IOST = InternalOrderStatus;
 function toOrdersOverall(x: http.Order[]): OrdersOverall {
   var a: OrdersOverall = {
     count: 0,
@@ -1096,8 +1597,8 @@ function toOrdersOverall(x: http.Order[]): OrdersOverall {
   };
   for (var o of x) {
     a.count++;
-    a.openCount += o.status === OST.Pending || o.status === OST.Transit? 1 : 0;
-    a.quantity += o.qty;
+    a.openCount += o.status === IOST.PENDING || o.status === IOST.TRANSIT? 1 : 0;
+    a.quantity  += o.qty;
     a.remainingQuantity += o.remainingQuantity;
     a.tradedQuantity    += o.filledQty;
     a.disclosedQuantity += o.discloseQty;
@@ -1992,9 +2493,6 @@ function fromEdisHolding(x: EdisHolding): http.EdisHolding {
 
 
 
-// FUNCTIONS
-// =========
-
 // CHARGES
 // -------
 
@@ -2232,6 +2730,34 @@ function commodityOptionsSellCharges(x: number) {
 
 
 
+
+// ERROR
+// -----
+
+/** Defines a FYERS error {code, message}. */
+class FyersError extends Error {
+  /** Error code (-ve). */
+  code: number
+
+  /**
+   * Create an error associated with FYERS API.
+   * @param code error code (-ve)
+   * @param message error message
+   */
+  constructor(code: number, message: string) {
+    super(message);
+    this.code = code;
+    this.name = this.constructor.name;
+    if (typeof Error.captureStackTrace !== 'function') this.stack = (new Error(message)).stack;
+    else Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+
+
+
+// STATELESS INTERFACE
+// ===================
 
 // AUTHORIZATION
 // -------------
@@ -2575,8 +3101,8 @@ export async function inquireEdisTransaction(auth: Authorization, id: string): P
 
 
 
-// MAIN
-// ====
+// STATEFUL INTERFACE
+// ==================
 
 /** Container for storing authorization details. */
 export class Fyers implements Authorization {
