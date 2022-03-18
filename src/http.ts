@@ -474,11 +474,15 @@ export interface PlaceOrderRequest {
 }
 
 
-/** Place order reponse. */
-export interface PlaceOrderResponse extends Response {
-  /** The order number of the placed order. */
+/** Place/modify/cancel order reponse. */
+export interface OrderResponse extends Response {
+  /** The order number of the placed/modified/cancelled order. */
   id: string,
 }
+
+
+/** Place order reponse. */
+export type PlaceOrderResponse = OrderResponse;
 
 
 /** Place orders response. */
@@ -511,10 +515,7 @@ export interface ModifyOrderRequest {
 
 
 /** Modify order response. */
-export interface ModifyOrderResponse extends Response {
-  /** The order number of the modified order. */
-  id: string,
-}
+export type ModifyOrderResponse = OrderResponse;
 
 
 /** Modify orders response. */
@@ -537,10 +538,7 @@ export interface CancelOrderRequest {
 
 
 /** Cancel order response. */
-export interface CancelOrderResponse extends Response {
-  /** The order number of the placed order. */
-  id: string,
-}
+export type CancelOrderResponse = OrderResponse;
 
 
 /** Cancel orders response. */

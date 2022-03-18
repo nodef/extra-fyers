@@ -2743,7 +2743,7 @@ interface ErrorDetails {
 }
 
 /** Defines a FYERS error {code, message}. */
-class FyersError extends Error {
+class ApiError extends Error {
   /** Error code (-ve). */
   code: number
 
@@ -2798,6 +2798,15 @@ export function authorizationStep2(appHash: string, authorizationCode: string): 
 // USER
 // ----
 
+function validateApiStatus(x: http.Response) {
+  if (x.s !== "ok") throw new ApiError(x.code, x.message);
+}
+
+function validateApiOrder(x: http.OrderResponse) {
+  if (x.id === "") throw new ApiError(x.code, x.message);
+}
+
+
 /**
  * Get basic details of the client.
  * @param auth authorization {appId, accessToken}
@@ -2805,7 +2814,7 @@ export function authorizationStep2(appHash: string, authorizationCode: string): 
  */
 export async function getProfile(auth: Authorization): Promise<Profile> {
   var a = await http.getProfile(fromAuthorization(auth));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return toProfile(a);
 }
 
@@ -2817,7 +2826,7 @@ export async function getProfile(auth: Authorization): Promise<Profile> {
  */
 export async function getFunds(auth: Authorization): Promise<Funds> {
   var a = await http.getFunds(fromAuthorization(auth));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return toFunds(a);
 }
 
@@ -2829,7 +2838,7 @@ export async function getFunds(auth: Authorization): Promise<Funds> {
  */
 export async function getHoldings(auth: Authorization): Promise<Holdings> {
   var a = await http.getHoldings(fromAuthorization(auth));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return toHoldings(a);
 }
 
@@ -2847,7 +2856,7 @@ export async function getHoldings(auth: Authorization): Promise<Holdings> {
  */
 export async function getOrder(auth: Authorization, id: string): Promise<Order> {
   var a = await http.getOrder(fromAuthorization(auth), {id});
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return toOrder(a.orderBook[0]);
 }
 
@@ -2859,7 +2868,7 @@ export async function getOrder(auth: Authorization, id: string): Promise<Order> 
  */
 export async function getOrders(auth: Authorization): Promise<Orders> {
   var a = await http.getOrders(fromAuthorization(auth));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return toOrders(a);
 }
 
@@ -2871,7 +2880,7 @@ export async function getOrders(auth: Authorization): Promise<Orders> {
  */
 export async function getPositions(auth: Authorization): Promise<Positions> {
   var a = await http.getPositions(fromAuthorization(auth));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return toPositions(a);
 }
 
@@ -2883,7 +2892,7 @@ export async function getPositions(auth: Authorization): Promise<Positions> {
  */
 export async function getTrades(auth: Authorization): Promise<Trades> {
   var a = await http.getTrades(fromAuthorization(auth));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return toTrades(a);
 }
 
@@ -2900,9 +2909,8 @@ export async function getTrades(auth: Authorization): Promise<Trades> {
  * @returns order id
  */
 export async function placeOrder(auth: Authorization, order: PlaceOrder): Promise<string> {
-  var options = fromPlaceOrder(order);
-  var a = await http.placeOrder(fromAuthorization(auth), options);
-  if (a.id === "") throw new FyersError(a.code, a.message);
+  var a = await http.placeOrder(fromAuthorization(auth), fromPlaceOrder(order));
+  validateApiOrder(a);
   return a.id;
 }
 
@@ -2913,10 +2921,13 @@ export async function placeOrder(auth: Authorization, order: PlaceOrder): Promis
  * @param orders details of multiple orders [{symbol, qty, type, side, ...}]
  * @returns unique order ids
  */
-export async function placeOrders(auth: Authorization, orders: PlaceOrder[]): Promise<string[]> {
-  var a = await http.placeOrders(fromAuthorization(auth), orders.map(fromPlaceOrder));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
-  return a.data.map(x => x.body.id);  // TODO?
+export function placeOrders(auth: Authorization, orders: PlaceOrder[]): Promise<string>[] {
+  var p = http.placeOrders(fromAuthorization(auth), orders.map(fromPlaceOrder));
+  return orders.map((_, i) => p.then(a => {
+    validateApiStatus(a);
+    validateApiOrder(a.data[i].body);
+    return a.data[i].body.id;
+  }));
 }
 
 
@@ -2933,7 +2944,7 @@ export async function placeOrders(auth: Authorization, orders: PlaceOrder[]): Pr
  */
 export async function modifyOrder(auth: Authorization, order: ModifyOrder): Promise<string> {
   var a = await http.modifyOrder(fromAuthorization(auth), fromModifyOrder(order));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return a.id;
 }
 
@@ -2944,10 +2955,12 @@ export async function modifyOrder(auth: Authorization, order: ModifyOrder): Prom
  * @param orders details of orders [{id, qty, type, side, ...}]
  * @returns unique order ids
  */
-export async function modifyOrders(auth: Authorization, orders: ModifyOrder[]): Promise<string[]> {
-  var a = await http.modifyOrders(fromAuthorization(auth), orders.map(fromModifyOrder));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
-  return a.data.map(x => x.body.id);
+export function modifyOrders(auth: Authorization, orders: ModifyOrder[]): Promise<void>[] {
+  var p = http.modifyOrders(fromAuthorization(auth), orders.map(fromModifyOrder));
+  return orders.map((_, i) => p.then(a => {
+    validateApiStatus(a);
+    validateApiOrder(a.data[i].body);
+  }));
 }
 
 
@@ -2957,10 +2970,9 @@ export async function modifyOrders(auth: Authorization, orders: ModifyOrder[]): 
  * @param id order id
  * @returns order id
  */
-export async function cancelOrder(auth: Authorization, id: string): Promise<string> {
+export async function cancelOrder(auth: Authorization, id: string): Promise<void> {
   var a = await http.cancelOrder(fromAuthorization(auth), {id});
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
-  return a.id;
+  validateApiStatus(a);
 }
 
 
@@ -2970,10 +2982,12 @@ export async function cancelOrder(auth: Authorization, id: string): Promise<stri
  * @param ids unique order ids
  * @returns unique order ids
  */
-export async function cancelOrders(auth: Authorization, ids: string[]): Promise<string[]> {
-  var a = await http.cancelOrders(fromAuthorization(auth), ids.map(id => ({id})));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
-  return a.data.map(x => x.body.id);
+export function cancelOrders(auth: Authorization, ids: string[]): Promise<void>[] {
+  var p = http.cancelOrders(fromAuthorization(auth), ids.map(id => ({id})));
+  return ids.map((_, i) => p.then(a => {
+    validateApiStatus(a);
+    validateApiOrder(a.data[i].body);
+  }));
 }
 
 
@@ -2984,7 +2998,7 @@ export async function cancelOrders(auth: Authorization, ids: string[]): Promise<
  */
 export async function exitPosition(auth: Authorization, id: string): Promise<void> {
   var a = await http.exitPosition(fromAuthorization(auth), {id});
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
 }
 
 
@@ -2994,7 +3008,7 @@ export async function exitPosition(auth: Authorization, id: string): Promise<voi
  */
 export async function exitAllPositions(auth: Authorization): Promise<void> {
   var a = await http.exitAllPositions(fromAuthorization(auth));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
 }
 
 
@@ -3005,7 +3019,7 @@ export async function exitAllPositions(auth: Authorization): Promise<void> {
  */
 export async function convertPosition(auth: Authorization, conversion: ConvertPosition): Promise<void> {
   var a = await http.convertPosition(fromAuthorization(auth), fromConvertPosition(conversion));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
 }
 
 
@@ -3021,7 +3035,7 @@ export async function convertPosition(auth: Authorization, conversion: ConvertPo
  */
 export async function getMarketStatus(auth: Authorization): Promise<MarketsStatus> {
   var a = await http.getMarketStatus(fromAuthorization(auth));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return toMarketsStatus(a);
 }
 
@@ -3034,7 +3048,7 @@ export async function getMarketStatus(auth: Authorization): Promise<MarketsStatu
  */
 export async function getMarketHistory(auth: Authorization, market: GetMarketHistory): Promise<MarketHistory> {
   var a = await http.getMarketHistory(fromAuthorization(auth), fromGetMarketHistory(market));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return toMarketHistory(a);
 }
 
@@ -3047,7 +3061,7 @@ export async function getMarketHistory(auth: Authorization, market: GetMarketHis
  */
 export async function getMarketQuotes(auth: Authorization, symbols: string[]): Promise<MarketQuote[]> {
   var a = await http.getMarketQuotes(fromAuthorization(auth), {symbols: symbols.join()});
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return a.d.map(toMarketQuote);
 }
 
@@ -3060,7 +3074,7 @@ export async function getMarketQuotes(auth: Authorization, symbols: string[]): P
  */
 export async function getMarketDepth(auth: Authorization, symbol: string): Promise<MarketDepth> {
   var a = await http.getMarketDepth(fromAuthorization(auth), {symbol, ohlcv_flag: 1});
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return toMarketDepth(a);
 }
 
@@ -3088,7 +3102,7 @@ export function getSymbolMaster(auth: null, exchange: string, segment: string): 
  */
 export async function generateEdisTpin(auth: Authorization): Promise<void> {
   var a = await http.generateEdisTpin(fromAuthorization(auth));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
 }
 
 
@@ -3099,7 +3113,7 @@ export async function generateEdisTpin(auth: Authorization): Promise<void> {
  */
 export async function getEdisTransactions(auth: Authorization): Promise<EdisTransactions> {
   var a = await http.getEdisTransactions(fromAuthorization(auth));
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return toEdisTransactions(a);
 }
 
@@ -3123,7 +3137,7 @@ export function submitEdisHoldingsStep(auth: Authorization, holdings: EdisHoldin
  */
 export async function inquireEdisTransaction(auth: Authorization, id: string): Promise<number> {
   var a = await http.inquireEdisTransaction(fromAuthorization(auth), {transactionId: id});
-  if (a.s !== "ok") throw new FyersError(a.code, a.message);
+  validateApiStatus(a);
   return a.data.FAILED_CNT > 0? -a.data.FAILED_CNT : a.data.SUCEESS_CNT;
 }
 
@@ -3134,7 +3148,7 @@ export async function inquireEdisTransaction(auth: Authorization, id: string): P
 // ==================
 
 /** Container for storing authorization details. */
-export class Fyers implements Authorization {
+export class Api implements Authorization {
   appId: string;
   accessToken: string;
 
