@@ -783,37 +783,19 @@ export function orderValidity(desc: string): OrderValidity {
 // -----------
 
 /** Option type code. */
-export type OptionType = "CALL" | "PUT";
+export type OptionType = "CE" | "PE";
 
 const enum InternalOptionType {
-  CALL = "CE",
-  PUT  = "PE",
+  CE = "CE",
+  PE = "PE",
 }
 
-
-const TO_OPTION_TYPE: Map<string, OptionType> = new Map([
-  ["CE", "CALL"],
-  ["PE", "PUT"],
-]);
-
-const FROM_OPTION_TYPE: Map<OptionType, string> = new Map([
-  ["CALL", "CE"],
-  ["PUT",  "PE"],
-]);
 
 const OPTION_TYPE_DESCRIPTION: Map<OptionType, string> = new Map([
-  ["CALL", "Call Option (CE)"],
-  ["PUT", "Put Option (PE)"],
+  ["CE", "Call option"],
+  ["PE", "Put option"],
 ]);
 
-
-function toOptionType(x: string): OptionType {
-  return TO_OPTION_TYPE.get(x);
-}
-
-function fromOptionType(x: OptionType): string {
-  return FROM_OPTION_TYPE.get(x);
-}
 
 /**
  * Get option type description.
@@ -830,7 +812,7 @@ function fromOptionType(x: OptionType): string {
  * @returns option type code (CE, PE)
  */
 export function optionType(desc: string): OptionType {
-  return /pe|put|sell/i.test(desc)? "PUT" : "CALL";
+  return /pe|put|sell/i.test(desc)? "PE" : "CE";
 }
 
 

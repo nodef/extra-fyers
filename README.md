@@ -11,8 +11,6 @@ A Javascript interface for FYERS API.<br>
 ## TODO
 
 ```
-CE/PE
-
 SL-MARKET?
 SL-LIMIT?
 SLMARKET
@@ -27,6 +25,7 @@ const enum InternalProductType {
 }
 
 getSymbolMaster null auth?
+PROCESS symbol master
 
 ERROR HANDLING - multiple?
 ERROR CLASS?
