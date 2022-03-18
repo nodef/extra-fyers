@@ -5,6 +5,6 @@ before_install:
 - git clone https://${GITHUB_TOKEN}@github.com/nodef/deploy "$HOME/deploy"
 - chmod 777 "$HOME/deploy/"*.sh
 - bash "$HOME/deploy/before_install.sh"
-- npm i -g typescript rollup dts-bundle-generator browserify terser typedoc
+- npm i -g typescript rollup browserify terser typedoc
 script:
 - bash "$HOME/deploy/script.sh"

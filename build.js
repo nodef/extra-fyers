@@ -1,5 +1,7 @@
 const os = require('os');
-const {child_process: cp, fs, path, git, github, javascript, package} = require('extra-build');
+const {child_process: cp, fs, path} = require('extra-build');
+const {git, github, package}        = require('extra-build');
+const {javascript, jsdoc}           = require('extra-build');
 
 
 const owner  = 'nodef';
@@ -38,7 +40,7 @@ function updateGithub() {
   var {name, description} = m;
   var homepage  = `https://www.npmjs.com/package/${name}`;
   var topics    = keywords(srcts);
-  topics.length = Math.max(topics.length, 20);
+  topics.length = Math.min(topics.length, 20);
   github.updateDetails(owner, name, {description, homepage, topics});
 }
 
@@ -55,14 +57,6 @@ function publishDocs(fil) {
   cp.execLogSync(`mv ".docs"/* "${cwd}"/`);
   git.commitPush('', {cwd});
   cp.execLogSync(`rm -rf ${cwd}`);
-}
-
-
-// Generate declarations.
-function generateDts(fil) {
-  cp.execLogSync(`dts-bundle-generator "src/${fil}" -o "${outdts}" --no-banner`);
-  var txt = fs.readFileTextSync(outdts), m = package.read();
-  fs.writeFileTextSync(outdts, javascript.correctDeclarations(txt, m.name));
 }
 
 
@@ -108,7 +102,6 @@ function deployRoot() {
   cp.execLogSync(`tsc`);
   updateGithub();
   publishDocs(srcts);
-  // generateDts(srcts);
   generateMain(srcts, '');
   publishRoot('', ver);
   generateMain(srcts, sym);
@@ -118,6 +111,6 @@ function deployRoot() {
 
 function main(a) {
   if (a[2] === 'deploy') deployRoot();
-  else { /* generateDts(srcts); */ generateMain(srcts, ''); }
+  else generateMain(srcts, '');
 }
 main(process.argv);
