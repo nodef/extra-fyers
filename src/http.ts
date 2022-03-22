@@ -663,19 +663,19 @@ export interface GetMarketQuotesRequest {
 }
 
 
-/** Candle in market quotes. */
+/** Candle in market quotes (1 minute). */
 export interface Candle {
   /** UNIX expoch time. */
   t: number,
-  /** Open price. */
+  /** Open price (1 minute). */
   o: number,
-  /** High price. */
+  /** High price (1 minute). */
   h: number,
-  /** Low price. */
+  /** Low price (1 minute). */
   l: number,
-  /** Close price. */
+  /** Close price (1 minute). */
   c: number,
-  /** Volume. */
+  /** Volume (1 minute). */
   v: number,
   /** Time, formatted. */
   tf: string,
@@ -763,7 +763,7 @@ export interface MarketOffer {
   price: number,
   /** Bid/ask volume. */
   volume: number,
-  /** Orders? */
+  /** Number of orders. */
   ord: number,
 }
 
