@@ -1,5 +1,6 @@
-import {HttpRequestOptions} from './_http';
-import * as http from './http';
+import {HttpRequestOptions} from "./_http";
+import * as http from "./http";
+import * as websocket from "./websocket";
 
 
 
@@ -7,8 +8,8 @@ import * as http from './http';
 // HTTP
 // ====
 
-export {HttpHeaders, HttpRequestOptions} from './_http';
-export * as http from './http';
+export {HttpHeaders, HttpRequestOptions} from "./_http";
+export * as http from "./http";
 
 
 
@@ -1423,7 +1424,7 @@ export interface HoldingsOverall {
 function toHoldingsOverall(xs: http.Holding[], x: http.HoldingsOverall): HoldingsOverall {
   var settledCount = 0;
   for (var h of xs)
-    if (h.holdingType === 'HLD') settledCount++;
+    if (h.holdingType === "HLD") settledCount++;
   return {
     count: x.count_total,
     settledCount,
@@ -1463,6 +1464,9 @@ export interface Order {
   id: string,
   /** The symbol for which order is placed. */
   symbol: string,
+  // TODO:
+  // /** Fytoken is a unique identifier for every symbol. */
+  // symbolToken: string,
   /** The ticker symbol for which order is placed. */
   ticker: string,
   /** Description of symbol for which order is placed. */
@@ -2019,7 +2023,7 @@ function toMarketsStatusOverall(x: http.MarketStatus[]): MarketsStatusOverall {
   };
   for (var s of x) {
     a.count++;
-    if (s.status === 'OPEN') a.openCount++;
+    if (s.status === "OPEN") a.openCount++;
     else a.closedCount++;
   }
   return a;
@@ -2082,7 +2086,7 @@ function fromCandleResolution(x: number): string {
     var d = Math.abs(x - r);
     if (d < D) { R = r; D = d; }
   }
-  return R === 1440? 'D' : R.toString();
+  return R === 1440? "D" : R.toString();
 }
 
 function fromGetMarketHistory(x: GetMarketHistory): http.GetMarketHistoryRequest {
@@ -2496,6 +2500,201 @@ function fromEdisHolding(x: EdisHolding): http.EdisHolding {
 
 
 
+// SUBSCRIBE-ORDER-STATUS
+// ----------------------
+
+interface OrderNotification {
+  /** The unique order id assigned for each order. */
+  id: string,
+  /** The symbol for which order is placed. */
+  symbol: string,
+  /** Fytoken is a unique identifier for every symbol. */
+  symbolToken: string,
+  /** The type of order. */
+  type: OrderType,
+  /** The order is buy or sell. */
+  side: OrderSide,
+  /** The product type. */
+  productType: ProductType,
+  /** The status of the order. */
+  status: OrderStatus,
+  /** Day or IOC. */
+  validity: OrderValidity,
+  /** True when placing AMO order. */
+  offlineOrder: boolean,
+  /** The original order qty. */
+  quantity: number,
+  /** The remaining qty. */
+  remainingQuantity: number,
+  /** The filled qty after partial trades. */
+  filledQuantity: number,
+  /** Disclosed quantity. */
+  disclosedQuantity: number,
+  /** Remaining disclosed quantity. */
+  remainingDisclosedQuantity: number,
+  /** The limit price for the order. */
+  limitPrice: number,
+  /** The stop price for the order. */
+  stopPrice: number,
+  /** The order time as per DD-MMM-YYYY hh:mm:ss in IST. */
+  date: string,
+  /** The parent order id will be provided only for applicable orders. */
+  parentId?: string,
+  /** The average traded price for the order. */
+  tradedPrice: number,
+  /** The error messages are shown here. */
+  message: string,
+}
+
+function toOrderNotification(x: websocket.OrderNotification): OrderNotification {
+  var d = x.d;
+  return {
+    id: d.id,
+    symbol:       d.symbol,
+    symbolToken:  d.fyToken,
+    type:         toOrderType(d.type),
+    side:         toOrderSide(d.side),
+    productType:  toProductType(d.productType),
+    status:       toOrderStatus(d.status),
+    validity:     toOrderValidity(d.orderValidity),
+    offlineOrder: d.offlineOrder,
+    quantity:     d.qty,
+    remainingQuantity: d.remainingQuantity,
+    filledQuantity:    d.filledQty,
+    disclosedQuantity: d.discloseQty,
+    remainingDisclosedQuantity: d.dqQtyRem,
+    limitPrice:   d.limitPrice,
+    stopPrice:    d.stopPrice,
+    date:         d.orderDateTime,
+    parentId:     d.parentId || null,
+    tradedPrice:  d.tradedPrice,
+    message:      d.message,
+  };
+}
+
+
+
+
+// SUBSCRIBE-MARKET-QUOTES/DEPTH
+// -----------------------------
+
+interface MarketQuoteNotification {
+  /** Fytoken is a unique identifier for every symbol. */
+  symbolToken: BigInt,
+  /** Timestamp sent by exchange (UNIX epoch). */
+  date: number,
+  /** Market status flag? */
+  marketStatus: number,
+  /** LTP is the price from which the next sale of the stocks happens. */
+  currentPrice: number,
+  /** Price at market opening time. */
+  openPrice: number,
+  /** Highest price for the day. */
+  highPrice: number,
+  /** Lowest price for the day. */
+  lowPrice: number,
+  /** Close price of the previous trading day. */
+  closePrice: number,
+  /** 1 minute candle. */
+  candle: Candle,
+  /** Open interest. */
+  openInterest: number,
+  /** Previous day open interest. */
+  previousOpenInterest: number,
+  /** Last traded quantity. */
+  tradedQuantity: number,
+  /** Last traded time (UNIX epoch). */
+  tradedDate: number,
+  /** Average traded price. */
+  tradedPrice: number,
+  /** Today's volume. */
+  volume: number,
+  /** Total buy quantity. */
+  buyQuantity: BigInt,
+  /** Total sell quantity. */
+  sellQuantity: BigInt,
+  /** Highest bid price. */
+  buyPrice: number,
+  /** Lowest ask price. */
+  sellPrice: number,
+}
+
+interface MarketDepthNotification extends MarketQuoteNotification {
+  /** Bidding price along with volume and total number of orders. */
+  buyOffers: MarketOffer[],
+  /** Offer price with volume and total number of orders. */
+  sellOffers: MarketOffer[],
+}
+
+function toMarketQuoteNotification(x: websocket.MarketData): MarketQuoteNotification {
+  var p = x.price_conv;
+  return {
+    symbolToken:  x.token,
+    date: x.tt,
+    marketStatus: x.marketStat,
+    currentPrice: x.ltp / p,
+    openPrice:    x.open_price / p,
+    highPrice:    x.high_price / p,
+    lowPrice:     x.low_price / p,
+    closePrice:   x.prev_close_price / p,
+    candle: {
+      date: x.tt,
+      openPrice:  x.o / p,
+      highPrice:  x.h / p,
+      lowPrice:   x.l / p,
+      closePrice: x.c / p,
+      volume: Number(x.v),
+    },
+    openInterest: Number(x.oi),
+    previousOpenInterest: Number(x.pdoi),
+    tradedQuantity: x.LTQ,
+    tradedDate:     x.L2_LTT,
+    tradedPrice:    x.ATP,
+    volume: x.volume,
+    buyQuantity:  x.tot_buy,
+    sellQuantity: x.tot_sell,
+    buyPrice:     x.bid,
+    sellPrice:    x.ask,
+  };
+}
+
+function toMarketDepthNotification(x: websocket.MarketData): MarketDepthNotification {
+  var p = x.price_conv;
+  return {
+    symbolToken:  x.token,
+    date: x.tt,
+    marketStatus: x.marketStat,
+    currentPrice: x.ltp / p,
+    openPrice:    x.open_price / p,
+    highPrice:    x.high_price / p,
+    lowPrice:     x.low_price / p,
+    closePrice:   x.prev_close_price / p,
+    candle: {
+      date: x.tt,
+      openPrice:  x.o / p,
+      highPrice:  x.h / p,
+      lowPrice:   x.l / p,
+      closePrice: x.c / p,
+      volume: Number(x.v),
+    },
+    openInterest: Number(x.oi),
+    previousOpenInterest: Number(x.pdoi),
+    tradedQuantity: x.LTQ,
+    tradedDate:     x.L2_LTT,
+    tradedPrice:    x.ATP,
+    volume: x.volume,
+    buyQuantity:  x.tot_buy,
+    sellQuantity: x.tot_sell,
+    buyPrice:     x.bids[0].price,
+    sellPrice:    x.asks[0].price,
+    buyOffers:    x.bids.map(toMarketOffer),
+    sellOffers:   x.asks.map(toMarketOffer),
+  };
+}
+
+
+
+
 // CHARGES
 // -------
 
@@ -2524,7 +2723,7 @@ function equityDeliverySellCharges(x: number) {
  * @returns total charges including brokerage and taxes
  */
  export function equityDeliveryCharges(side: OrderSide, value: number) {
-  if (side === 'BUY') return equityDeliveryBuyCharges(value);
+  if (side === "BUY") return equityDeliveryBuyCharges(value);
   return equityDeliverySellCharges(value);
 }
 
@@ -2555,7 +2754,7 @@ function equityIntradaySellCharges(x: number) {
  * @returns total charges including brokerage and taxes
  */
  export function equityIntradayCharges(side: OrderSide, value: number) {
-  if (side === 'BUY') return equityIntradayBuyCharges(value);
+  if (side === "BUY") return equityIntradayBuyCharges(value);
   return equityIntradaySellCharges(value);
 }
 
@@ -2588,7 +2787,7 @@ function equityFuturesSellCharges(x: number) {
  * @returns total charges including brokerage and taxes
  */
  export function equityFuturesCharges(side: OrderSide, value: number) {
-  if (side === 'BUY') return equityFuturesBuyCharges(value);
+  if (side === "BUY") return equityFuturesBuyCharges(value);
   return equityFuturesSellCharges(value);
 }
 
@@ -2621,7 +2820,7 @@ function equityOptionsSellCharges(x: number) {
  * @returns total charges including brokerage and taxes
  */
  export function equityOptionsCharges(side: OrderSide, value: number) {
-  if (side === 'BUY') return equityOptionsBuyCharges(value);
+  if (side === "BUY") return equityOptionsBuyCharges(value);
   return equityOptionsSellCharges(value);
 }
 
@@ -2696,7 +2895,7 @@ function commodityFuturesSellCharges(x: number) {
  * @returns total charges including brokerage and taxes
  */
  export function commodityFuturesCharges(side: OrderSide, value: number) {
-  if (side === 'BUY') return commodityFuturesBuyCharges(value);
+  if (side === "BUY") return commodityFuturesBuyCharges(value);
   return commodityFuturesSellCharges(value);
 }
 
@@ -2727,7 +2926,7 @@ function commodityOptionsSellCharges(x: number) {
  * @returns total charges including brokerage and taxes
  */
  export function commodityOptionsCharges(side: OrderSide, value: number) {
-  if (side === 'BUY') return commodityOptionsBuyCharges(value);
+  if (side === "BUY") return commodityOptionsBuyCharges(value);
   return commodityOptionsSellCharges(value);
 }
 
@@ -2756,7 +2955,7 @@ class ApiError extends Error {
     super(message);
     this.code = code;
     this.name = this.constructor.name;
-    if (typeof Error.captureStackTrace !== 'function') this.stack = (new Error(message)).stack;
+    if (typeof Error.captureStackTrace !== "function") this.stack = (new Error(message)).stack;
     else Error.captureStackTrace(this, this.constructor);
   }
 }
@@ -3140,6 +3339,14 @@ export async function inquireEdisTransaction(auth: Authorization, id: string): P
   validateApiStatus(a);
   return a.data.FAILED_CNT > 0? -a.data.FAILED_CNT : a.data.SUCEESS_CNT;
 }
+
+
+
+
+//
+function subscribeOrderStatus() {}
+function subscribeMarketQuote() {}
+function subscribeMarketDepth() {}
 
 
 
