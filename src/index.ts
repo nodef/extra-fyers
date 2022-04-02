@@ -1129,6 +1129,99 @@ export function instrumentType(desc: string): InstrumentType {
 
 
 
+// SYMBOL-DETAILS
+// --------------
+
+/**
+ * Get symbol exchange.
+ * @param code symbol
+ * @returns symbol exchange
+ */
+export function symbolExchange(code: string): Exchange {
+  var i = code.indexOf(":");
+  return code.substring(0, i) as Exchange;
+}
+
+/** Get ticker name [equity, future, monthly-expiry option, weekly-expiry option]. */
+const RTICKER = /^\w+:(\w+)-\w+|^\w+:(\w+)\d{2}\w{3}FUT|^\w+:(\w+)\d{2}\w{3}\d+[CP]E|^\w+:(\w+)\d{2}\w{1}\d{2}\d+[CP]E/;
+
+/**
+ * Get symbol ticker (exchange symbol, underlying symbol, currency pair, or commodity).
+ * @param code symbol
+ * @returns symbol ticker
+ */
+export function symbolTicker(code: string): string {
+  var m = RTICKER.exec(code);
+  return m[1] || m[2] || m[3] || m[4];
+}
+
+function symbolSeries(code: string): string | null {
+  var i = code.lastIndexOf("-");
+  return i > 0? code.substring(i) : null;
+}
+
+function symbolOptionType(code: string): OptionType | null {
+  var a = code.substring(code.length - 2);
+  return a === "CE" || a === "PE"? a : null;
+}
+
+function symbolIsOption(code: string): boolean {
+  return symbolOptionType(code) != null;
+}
+
+function symbolIsFuture(code: string): boolean {
+  var a = code.substring(code.length - 3);
+  return a === "FUT";
+}
+
+function symbolIsDerivative(code: string): boolean {
+  return symbolIsOption(code) || symbolIsFuture(code);
+}
+
+function symbolStrikePrice(code: string): number {
+  var RSTRIKE = /(\d+)[CP]E$/, m = RSTRIKE.exec(code);
+  return m != null? parseInt(m[1], 10) : 0;
+}
+
+
+
+
+interface SymbolMasterNseCm {
+  symbol: string,
+  symbolToken: BigInt,
+  symbolDescription: string,
+  instrumentType: number, // 0
+  minimumLotSize: number, // 1
+  tickSize: number, // 0.05
+  isin: string,
+  tradingSession: string, // 0915-1530|1815-1915:17
+}
+
+interface SymbolMasterBseCm {
+  symbol: string,
+  symbolToken: BigInt,
+  symbolDescription: string,
+  instrumentType: number, // 50
+  minimumLotSize: number, // 1
+  tickSize: number, // 0.05 / 0.01
+  isin: string,
+  tradingSession: string, // 0915-1530|1815-1915:17
+}
+
+interface SymbolMasterNseMcxCom {
+  symbol: string,
+  symbolToken: BigInt,
+  symbolDescription: string,
+  instrumentType: number, // 31
+  tickSize: number, // 0.05 / 0.01
+  tradingSession: string, // 0915-1530|1815-1915:17
+  strikePrice: number,
+  optionType: number,
+}
+
+
+
+
 // LOGIN
 // -----
 
