@@ -1,4 +1,4 @@
-import {Data, WebSocket} from "ws";
+import {WebSocket} from "ws";
 import {Response, Authorization} from "./http";
 
 
@@ -7,10 +7,10 @@ import {Response, Authorization} from "./http";
 // CONSTANTS
 // =========
 
-/** Root URL for Data updates. */
-export const DATA_URL: string = 'wss://api.fyers.in/socket/v2/dataSock';
-/** Root URL for Order updates. */
-export const ORDERS_URL: string = 'wss://api.fyers.in/socket/v2/orderSock';
+/** Root URL for Market data notifications. */
+export const MARKET_DATA_URL: string = 'wss://api.fyers.in/socket/v2/dataSock';
+/** Root URL for Order status notifications. */
+export const ORDER_STATUS_URL: string = 'wss://api.fyers.in/socket/v2/orderSock';
 
 
 
@@ -18,10 +18,8 @@ export const ORDERS_URL: string = 'wss://api.fyers.in/socket/v2/orderSock';
 // TYPES
 // =====
 
-// RESPONSE/NOTIFICATION
-// ---------------------
-
-export {Response} from "./http";
+// NOTIFICATION
+// ------------
 
 /** Common notification format. */
 export type Notification = Response;
@@ -37,8 +35,8 @@ export {Authorization} from "./http";
 
 
 
-// MARKET-QUOTE/DEPTH (BINARY)
-// ---------------------------
+// MARKET-DATA HEADER
+// ------------------
 
 /** Size of header in binary message. */
 const HEADER_SIZE   = 24;
@@ -63,6 +61,32 @@ export interface Header {
 }
 
 
+function toHeader(x: DataView, i: number): Header {
+  return {
+    token:       x.getBigUint64(i + 0),
+    tt:          x.getUint32(i + 8),
+    fyCode:      x.getUint16(i + 12),
+    marketStat:  x.getUint16(i + 14),
+    pktlen:      x.getUint16(i + 16),
+    L2:          x.getUint8(i + 18),
+  };
+}
+
+function writeHeader(a: Header, x: DataView, i: number): void {
+  a.token      = x.getBigUint64(i + 0);
+  a.tt         = x.getUint32(i + 8);
+  a.fyCode     = x.getUint16(i + 12);
+  a.marketStat = x.getUint16(i + 14);
+  a.pktlen     = x.getUint16(i + 16);
+  a.L2         = x.getUint8(i + 18);
+}
+
+
+
+
+// MARKET-DATA OI-DATA
+// -------------------
+
 /** Size of OI data in binary message. */
 const OI_DATA_SIZE   = 8;
 /** Offset of OI data in binary message. */
@@ -76,6 +100,24 @@ export interface OiData {
   pdoi: number,
 }
 
+
+function toOiData(x: DataView, i: number): OiData {
+  return {
+    oi:   x.getUint32(i + 0),
+    pdoi: x.getUint32(i + 4),
+  };
+}
+
+function writeOiData(a: CommonData, x: DataView, i: number): void {
+  a.oi   = BigInt(x.getUint32(i + 0));
+  a.pdoi = BigInt(x.getUint32(i + 4));
+}
+
+
+
+
+// MARKET-DATA COMMON-DATA
+// -----------------------
 
 /** Size of common data in binary message. */
 const COMMON_DATA_SIZE = 64;
@@ -110,108 +152,6 @@ export interface CommonData {
   oi: BigInt,
   /** Previous day open interest. */
   pdoi: BigInt,
-}
-
-
-/** Minimum size of L1 data in binary message. */
-const L1_DATA_SIZE   = 32;
-/** Offset of L1 data in binary message. */
-const L1_DATA_OFFSET = HEADER_SIZE + COMMON_DATA_SIZE;
-
-/** Additional data (fyCode === 7208, 31038). */
-export interface L1Data {
-  /** Last traded quantity. */
-  LTQ: number,
-  /** Last traded time (UNIX epoch). */
-  L2_LTT: number,
-  /** Average traded price. */
-  ATP: number,
-  /** Today's volume. */
-  volume: number,
-  /** Total buy quantity. */
-  tot_buy: BigInt,
-  /** Total sell quantity. */
-  tot_sell: BigInt,
-  /** Highest bid price. */
-  bid: number,
-  /** Lowest ask price. */
-  ask: number,
-}
-
-
-/** Open buy/sell orders at a particular price (L2 === 1). */
-export interface L2MarketOffer {
-  /** Bid/ask price. */
-  price: number,
-  /** Bid/ask volume. */
-  volume: number,
-  /** Number of orders. */
-  ord: number,
-}
-
-
-/** Size of L2 data in binary message. */
-const L2_DATA_SIZE   = 120;
-/** Offset of L1 data in binary message. */
-const L2_DATA_OFFSET = HEADER_SIZE + COMMON_DATA_SIZE + L1_DATA_SIZE;
-
-/** Market depth data, 5 rows (L2 === 1). */
-export interface L2Data {
-  /** Bidding price along with volume and total number of orders. */
-  bids: L2MarketOffer[],
-  /** Offer price with volume and total number of orders. */
-  asks: L2MarketOffer[],
-}
-
-
-/** Combined Data (oi/quote/depth) for symbols subscribed by the user. */
-interface CombinedMarketData extends Header, CommonData, L1Data, L2Data {}
-
-
-/** Split Data (oi/quote/depth) for symbols subscribed by the user. */
-interface SplitMarketData extends Header {
-  /** Open interest data (fyCode === 7202). */
-  oi_data: OiData | null,
-  /** Common data (fyCode !== 7202). */
-  common_data: CommonData | null,
-  /** Additional data (fyCode === 7208, 31038). */
-  l1_data: L1Data | null,
-  /** Market depth data, 5 rows (L2 === 1). */
-  l2_data: L2Data | null,
-}
-
-
-function toHeader(x: DataView, i: number): Header {
-  return {
-    token:       x.getBigUint64(i + 0),
-    tt:          x.getUint32(i + 8),
-    fyCode:      x.getUint16(i + 12),
-    marketStat:  x.getUint16(i + 14),
-    pktlen:      x.getUint16(i + 16),
-    L2:          x.getUint8(i + 18),
-  };
-}
-
-function writeHeader(a: Header, x: DataView, i: number): void {
-  a.token      = x.getBigUint64(i + 0);
-  a.tt         = x.getUint32(i + 8);
-  a.fyCode     = x.getUint16(i + 12);
-  a.marketStat = x.getUint16(i + 14);
-  a.pktlen     = x.getUint16(i + 16);
-  a.L2         = x.getUint8(i + 18);
-}
-
-
-function toOiData(x: DataView, i: number): OiData {
-  return {
-    oi:   x.getUint32(i + 0),
-    pdoi: x.getUint32(i + 4),
-  };
-}
-
-function writeOiData(a: CommonData, x: DataView, i: number): void {
-  a.oi   = BigInt(x.getUint32(i + 0));
-  a.pdoi = BigInt(x.getUint32(i + 4));
 }
 
 
@@ -250,6 +190,37 @@ function writeCommonData(a: CommonData, x: DataView, i: number): void {
 }
 
 
+
+
+// MARKET-DATA L1-DATA
+// -------------------
+
+/** Minimum size of L1 data in binary message. */
+const L1_DATA_SIZE   = 32;
+/** Offset of L1 data in binary message. */
+const L1_DATA_OFFSET = HEADER_SIZE + COMMON_DATA_SIZE;
+
+/** Additional data (fyCode === 7208, 31038). */
+export interface L1Data {
+  /** Last traded quantity. */
+  LTQ: number,
+  /** Last traded time (UNIX epoch). */
+  L2_LTT: number,
+  /** Average traded price. */
+  ATP: number,
+  /** Today's volume. */
+  volume: number,
+  /** Total buy quantity. */
+  tot_buy: BigInt,
+  /** Total sell quantity. */
+  tot_sell: BigInt,
+  /** Highest bid price. */
+  bid: number,
+  /** Lowest ask price. */
+  ask: number,
+}
+
+
 function toL1Data(x: DataView, i: number, bidAsk: boolean): L1Data {
   return {
     LTQ:      x.getUint32(i + 0),
@@ -273,6 +244,36 @@ function writeL1Data(a: L1Data, x: DataView, i: number, bidAsk: boolean): void {
   if (!bidAsk) return;
   a.bid = x.getUint32(i + 32);
   a.ask = x.getUint32(i + 36);
+}
+
+
+
+
+// MARKET-DATA L2-DATA
+// -------------------
+
+/** Open buy/sell orders at a particular price (L2 === 1). */
+export interface L2MarketOffer {
+  /** Bid/ask price. */
+  price: number,
+  /** Bid/ask volume. */
+  volume: number,
+  /** Number of orders. */
+  ord: number,
+}
+
+
+/** Size of L2 data in binary message. */
+const L2_DATA_SIZE   = 120;
+/** Offset of L1 data in binary message. */
+const L2_DATA_OFFSET = HEADER_SIZE + COMMON_DATA_SIZE + L1_DATA_SIZE;
+
+/** Market depth data, 5 rows (L2 === 1). */
+export interface L2Data {
+  /** Bidding price along with volume and total number of orders. */
+  bids: L2MarketOffer[],
+  /** Offer price with volume and total number of orders. */
+  asks: L2MarketOffer[],
 }
 
 
@@ -304,6 +305,27 @@ function writeL2Data(a: L2Data, x: DataView, i: number): void {
 }
 
 
+
+
+// MARKET-DATA
+// -----------
+
+/** Split Market data (oi/quote/depth) for symbols subscribed by the user. */
+interface SplitMarketData extends Header {
+  /** Open interest data (fyCode === 7202). */
+  oi_data: OiData | null,
+  /** Common data (fyCode !== 7202). */
+  common_data: CommonData | null,
+  /** Additional data (fyCode === 7208, 31038). */
+  l1_data: L1Data | null,
+  /** Market depth data, 5 rows (L2 === 1). */
+  l2_data: L2Data | null,
+}
+
+/** Market data (oi/quote/depth) for symbols subscribed by the user. */
+export interface MarketData extends Header, CommonData, L1Data, L2Data {}
+
+
 function toSplitMarketData(x: DataView, i: number): SplitMarketData {
   var fyCode = x.getUint16(i + 12);
   var L2     = x.getUint8(i + 18);
@@ -321,7 +343,7 @@ function toSplitMarketData(x: DataView, i: number): SplitMarketData {
   };
 }
 
-function writeCombinedMarketData(a: CombinedMarketData, x: DataView, i: number): void {
+function writeMarketData(a: MarketData, x: DataView, i: number): void {
   writeHeader(a, x, i + HEADER_OFFSET);
   if (a.fyCode === 7202) writeOiData(a, x, i + OI_DATA_OFFSET);
   else writeCommonData(a, x, i + COMMON_DATA_OFFSET);
@@ -329,8 +351,8 @@ function writeCombinedMarketData(a: CombinedMarketData, x: DataView, i: number):
   if (a.L2 === 1) writeL2Data(a, x, i + L2_DATA_OFFSET);
 }
 
-function toCombinedMarketData(x: DataView, i: number): CombinedMarketData {
-  var a: CombinedMarketData = {
+function toMarketData(x: DataView, i: number): MarketData {
+  var a: MarketData = {
     // HEADER
     token: BigInt(0),
     tt: 0,
@@ -365,21 +387,13 @@ function toCombinedMarketData(x: DataView, i: number): CombinedMarketData {
     bids: null,
     asks: null,
   };
-  writeCombinedMarketData(a, x, i);
+  writeMarketData(a, x, i);
   return a;
 }
 
 
-/** Combined Data (oi/quote/depth) for symbols subscribed by the user. */
-export type MarketData = CombinedMarketData;
-
-function toMarketData(x: DataView, i: number): MarketData {
-  return toCombinedMarketData(x, i);
-}
-
-
-/** Binary notification on symbol status. */
-export interface SymbolNotification extends Notification {
+/** Binary notification on Market data. */
+export interface MarketDataNotification extends Notification {
   /** Data for the notification. */
   d?: MarketData,
 }
@@ -387,11 +401,11 @@ export interface SymbolNotification extends Notification {
 
 
 
-// ORDERS
-// ------
+// ORDER-STATUS
+// ------------
 
-/** Data for order placed by the user in the current trading day. */
-export interface OrderData {
+/** Status for order placed by the user in the current trading day. */
+export interface OrderStatus {
   /** The unique order id assigned for each order. */
   id: string,
   /** The order id provided by the exchange. */
@@ -446,11 +460,11 @@ export interface OrderData {
 
 
 /** String notification on order status. */
-export interface OrderNotification extends Notification {
+export interface OrderStatusNotification extends Notification {
   /** Websocket type [1]. */
   ws_type?: number,
   /** Data for the notification. */
-  d?: OrderData,
+  d?: OrderStatus,
 }
 
 
@@ -460,37 +474,93 @@ export interface OrderNotification extends Notification {
 // =========
 
 /**
- * Subscribe to symbols data.
+ * Notified function.
+ * @param notification notification
+ */
+export type NotifiedFunction = (notification: Notification) => void;
+
+/**
+ * Market data notified function.
+ * @param notification notification
+ */
+export type MarketDataNotifiedFunction = (notification: MarketDataNotification) => void;
+
+/**
+ * Order status notified function.
+ * @param notification notification
+ */
+export type OrderStatusNotifiedFunction = (notification: OrderStatusNotification) => void;
+
+
+
+
+// MARKET-DATA
+// -----------
+
+function marketDataRequest(type: string, symbols: string[], subscribe: number): any {
+  if (type === "SUB_L2") return {T: "SUB_L2", L2LIST: symbols, SUB_T: subscribe};
+  return {T: "SUB_DATA", TLIST: symbols, SUB_T: subscribe};
+}
+
+
+/**
+ * Unsubscribe to market data.
+ * @param auth authorization (unused)
+ * @param conn websocket connection
+ * @param type subscription type
+ * @param symbols list of symbols
+ * @returns websocket connection
+ */
+ export function unsubscribeMarketData(auth: null, conn: WebSocket, type: string, symbols: string[]): WebSocket {
+  conn.send(JSON.stringify(marketDataRequest(type, symbols, 0)));
+  return conn;
+}
+
+
+/**
+ * Subscribe to market data.
  * @param auth authorization {app_id, access_token}
  * @param conn websocket connection (optional)
+ * @param type subscription type
  * @param symbols list of symbols
  * @param fn notified function
  * @returns websocket connection
  */
-export function subscribeData(auth: Authorization, conn: WebSocket | null, symbols: string[], fn: (res: SymbolNotification) => void): WebSocket {
-  var request = {T: "SUB_L2", L2LIST: [symbols], SUB_T: 1};
-  if (conn) { conn.send(JSON.stringify(request)); return conn; }
-  var conn = new WebSocket(`${DATA_URL}?type=symbolUpdate&user-agent=fyers-api&access_token=${auth.app_id}:${auth.access_token}`);
-  conn.onerror = e => {
-    var {message} = e;
-    fn({s: "error", code: -1, message});
-  };
-  conn.onclose = e => {
-    var {code, wasClean, reason} = e;
-    if (wasClean) fn({s: "ok", code, message: reason});
-    else fn({s: "error", code: -code, message: reason});
-  };
-  conn.onopen = () => {
-    conn.send(JSON.stringify(request));
-  };
+export function subscribeMarketData(auth: Authorization | null, conn: WebSocket | null, type: string, symbols: string[], fn: MarketDataNotifiedFunction): WebSocket {
+  if (conn) { conn.send(JSON.stringify(marketDataRequest(type, symbols, 1))); return conn; }
+  var url  = `${MARKET_DATA_URL}?type=symbolUpdate&user-agent=fyers-api&access_token=${auth.app_id}:${auth.access_token}`;
+  var conn = new WebSocket(url);
+  conn.onopen = () => { conn.send(JSON.stringify(marketDataRequest(type, symbols, 1))); };
   conn.onmessage = e => {
     if (typeof e.data === "string") {
-      if (e.data !== "pong") return;
-      fn(JSON.parse(e.data));
+      if (e.data !== "pong") fn(JSON.parse(e.data));
+      return;
     }
-    var data = new DataView(e.data as ArrayBuffer);
-    fn({s: "ok", d: toMarketData(data, 0)});
+    var binary = new DataView(e.data as ArrayBuffer);
+    fn({s: "ok", d: toMarketData(binary, 0)});
   };
+  return conn;
+}
+
+
+
+
+// ORDER-STATUS
+// ------------
+
+function orderStatusRequest(subscribe: number): any {
+  return {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: subscribe};
+}
+
+
+/**
+ * Unsubscribe to order status.
+ * @param auth authorization (unused)
+ * @param conn websocket connection
+ * @returns websocket connection
+ */
+ export function unsubscribeOrderStatus(auth: null, conn: WebSocket): WebSocket {
+  conn.send(JSON.stringify(orderStatusRequest(0)));
   return conn;
 }
 
@@ -502,26 +572,15 @@ export function subscribeData(auth: Authorization, conn: WebSocket | null, symbo
  * @param fn notified function
  * @returns websocket connection
  */
- export function subscribeOrders(auth: Authorization, conn: WebSocket | null, fn: (res: OrderNotification) => void): WebSocket {
-  var request = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 1};
-  if (conn) { conn.send(JSON.stringify(request)); return conn; }
-  var conn = new WebSocket(`${ORDERS_URL}?type=orderUpdate&user-agent=fyers-api&access_token=${auth.app_id}:${auth.access_token}`);
-  conn.onerror = e => {
-    var {message} = e;
-    fn({s: "error", code: -1, message});
-  };
-  conn.onclose = e => {
-    var {code, wasClean, reason} = e;
-    if (wasClean) fn({s: "ok", code, message: reason});
-    else fn({s: "error", code: -code, message: reason});
-  };
-  conn.onopen = () => {
-    conn.send(JSON.stringify(request));
-  };
+ export function subscribeOrderStatus(auth: Authorization | null, conn: WebSocket | null, fn: OrderStatusNotifiedFunction): WebSocket {
+  if (conn) { conn.send(JSON.stringify(orderStatusRequest(1))); return conn; }
+  var url  = `${ORDER_STATUS_URL}?type=orderUpdate&user-agent=fyers-api&access_token=${auth.app_id}:${auth.access_token}`;
+  var conn = new WebSocket(url);
+  conn.onopen = () => { conn.send(JSON.stringify(orderStatusRequest(1))); };
   conn.onmessage = e => {
     if (typeof e.data === "string") {
-      if (e.data !== "pong") return;
-      fn(JSON.parse(e.data));
+      if (e.data !== "pong") fn(JSON.parse(e.data));
+      return;
     }
   };
   return conn;

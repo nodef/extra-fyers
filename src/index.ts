@@ -2546,7 +2546,7 @@ interface OrderNotification {
   message: string,
 }
 
-function toOrderNotification(x: websocket.OrderNotification): OrderNotification {
+function toOrderNotification(x: websocket.OrderStatusNotification): OrderNotification {
   var d = x.d;
   return {
     id: d.id,
