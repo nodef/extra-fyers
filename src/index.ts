@@ -3343,7 +3343,83 @@ export async function inquireEdisTransaction(auth: Authorization, id: string): P
 
 
 
-//
+// NOTIFICATIONS
+// -------------
+
+// MarketQuote/Depth?
+interface MarketData {
+  symbol: string, // token
+  date: number, // tt
+  type: number, // fyCode
+  currentPrice: number,
+  openPrice: number,
+  highPrice: number,
+  lowPrice: number,
+  closePrice: number,
+  volume: number,
+  candle: Candle,
+  openInterest: number,
+  previousOpenInterest: number,
+  tradedQuantity: number,
+  tradedDate: number,
+  tradedPrice: number,
+  buyQuantity: number,
+  sellQuantity: number,
+  buyPrice: number,
+  sellPrice: number,
+  buyOffers: MarketOffer[],
+  sellOffers: MarketOffer[],
+}
+
+
+function toCandleWebsocket(x: websocket.MarketData): Candle {
+  var p = x.price_conv;
+  return {
+    openPrice:  x.o / p,
+    highPrice:  x.h / p,
+    lowPrice:   x.l / p,
+    closePrice: x.c / p,
+    volume: Number(x.v),
+    date:   x.tt,
+  };
+}
+
+function toMarketOfferWebsocket(x: websocket.L2MarketOffer, p: number): MarketOffer {
+  return {
+    price:  x.price / p,
+    volume: x.volume,
+    orders: x.ord,
+  };
+}
+
+function toMarketData(x: websocket.MarketData): MarketData {
+  var p = x.price_conv;
+  return {
+    symbol: x.token.toString(),
+    date:   x.tt,
+    type:   x.fyCode,
+    currentPrice: x.ltp / p,
+    openPrice:    x.open_price / p,
+    highPrice:    x.high_price / p,
+    lowPrice:     x.low_price / p,
+    closePrice:   x.prev_close_price / p,
+    volume:       x.volume,
+    candle: toCandleWebsocket(x),
+    openInterest: Number(x.oi),
+    previousOpenInterest: Number(x.pdoi),
+    tradedQuantity: x.LTQ,
+    tradedDate:     x.L2_LTT,
+    tradedPrice:    x.ATP,
+    buyQuantity:    Number(x.tot_buy),
+    sellQuantity:   Number(x.tot_sell),
+    buyPrice:   x.bid / p,
+    sellPrice:  x.ask / p,
+    buyOffers:  x.bids != null? x.bids.map(o => toMarketOfferWebsocket(o, p)) : null,
+    sellOffers: x.asks != null? x.asks.map(o => toMarketOfferWebsocket(o, p)) : null,
+  };
+}
+
+
 function subscribeOrderStatus() {}
 function subscribeMarketQuote() {}
 function subscribeMarketDepth() {}
