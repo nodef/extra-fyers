@@ -1,5 +1,5 @@
 import {HttpRequestOptions} from "./_http";
-import {WebSocket} from "./websocket";
+import {Connection} from "./websocket";
 import * as http from "./http";
 import * as websocket from "./websocket";
 
@@ -3453,7 +3453,7 @@ export async function inquireEdisTransaction(auth: Authorization, id: string): P
  * @param fn notified function
  * @returns WebSocket connection
  */
-export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFunction): WebSocket {
+export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFunction): Promise<Connection> {
   return websocket.connectMarketData(fromAuthorization(auth), x => {
     if (x.d) fn(toMarketDataNotification(x));
   });
@@ -3465,8 +3465,9 @@ export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFun
  * @param conn websocket connection
  * @param symbols list of symbols
  */
-export function subscribeMarketQuote(conn: WebSocket, symbols: string[]): void {
-  websocket.subscribeMarketQuote(conn, symbols);
+export async function subscribeMarketQuote(conn: Connection, symbols: string[]): Promise<void> {
+  var a = await websocket.subscribeMarketQuote(conn, symbols);
+  if (a.code < 0) throw new ApiError(a.code, a.message);
 }
 
 
@@ -3475,8 +3476,9 @@ export function subscribeMarketQuote(conn: WebSocket, symbols: string[]): void {
  * @param conn websocket connection
  * @param symbols list of symbols
  */
-export function subscribeMarketDepth(conn: WebSocket, symbols: string[]): void {
-  websocket.subscribeMarketDepth(conn, symbols);
+export async function subscribeMarketDepth(conn: Connection, symbols: string[]): Promise<void> {
+  var a = await websocket.subscribeMarketDepth(conn, symbols);
+  if (a.code < 0) throw new ApiError(a.code, a.message);
 }
 
 
@@ -3485,8 +3487,9 @@ export function subscribeMarketDepth(conn: WebSocket, symbols: string[]): void {
  * @param conn websocket connection
  * @param symbols list of symbols
  */
-export function unsubscribeMarketQuote(conn: WebSocket, symbols: string[]): void {
-  websocket.unsubscribeMarketQuote(conn, symbols);
+export async function unsubscribeMarketQuote(conn: Connection, symbols: string[]): Promise<void> {
+  var a = await websocket.unsubscribeMarketQuote(conn, symbols);
+  if (a.code < 0) throw new ApiError(a.code, a.message);
 }
 
 
@@ -3495,8 +3498,9 @@ export function unsubscribeMarketQuote(conn: WebSocket, symbols: string[]): void
  * @param conn websocket connection
  * @param symbols list of symbols
  */
-export function unsubscribeMarketDepth(conn: WebSocket, symbols: string[]): void {
-  websocket.unsubscribeMarketDepth(conn, symbols);
+export async function unsubscribeMarketDepth(conn: Connection, symbols: string[]): Promise<void> {
+  var a = await websocket.unsubscribeMarketDepth(conn, symbols);
+  if (a.code < 0) throw new ApiError(a.code, a.message);
 }
 
 
@@ -3511,7 +3515,7 @@ export function unsubscribeMarketDepth(conn: WebSocket, symbols: string[]): void
  * @param fn notified function
  * @returns WebSocket connection
  */
-export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedFunction): WebSocket {
+export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedFunction): Promise<Connection> {
   return websocket.connectOrderUpdate(fromAuthorization(auth), x => {
     if (x.d) fn(toOrderUpdateNotification(x));
   });
@@ -3522,8 +3526,9 @@ export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedF
  * Subscribe to order update.
  * @param conn websocket connection
  */
-export function subscribeOrderUpdate(conn: WebSocket): void {
-  websocket.subscribeOrderUpdate(conn);
+export async function subscribeOrderUpdate(conn: Connection): Promise<void> {
+  var a = await websocket.subscribeOrderUpdate(conn);
+  if (a.code < 0) throw new ApiError(a.code, a.message);
 }
 
 
@@ -3531,8 +3536,9 @@ export function subscribeOrderUpdate(conn: WebSocket): void {
  * Unsubscribe to order update.
  * @param conn websocket connection
  */
-export function unsubscribeOrderUpdate(conn: WebSocket): void {
-  websocket.unsubscribeOrderUpdate(conn);
+export async function unsubscribeOrderUpdate(conn: Connection): Promise<void> {
+  var a = await websocket.unsubscribeOrderUpdate(conn);
+  if (a.code < 0) throw new ApiError(a.code, a.message);
 }
 
 
