@@ -1,7 +1,6 @@
 import {WebSocket} from "./_websocket";
 import {Response, Authorization} from "./http";
-export {WebSocket} from "./_websocket";
-export {Authorization} from "./http";
+export {Response, Authorization} from "./http";
 
 
 
@@ -17,6 +16,20 @@ export const ORDER_UPDATE_URL: string = "wss://api.fyers.in/socket/v2/orderSock"
 const MARKET_DATA_QUERY:string  = "user-agent=fyers-api&type=symbolUpdate";
 /** Base query string for Order update notifications. */
 const ORDER_UPDATE_QUERY:string = "user-agent=fyers-api&type=orderUpdate";
+/** Ping interval on the WebSocket connection. */
+const PING_INTERVAL: number = 5000;
+
+
+
+
+// TYPES
+// =====
+
+// NOTIFICATION
+// ------------
+
+/** Common notification format. */
+export type Notification = Response;
 
 
 
@@ -86,18 +99,6 @@ export interface OrderUpdateNotification extends Notification {
   /** Data for the notification. */
   d?: OrderUpdate,
 }
-
-
-
-
-// TYPES
-// =====
-
-// NOTIFICATION
-// ------------
-
-/** Common notification format. */
-export type Notification = Response;
 
 
 
@@ -492,6 +493,40 @@ export type MarketDataNotifiedFunction = (notification: MarketDataNotification) 
 
 
 
+// WEB-CHANNEL
+// -----------
+
+/** Handler for reciever which has passed (resolved). */
+type ResolvedReciever = (response: Response) => void;
+/** Handler for reciever which has failed (rejected). */
+type RejectedReciever = (error: Error) => void;
+
+
+/** Reciever which can pass or fail (resolve or reject). */
+interface Reciever {
+  /** Pass (resolve) handler for reciever. */
+  resolve: ResolvedReciever,
+  /** Fail (reject) handler for reciever. */
+  reject: RejectedReciever;
+}
+
+
+/**
+ * Provides the API for creating and managing a WebSocket connection to
+ * a server, as well as for sending and receiving data on the connection.
+ */
+export class Connection extends WebSocket {
+  recievers: Reciever[] = []
+}
+
+// Wait for response to request.
+function waitResponse(conn: Connection): Promise<Response> {
+  return new Promise((resolve, reject) => conn.recievers.push({resolve, reject}));
+}
+
+
+
+
 // ORDER-UPDATE
 // ------------
 
@@ -501,15 +536,29 @@ export type MarketDataNotifiedFunction = (notification: MarketDataNotification) 
  * @param fn notified function
  * @returns WebSocket connection
  */
-export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedFunction): WebSocket {
-  var {app_id, access_token} = auth;
-  var query = `${ORDER_UPDATE_QUERY}&access_token=${app_id}:${access_token}`;
-  var conn  = new WebSocket(`${ORDER_UPDATE_URL}?${query}`);
-  conn.onmessage = e => {
-    if (typeof e.data !== "string") return;
-    if (e.data !== "pong") fn(JSON.parse(e.data));
-  };
-  return conn;
+export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedFunction): Promise<Connection> {
+  return new Promise((resolve, reject) => {
+    var {app_id, access_token} = auth;
+    var query = `${ORDER_UPDATE_QUERY}&access_token=${app_id}:${access_token}`;
+    var conn  = new Connection(`${ORDER_UPDATE_URL}?${query}`);
+    var ping  = setInterval(() => {
+      if (conn.readyState !== WebSocket.OPEN) return;
+      conn.send("ping");
+    }, PING_INTERVAL);
+    conn.onerror = e => {
+      for (var r of conn.recievers)
+        r.reject(e.error);
+      clearInterval(ping);
+      reject(e.error);
+    };
+    conn.onopen = () => resolve(conn);
+    conn.onmessage = e => {
+      if (typeof e.data !== "string") return;
+      if (e.data === "pong") return;
+      var x = JSON.parse(e.data); fn(x);
+      if (!x.hasOwnProperty("d") && conn.recievers.length > 0) conn.recievers.shift().resolve(x);
+    };
+  });
 }
 
 
@@ -517,9 +566,10 @@ export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedF
  * Subscribe to order update.
  * @param conn websocket connection
  */
-export function subscribeOrderUpdate(conn: WebSocket): void {
+export function subscribeOrderUpdate(conn: Connection): Promise<Response> {
   var req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 1};
   conn.send(JSON.stringify(req));
+  return waitResponse(conn);
 }
 
 
@@ -527,9 +577,10 @@ export function subscribeOrderUpdate(conn: WebSocket): void {
  * Unsubscribe to order update.
  * @param conn websocket connection
  */
-export function unsubscribeOrderUpdate(conn: WebSocket): void {
+export function unsubscribeOrderUpdate(conn: Connection): Promise<Response> {
   var req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 0};
   conn.send(JSON.stringify(req));
+  return waitResponse(conn);
 }
 
 
@@ -544,20 +595,34 @@ export function unsubscribeOrderUpdate(conn: WebSocket): void {
  * @param fn notified function
  * @returns WebSocket connection
  */
-export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFunction): WebSocket {
-  var {app_id, access_token} = auth;
-  var query = `${MARKET_DATA_QUERY}&access_token=${app_id}:${access_token}`;
-  var conn  = new WebSocket(`${MARKET_DATA_URL}?${query}`);
-  conn.onmessage = e => {
-    if (typeof e.data === "string") {
-      if (e.data !== "pong") fn(JSON.parse(e.data));
-    }
-    else {
-      var binary = new DataView(e.data as ArrayBuffer);
-      fn({s: "ok", d: toMarketData(binary, 0)});
-    }
-  };
-  return conn;
+export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFunction): Promise<Connection> {
+  return new Promise((resolve, reject) => {
+    var {app_id, access_token} = auth;
+    var query = `${MARKET_DATA_QUERY}&access_token=${app_id}:${access_token}`;
+    var conn  = new Connection(`${MARKET_DATA_URL}?${query}`);
+    var ping  = setInterval(() => {
+      if (conn.readyState !== WebSocket.OPEN) return;
+      conn.send("ping");
+    }, PING_INTERVAL);
+    conn.onerror = e => {
+      for (var r of conn.recievers)
+        r.reject(e.error);
+      clearInterval(ping);
+      reject(e.error);
+    };
+    conn.onopen = () => resolve(conn);
+    conn.onmessage = e => {
+      if (typeof e.data === "string") {
+        if (e.data === "pong") return;
+        var x = JSON.parse(e.data); fn(x);
+        if (!x.hasOwnProperty("d") && conn.recievers.length > 0) conn.recievers.shift().resolve(x);
+      }
+      else {
+        var binary = new DataView(e.data as ArrayBuffer);
+        fn({s: "ok", d: toMarketData(binary, 0)});
+      }
+    };
+  });
 }
 
 
@@ -566,9 +631,10 @@ export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFun
  * @param conn websocket connection
  * @param symbols list of symbols
  */
-export function subscribeMarketQuote(conn: WebSocket, symbols: string[]): void {
+export function subscribeMarketQuote(conn: Connection, symbols: string[]): Promise<Response> {
   var req = {T: "SUB_DATA", TLIST: symbols, SUB_T: 1};
   conn.send(JSON.stringify(req));
+  return waitResponse(conn);
 }
 
 
@@ -577,9 +643,10 @@ export function subscribeMarketQuote(conn: WebSocket, symbols: string[]): void {
  * @param conn websocket connection
  * @param symbols list of symbols
  */
-export function subscribeMarketDepth(conn: WebSocket, symbols: string[]): void {
+export function subscribeMarketDepth(conn: Connection, symbols: string[]): Promise<Response> {
   var req = {T: "SUB_L2", L2LIST: symbols, SUB_T: 1};
   conn.send(JSON.stringify(req));
+  return waitResponse(conn);
 }
 
 
@@ -588,9 +655,10 @@ export function subscribeMarketDepth(conn: WebSocket, symbols: string[]): void {
  * @param conn websocket connection
  * @param symbols list of symbols
  */
-export function unsubscribeMarketQuote(conn: WebSocket, symbols: string[]): void {
+export function unsubscribeMarketQuote(conn: Connection, symbols: string[]): Promise<Response> {
   var req = {T: "SUB_DATA", TLIST: symbols, SUB_T: 0};
   conn.send(JSON.stringify(req));
+  return waitResponse(conn);
 }
 
 
@@ -599,7 +667,8 @@ export function unsubscribeMarketQuote(conn: WebSocket, symbols: string[]): void
  * @param conn websocket connection
  * @param symbols list of symbols
  */
-export function unsubscribeMarketDepth(conn: WebSocket, symbols: string[]): void {
+export function unsubscribeMarketDepth(conn: Connection, symbols: string[]): Promise<Response> {
   var req = {T: "SUB_L2", L2LIST: symbols, SUB_T: 0};
   conn.send(JSON.stringify(req));
+  return waitResponse(conn);
 }
