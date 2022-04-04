@@ -21,6 +21,75 @@ const ORDER_UPDATE_QUERY:string = "user-agent=fyers-api&type=orderUpdate";
 
 
 
+// ORDER-UPDATE
+// ------------
+
+/** Update for order placed by the user in the current trading day. */
+export interface OrderUpdate {
+  /** The unique order id assigned for each order. */
+  id: string,
+  /** The order id provided by the exchange. */
+  exchOrdId: string,
+  /** The symbol for which order is placed. */
+  symbol: string,
+  /** Fytoken is a unique identifier for every symbol. */
+  fyToken: string,
+  /** The segment this order is placed in. */
+  segment: string,
+  /** Exchange instrument type. */
+  instrument: string,
+  /** The type of order. */
+  type: number,
+  /** The order is buy or sell. */
+  side: number,
+  /** The product type. */
+  productType: string,
+  /** The status of the order. */
+  status: number,
+  /** The order number and status of the order. */
+  orderNumStatus: string,
+  /** True when placing AMO order. */
+  offlineOrder: boolean,
+  /** The original order qty. */
+  qty: number,
+  /** The remaining qty. */
+  remainingQuantity: number,
+  /** The filled qty after partial trades. */
+  filledQty: number,
+  /** The limit price for the order. */
+  limitPrice: number,
+  /** The stop price for the order. */
+  stopPrice: number,
+  /** Disclosed quantity. */
+  discloseQty: number,
+  /** Remaining disclosed quantity. */
+  dqQtyRem: number,
+  /** Day or IOC. */
+  orderValidity: string,
+  /** The order time as per DD-MMM-YYYY hh:mm:ss in IST. */
+  orderDateTime: string,
+  /** The parent order id will be provided only for applicable orders. */
+  parentId?: string,
+  /** The average traded price for the order. */
+  tradedPrice: number,
+  /** This is used to sort the orders based on the time. */
+  slNo: number,
+  /** The error messages are shown here. */
+  message: string,
+}
+
+
+/** String notification on order update. */
+export interface OrderUpdateNotification extends Notification {
+  /** Websocket type [1]. */
+  ws_type?: number,
+  /** Data for the notification. */
+  d?: OrderUpdate,
+}
+
+
+
+
 // TYPES
 // =====
 
@@ -399,75 +468,6 @@ export interface MarketDataNotification extends Notification {
 
 
 
-// ORDER-UPDATE
-// ------------
-
-/** Update for order placed by the user in the current trading day. */
-export interface OrderUpdate {
-  /** The unique order id assigned for each order. */
-  id: string,
-  /** The order id provided by the exchange. */
-  exchOrdId: string,
-  /** The symbol for which order is placed. */
-  symbol: string,
-  /** Fytoken is a unique identifier for every symbol. */
-  fyToken: string,
-  /** The segment this order is placed in. */
-  segment: string,
-  /** Exchange instrument type. */
-  instrument: string,
-  /** The type of order. */
-  type: number,
-  /** The order is buy or sell. */
-  side: number,
-  /** The product type. */
-  productType: string,
-  /** The status of the order. */
-  status: number,
-  /** The order number and status of the order. */
-  orderNumStatus: string,
-  /** True when placing AMO order. */
-  offlineOrder: boolean,
-  /** The original order qty. */
-  qty: number,
-  /** The remaining qty. */
-  remainingQuantity: number,
-  /** The filled qty after partial trades. */
-  filledQty: number,
-  /** The limit price for the order. */
-  limitPrice: number,
-  /** The stop price for the order. */
-  stopPrice: number,
-  /** Disclosed quantity. */
-  discloseQty: number,
-  /** Remaining disclosed quantity. */
-  dqQtyRem: number,
-  /** Day or IOC. */
-  orderValidity: string,
-  /** The order time as per DD-MMM-YYYY hh:mm:ss in IST. */
-  orderDateTime: string,
-  /** The parent order id will be provided only for applicable orders. */
-  parentId?: string,
-  /** The average traded price for the order. */
-  tradedPrice: number,
-  /** This is used to sort the orders based on the time. */
-  slNo: number,
-  /** The error messages are shown here. */
-  message: string,
-}
-
-
-/** String notification on order update. */
-export interface OrderUpdateNotification extends Notification {
-  /** Websocket type [1]. */
-  ws_type?: number,
-  /** Data for the notification. */
-  d?: OrderUpdate,
-}
-
-
-
-
 // FUNCTIONS
 // =========
 
@@ -478,16 +478,59 @@ export interface OrderUpdateNotification extends Notification {
 export type NotifiedFunction = (notification: Notification) => void;
 
 /**
+ * Order update notified function.
+ * @param notification notification
+ */
+export type OrderUpdateNotifiedFunction = (notification: OrderUpdateNotification) => void;
+
+/**
  * Market data notified function.
  * @param notification notification
  */
 export type MarketDataNotifiedFunction = (notification: MarketDataNotification) => void;
 
+
+
+
+// ORDER-UPDATE
+// ------------
+
 /**
- * Order update notified function.
- * @param notification notification
+ * Connect to Order update URL with WebSocket.
+ * @param auth authorization {app_id, access_token}
+ * @param fn notified function
+ * @returns WebSocket connection
  */
-export type OrderUpdateNotifiedFunction = (notification: OrderUpdateNotification) => void;
+export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedFunction): WebSocket {
+  var {app_id, access_token} = auth;
+  var query = `${ORDER_UPDATE_QUERY}&access_token=${app_id}:${access_token}`;
+  var conn  = new WebSocket(`${ORDER_UPDATE_URL}?${query}`);
+  conn.onmessage = e => {
+    if (typeof e.data !== "string") return;
+    if (e.data !== "pong") fn(JSON.parse(e.data));
+  };
+  return conn;
+}
+
+
+/**
+ * Subscribe to order update.
+ * @param conn websocket connection
+ */
+export function subscribeOrderUpdate(conn: WebSocket): void {
+  var req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 1};
+  conn.send(JSON.stringify(req));
+}
+
+
+/**
+ * Unsubscribe to order update.
+ * @param conn websocket connection
+ */
+export function unsubscribeOrderUpdate(conn: WebSocket): void {
+  var req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 0};
+  conn.send(JSON.stringify(req));
+}
 
 
 
@@ -558,48 +601,5 @@ export function unsubscribeMarketQuote(conn: WebSocket, symbols: string[]): void
  */
 export function unsubscribeMarketDepth(conn: WebSocket, symbols: string[]): void {
   var req = {T: "SUB_L2", L2LIST: symbols, SUB_T: 0};
-  conn.send(JSON.stringify(req));
-}
-
-
-
-
-// ORDER-UPDATE
-// ------------
-
-/**
- * Connect to Order update URL with WebSocket.
- * @param auth authorization {app_id, access_token}
- * @param fn notified function
- * @returns WebSocket connection
- */
-export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedFunction): WebSocket {
-  var {app_id, access_token} = auth;
-  var query = `${ORDER_UPDATE_QUERY}&access_token=${app_id}:${access_token}`;
-  var conn  = new WebSocket(`${ORDER_UPDATE_URL}?${query}`);
-  conn.onmessage = e => {
-    if (typeof e.data !== "string") return;
-    if (e.data !== "pong") fn(JSON.parse(e.data));
-  };
-  return conn;
-}
-
-
-/**
- * Subscribe to order update.
- * @param conn websocket connection
- */
-export function subscribeOrderUpdate(conn: WebSocket): void {
-  var req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 1};
-  conn.send(JSON.stringify(req));
-}
-
-
-/**
- * Unsubscribe to order update.
- * @param conn websocket connection
- */
-export function unsubscribeOrderUpdate(conn: WebSocket): void {
-  var req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 0};
   conn.send(JSON.stringify(req));
 }
