@@ -1456,6 +1456,8 @@ export interface Holding {
   isin: string,
   /** Eg: NSE:RCOM-EQ. */
   symbol: string,
+  /** A unique identifier for every symbol. */
+  token: string,
   /** The exchange in which order is placed. */
   exchange: Exchange,
   /** Identify the type of holding. */
@@ -1483,6 +1485,7 @@ function toHolding(x: http.Holding): Holding {
   return {
     isin:     x.isin,
     symbol:   x.symbol,
+    token:    x.fytoken,
     exchange: toExchange(x.exchange),
     type:     toHoldingType(x.holdingType),
     quantity: x.quantity,
@@ -1557,9 +1560,8 @@ export interface Order {
   id: string,
   /** The symbol for which order is placed. */
   symbol: string,
-  // TODO:
-  // /** Fytoken is a unique identifier for every symbol. */
-  // symbolToken: string,
+  /** A unique identifier for every symbol. */
+  token: string,
   /** The ticker symbol for which order is placed. */
   ticker: string,
   /** Description of symbol for which order is placed. */
@@ -1623,6 +1625,7 @@ function toOrder(x: http.Order): Order {
   return {
     id:     x.id,
     symbol: x.symbol,
+    token:  x.fytoken,
     ticker: x.ex_sym,
     description:  x.description,
     segment:      toSegment(x.segment),
@@ -1729,6 +1732,8 @@ export interface Position {
   id: string,
   /** Eg: NSE:SBIN-EQ. */
   symbol: string,
+  /** A unique identifier for every symbol. */
+  token: string,
   /** The segment in which the position is taken. */
   segment: Segment,
   /** The product type of the position. */
@@ -1774,6 +1779,7 @@ function toPosition(x: http.Position): Position {
   return {
     id: x.id,
     symbol:      x.symbol,
+    token:       x.fytoken,
     segment:     toSegment(x.segment),
     productType: toProductType(x.productType),
     side:        toPositionSide(x.side),
@@ -1867,6 +1873,8 @@ export interface Trade {
   orderId: string,
   /** Eg: NSE:SBIN-EQ. */
   symbol: string,
+  /** A unique identifier for every symbol. */
+  token: string,
   /** The segment in which order is placed. */
   segment: Segment,
   /** The exchange in which order is placed. */
@@ -1895,6 +1903,7 @@ function toTrade(x: http.Trade): Trade {
     id: x.id,
     orderId:  x.orderNumber,
     symbol:   x.symbol,
+    token:    x.fyToken,
     segment:  toSegment(x.segment),
     exchange: toExchange(x.exchange),
     side:     toOrderSide(x.transactionType),
@@ -2204,7 +2213,7 @@ export interface Candle {
   highPrice: number,
   /** Low price. */
   lowPrice: number,
-  /** Close price. */
+  /** Previous Close price. */
   closePrice: number,
   /** Volume. */
   volume: number,
@@ -2306,6 +2315,8 @@ function toMarketHistory(x: http.GetMarketHistoryResponse): MarketHistory {
 export interface MarketQuote {
   /** Symbol name provided by the user. */
   symbol: string,
+  /** A unique identifier for every symbol. */
+  token: string,
   /** Short name for the symbol Eg: “SBIN-EQ”. */
   name: string,
   /** Name of the exchange. Eg: “NSE” or “BSE”. */
@@ -2345,6 +2356,7 @@ function toMarketQuote(x: http.MarketQuote): MarketQuote {
   var v = x.v;
   return {
     symbol:   x.n,
+    token:    v.fyToken,
     name:     v.short_name,
     exchange: v.exchange as Exchange,
     description:  v.description,

@@ -168,7 +168,7 @@ export interface Holding {
   /** An identifier for this holding. */
   id: number,
   /** Fytoken is a unique identifier for every symbol. */
-  fytoken: number,
+  fytoken: string,
   /** 12-digit International Securities Identification Number. */
   isin: string,
   /** Eg: NSE:RCOM-EQ. */
