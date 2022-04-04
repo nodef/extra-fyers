@@ -1,5 +1,6 @@
-import {WebSocket} from "ws";
+import {WebSocket} from "./_websocket";
 import {Response, Authorization} from "./http";
+export {WebSocket} from "./_websocket";
 export {Authorization} from "./http";
 
 
@@ -10,12 +11,12 @@ export {Authorization} from "./http";
 
 /** Root URL for Market data notifications. */
 export const MARKET_DATA_URL: string  = "wss://api.fyers.in/socket/v2/dataSock";
-/** Root URL for Order status notifications. */
-export const ORDER_STATUS_URL: string = "wss://api.fyers.in/socket/v2/orderSock";
+/** Root URL for Order update notifications. */
+export const ORDER_UPDATE_URL: string = "wss://api.fyers.in/socket/v2/orderSock";
 /** Base query string for Market data notifications. */
 const MARKET_DATA_QUERY:string  = "user-agent=fyers-api&type=symbolUpdate";
-/** Base query string for Order status notifications. */
-const ORDER_STATUS_QUERY:string = "user-agent=fyers-api&type=orderUpdate";
+/** Base query string for Order update notifications. */
+const ORDER_UPDATE_QUERY:string = "user-agent=fyers-api&type=orderUpdate";
 
 
 
@@ -398,11 +399,11 @@ export interface MarketDataNotification extends Notification {
 
 
 
-// ORDER-STATUS
+// ORDER-UPDATE
 // ------------
 
-/** Status for order placed by the user in the current trading day. */
-export interface OrderStatus {
+/** Update for order placed by the user in the current trading day. */
+export interface OrderUpdate {
   /** The unique order id assigned for each order. */
   id: string,
   /** The order id provided by the exchange. */
@@ -456,12 +457,12 @@ export interface OrderStatus {
 }
 
 
-/** String notification on order status. */
-export interface OrderStatusNotification extends Notification {
+/** String notification on order update. */
+export interface OrderUpdateNotification extends Notification {
   /** Websocket type [1]. */
   ws_type?: number,
   /** Data for the notification. */
-  d?: OrderStatus,
+  d?: OrderUpdate,
 }
 
 
@@ -483,10 +484,10 @@ export type NotifiedFunction = (notification: Notification) => void;
 export type MarketDataNotifiedFunction = (notification: MarketDataNotification) => void;
 
 /**
- * Order status notified function.
+ * Order update notified function.
  * @param notification notification
  */
-export type OrderStatusNotifiedFunction = (notification: OrderStatusNotification) => void;
+export type OrderUpdateNotifiedFunction = (notification: OrderUpdateNotification) => void;
 
 
 
@@ -563,19 +564,19 @@ export function unsubscribeMarketDepth(conn: WebSocket, symbols: string[]): void
 
 
 
-// ORDER-STATUS
+// ORDER-UPDATE
 // ------------
 
 /**
- * Connect to Order status URL with WebSocket.
+ * Connect to Order update URL with WebSocket.
  * @param auth authorization {app_id, access_token}
  * @param fn notified function
  * @returns WebSocket connection
  */
-export function connectOrderStatus(auth: Authorization, fn: OrderStatusNotifiedFunction): WebSocket {
+export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedFunction): WebSocket {
   var {app_id, access_token} = auth;
-  var query = `${ORDER_STATUS_QUERY}&access_token=${app_id}:${access_token}`;
-  var conn  = new WebSocket(`${ORDER_STATUS_URL}?${query}`);
+  var query = `${ORDER_UPDATE_QUERY}&access_token=${app_id}:${access_token}`;
+  var conn  = new WebSocket(`${ORDER_UPDATE_URL}?${query}`);
   conn.onmessage = e => {
     if (typeof e.data !== "string") return;
     if (e.data !== "pong") fn(JSON.parse(e.data));
@@ -585,20 +586,20 @@ export function connectOrderStatus(auth: Authorization, fn: OrderStatusNotifiedF
 
 
 /**
- * Subscribe to order status.
+ * Subscribe to order update.
  * @param conn websocket connection
  */
-export function subscribeOrderStatus(conn: WebSocket): void {
+export function subscribeOrderUpdate(conn: WebSocket): void {
   var req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 1};
   conn.send(JSON.stringify(req));
 }
 
 
 /**
- * Unsubscribe to order status.
+ * Unsubscribe to order update.
  * @param conn websocket connection
  */
-export function unsubscribeOrderStatus(conn: WebSocket): void {
+export function unsubscribeOrderUpdate(conn: WebSocket): void {
   var req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 0};
   conn.send(JSON.stringify(req));
 }

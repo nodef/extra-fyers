@@ -1,4 +1,5 @@
 import {HttpRequestOptions} from "./_http";
+import {WebSocket} from "./websocket";
 import * as http from "./http";
 import * as websocket from "./websocket";
 
@@ -2605,16 +2606,17 @@ function fromEdisHolding(x: EdisHolding): http.EdisHolding {
 
 
 
-// SUBSCRIBE-ORDER-STATUS
-// ----------------------
+// ORDER-UPDATE
+// ------------
 
-interface OrderNotification {
+/** Order update notification from WebSocket. */
+export interface OrderUpdateNotification {
   /** The unique order id assigned for each order. */
   id: string,
   /** The symbol for which order is placed. */
   symbol: string,
-  /** Fytoken is a unique identifier for every symbol. */
-  symbolToken: string,
+  /** A unique identifier for every symbol. */
+  token: string,
   /** The type of order. */
   type: OrderType,
   /** The order is buy or sell. */
@@ -2651,12 +2653,13 @@ interface OrderNotification {
   message: string,
 }
 
-function toOrderNotification(x: websocket.OrderStatusNotification): OrderNotification {
+
+function toOrderUpdateNotification(x: websocket.OrderUpdateNotification): OrderUpdateNotification {
   var d = x.d;
   return {
     id: d.id,
     symbol:       d.symbol,
-    symbolToken:  d.fyToken,
+    token:        d.fyToken,
     type:         toOrderType(d.type),
     side:         toOrderSide(d.side),
     productType:  toProductType(d.productType),
@@ -2683,9 +2686,12 @@ function toOrderNotification(x: websocket.OrderStatusNotification): OrderNotific
 // SUBSCRIBE-MARKET-QUOTES/DEPTH
 // -----------------------------
 
-interface MarketQuoteNotification {
-  /** Fytoken is a unique identifier for every symbol. */
-  symbolToken: BigInt,
+/** Market quote notification from WebSocket. */
+export interface MarketQuoteNotification {
+  /** The symbol for which order is placed. */
+  symbol?: string,
+  /** A unique identifier for every symbol. */
+  token: string,
   /** Timestamp sent by exchange (UNIX epoch). */
   date: number,
   /** Market status flag? */
@@ -2724,78 +2730,71 @@ interface MarketQuoteNotification {
   sellPrice: number,
 }
 
-interface MarketDepthNotification extends MarketQuoteNotification {
+/** Market depth notification from WebSocket. */
+export interface MarketDepthNotification extends MarketQuoteNotification {
   /** Bidding price along with volume and total number of orders. */
   buyOffers: MarketOffer[],
   /** Offer price with volume and total number of orders. */
   sellOffers: MarketOffer[],
 }
 
-function toMarketQuoteNotification(x: websocket.MarketData): MarketQuoteNotification {
-  var p = x.price_conv;
+/** Market depth notification from WebSocket. */
+export interface MarketDataNotification extends MarketDepthNotification {}
+
+
+function toMarketDataNotification(x: websocket.MarketDataNotification): MarketDataNotification {
+  var d = x.d;
+  var p = d.price_conv;
   return {
-    symbolToken:  x.token,
-    date: x.tt,
-    marketStatus: x.marketStat,
-    currentPrice: x.ltp / p,
-    openPrice:    x.open_price / p,
-    highPrice:    x.high_price / p,
-    lowPrice:     x.low_price / p,
-    closePrice:   x.prev_close_price / p,
+    symbol: null,
+    token:  d.token.toString(),
+    date:   d.tt,
+    marketStatus: d.marketStat,
+    currentPrice: d.ltp / p,
+    openPrice:    d.open_price / p,
+    highPrice:    d.high_price / p,
+    lowPrice:     d.low_price / p,
+    closePrice:   d.prev_close_price / p,
     candle: {
-      date: x.tt,
-      openPrice:  x.o / p,
-      highPrice:  x.h / p,
-      lowPrice:   x.l / p,
-      closePrice: x.c / p,
-      volume: Number(x.v),
+      date: d.tt,
+      openPrice:  d.o / p,
+      highPrice:  d.h / p,
+      lowPrice:   d.l / p,
+      closePrice: d.c / p,
+      volume: Number(d.v),
     },
-    openInterest: Number(x.oi),
-    previousOpenInterest: Number(x.pdoi),
-    tradedQuantity: x.LTQ,
-    tradedDate:     x.L2_LTT,
-    tradedPrice:    x.ATP,
-    volume: x.volume,
-    buyQuantity:  x.tot_buy,
-    sellQuantity: x.tot_sell,
-    buyPrice:     x.bid,
-    sellPrice:    x.ask,
+    openInterest: Number(d.oi),
+    previousOpenInterest: Number(d.pdoi),
+    tradedQuantity: d.LTQ,
+    tradedDate:     d.L2_LTT,
+    tradedPrice:    d.ATP,
+    volume: d.volume,
+    buyQuantity:  d.tot_buy,
+    sellQuantity: d.tot_sell,
+    buyPrice:     d.bids == null? d.bid : d.bids[0].price,
+    sellPrice:    d.asks == null? d.ask : d.asks[0].price,
+    buyOffers:    d.bids == null? null  : d.bids.map(toMarketOffer),
+    sellOffers:   d.asks == null? null  : d.asks.map(toMarketOffer),
   };
 }
 
-function toMarketDepthNotification(x: websocket.MarketData): MarketDepthNotification {
-  var p = x.price_conv;
-  return {
-    symbolToken:  x.token,
-    date: x.tt,
-    marketStatus: x.marketStat,
-    currentPrice: x.ltp / p,
-    openPrice:    x.open_price / p,
-    highPrice:    x.high_price / p,
-    lowPrice:     x.low_price / p,
-    closePrice:   x.prev_close_price / p,
-    candle: {
-      date: x.tt,
-      openPrice:  x.o / p,
-      highPrice:  x.h / p,
-      lowPrice:   x.l / p,
-      closePrice: x.c / p,
-      volume: Number(x.v),
-    },
-    openInterest: Number(x.oi),
-    previousOpenInterest: Number(x.pdoi),
-    tradedQuantity: x.LTQ,
-    tradedDate:     x.L2_LTT,
-    tradedPrice:    x.ATP,
-    volume: x.volume,
-    buyQuantity:  x.tot_buy,
-    sellQuantity: x.tot_sell,
-    buyPrice:     x.bids[0].price,
-    sellPrice:    x.asks[0].price,
-    buyOffers:    x.bids.map(toMarketOffer),
-    sellOffers:   x.asks.map(toMarketOffer),
-  };
-}
+
+
+
+// NOTIFICATIONS
+// -------------
+
+/**
+ * Market data notified function.
+ * @param notification notification
+ */
+export type MarketDataNotifiedFunction = (notification: MarketDataNotification) => void;
+
+/**
+ * Order update notified function.
+ * @param notification notification
+ */
+export type OrderUpdateNotifiedFunction = (notification: OrderUpdateNotification) => void;
 
 
 
@@ -3041,11 +3040,6 @@ function commodityOptionsSellCharges(x: number) {
 // ERROR
 // -----
 
-interface ErrorDetails {
-  code: number,
-  message: string,
-}
-
 /** Defines a FYERS error {code, message}. */
 class ApiError extends Error {
   /** Error code (-ve). */
@@ -3058,10 +3052,9 @@ class ApiError extends Error {
    */
   constructor(code: number, message: string) {
     super(message);
-    this.code = code;
-    this.name = this.constructor.name;
-    if (typeof Error.captureStackTrace !== "function") this.stack = (new Error(message)).stack;
-    else Error.captureStackTrace(this, this.constructor);
+    this.code  = code;
+    this.name  = this.constructor.name;
+    this.stack = (new Error(message)).stack;
   }
 }
 
@@ -3449,85 +3442,98 @@ export async function inquireEdisTransaction(auth: Authorization, id: string): P
 
 
 // NOTIFICATIONS
-// -------------
+// =============
 
-// MarketQuote/Depth?
-interface MarketData {
-  symbol: string, // token
-  date: number, // tt
-  type: number, // fyCode
-  currentPrice: number,
-  openPrice: number,
-  highPrice: number,
-  lowPrice: number,
-  closePrice: number,
-  volume: number,
-  candle: Candle,
-  openInterest: number,
-  previousOpenInterest: number,
-  tradedQuantity: number,
-  tradedDate: number,
-  tradedPrice: number,
-  buyQuantity: number,
-  sellQuantity: number,
-  buyPrice: number,
-  sellPrice: number,
-  buyOffers: MarketOffer[],
-  sellOffers: MarketOffer[],
+// MARKET-DATA
+// -----------
+
+/**
+ * Connect to Market data URL with WebSocket.
+ * @param auth authorization {appId, accessToken}
+ * @param fn notified function
+ * @returns WebSocket connection
+ */
+export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFunction): WebSocket {
+  return websocket.connectMarketData(fromAuthorization(auth), x => {
+    if (x.d) fn(toMarketDataNotification(x));
+  });
 }
 
 
-function toCandleWebsocket(x: websocket.MarketData): Candle {
-  var p = x.price_conv;
-  return {
-    openPrice:  x.o / p,
-    highPrice:  x.h / p,
-    lowPrice:   x.l / p,
-    closePrice: x.c / p,
-    volume: Number(x.v),
-    date:   x.tt,
-  };
-}
-
-function toMarketOfferWebsocket(x: websocket.L2MarketOffer, p: number): MarketOffer {
-  return {
-    price:  x.price / p,
-    volume: x.volume,
-    orders: x.ord,
-  };
-}
-
-function toMarketData(x: websocket.MarketData): MarketData {
-  var p = x.price_conv;
-  return {
-    symbol: x.token.toString(),
-    date:   x.tt,
-    type:   x.fyCode,
-    currentPrice: x.ltp / p,
-    openPrice:    x.open_price / p,
-    highPrice:    x.high_price / p,
-    lowPrice:     x.low_price / p,
-    closePrice:   x.prev_close_price / p,
-    volume:       x.volume,
-    candle: toCandleWebsocket(x),
-    openInterest: Number(x.oi),
-    previousOpenInterest: Number(x.pdoi),
-    tradedQuantity: x.LTQ,
-    tradedDate:     x.L2_LTT,
-    tradedPrice:    x.ATP,
-    buyQuantity:    Number(x.tot_buy),
-    sellQuantity:   Number(x.tot_sell),
-    buyPrice:   x.bid / p,
-    sellPrice:  x.ask / p,
-    buyOffers:  x.bids != null? x.bids.map(o => toMarketOfferWebsocket(o, p)) : null,
-    sellOffers: x.asks != null? x.asks.map(o => toMarketOfferWebsocket(o, p)) : null,
-  };
+/**
+ * Subscribe to market quote.
+ * @param conn websocket connection
+ * @param symbols list of symbols
+ */
+export function subscribeMarketQuote(conn: WebSocket, symbols: string[]): void {
+  websocket.subscribeMarketQuote(conn, symbols);
 }
 
 
-function subscribeOrderStatus() {}
-function subscribeMarketQuote() {}
-function subscribeMarketDepth() {}
+/**
+ * Subscribe to market depth.
+ * @param conn websocket connection
+ * @param symbols list of symbols
+ */
+export function subscribeMarketDepth(conn: WebSocket, symbols: string[]): void {
+  websocket.subscribeMarketDepth(conn, symbols);
+}
+
+
+/**
+ * Unsubscribe to market quote.
+ * @param conn websocket connection
+ * @param symbols list of symbols
+ */
+export function unsubscribeMarketQuote(conn: WebSocket, symbols: string[]): void {
+  websocket.unsubscribeMarketQuote(conn, symbols);
+}
+
+
+/**
+ * Unsubscribe to market depth.
+ * @param conn websocket connection
+ * @param symbols list of symbols
+ */
+export function unsubscribeMarketDepth(conn: WebSocket, symbols: string[]): void {
+  websocket.unsubscribeMarketDepth(conn, symbols);
+}
+
+
+
+
+// ORDER-UPDATE
+// ------------
+
+/**
+ * Connect to Order update URL with WebSocket.
+ * @param auth authorization {appId, accessToken}
+ * @param fn notified function
+ * @returns WebSocket connection
+ */
+export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedFunction): WebSocket {
+  return websocket.connectOrderUpdate(fromAuthorization(auth), x => {
+    if (x.d) fn(toOrderUpdateNotification(x));
+  });
+}
+
+
+/**
+ * Subscribe to order update.
+ * @param conn websocket connection
+ */
+export function subscribeOrderUpdate(conn: WebSocket): void {
+  websocket.subscribeOrderUpdate(conn);
+}
+
+
+/**
+ * Unsubscribe to order update.
+ * @param conn websocket connection
+ */
+export function unsubscribeOrderUpdate(conn: WebSocket): void {
+  websocket.unsubscribeOrderUpdate(conn);
+}
 
 
 
