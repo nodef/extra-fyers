@@ -1,5 +1,6 @@
 import {WebSocket} from "ws";
 import {Response, Authorization} from "./http";
+export {Authorization} from "./http";
 
 
 
@@ -8,9 +9,13 @@ import {Response, Authorization} from "./http";
 // =========
 
 /** Root URL for Market data notifications. */
-export const MARKET_DATA_URL: string = 'wss://api.fyers.in/socket/v2/dataSock';
+export const MARKET_DATA_URL: string  = "wss://api.fyers.in/socket/v2/dataSock";
 /** Root URL for Order status notifications. */
-export const ORDER_STATUS_URL: string = 'wss://api.fyers.in/socket/v2/orderSock';
+export const ORDER_STATUS_URL: string = "wss://api.fyers.in/socket/v2/orderSock";
+/** Base query string for Market data notifications. */
+const MARKET_DATA_QUERY:string  = "user-agent=fyers-api&type=symbolUpdate";
+/** Base query string for Order status notifications. */
+const ORDER_STATUS_QUERY:string = "user-agent=fyers-api&type=orderUpdate";
 
 
 
@@ -23,14 +28,6 @@ export const ORDER_STATUS_URL: string = 'wss://api.fyers.in/socket/v2/orderSock'
 
 /** Common notification format. */
 export type Notification = Response;
-
-
-
-
-// AUTHORIZATION
-// -------------
-
-export {Authorization} from "./http";
 
 
 
@@ -497,49 +494,70 @@ export type OrderStatusNotifiedFunction = (notification: OrderStatusNotification
 // MARKET-DATA
 // -----------
 
-function marketDataRequest(type: string, symbols: string[], subscribe: number): any {
-  if (type === "SUB_L2") return {T: "SUB_L2", L2LIST: symbols, SUB_T: subscribe};
-  return {T: "SUB_DATA", TLIST: symbols, SUB_T: subscribe};
-}
-
-
 /**
- * Unsubscribe to market data.
- * @param auth authorization (unused)
- * @param conn websocket connection
- * @param type subscription type
- * @param symbols list of symbols
- * @returns websocket connection
- */
- export function unsubscribeMarketData(auth: null, conn: WebSocket, type: string, symbols: string[]): WebSocket {
-  conn.send(JSON.stringify(marketDataRequest(type, symbols, 0)));
-  return conn;
-}
-
-
-/**
- * Subscribe to market data.
+ * Connect to Market data URL with WebSocket.
  * @param auth authorization {app_id, access_token}
- * @param conn websocket connection (optional)
- * @param type subscription type
- * @param symbols list of symbols
  * @param fn notified function
- * @returns websocket connection
+ * @returns WebSocket connection
  */
-export function subscribeMarketData(auth: Authorization | null, conn: WebSocket | null, type: string, symbols: string[], fn: MarketDataNotifiedFunction): WebSocket {
-  if (conn) { conn.send(JSON.stringify(marketDataRequest(type, symbols, 1))); return conn; }
-  var url  = `${MARKET_DATA_URL}?type=symbolUpdate&user-agent=fyers-api&access_token=${auth.app_id}:${auth.access_token}`;
-  var conn = new WebSocket(url);
-  conn.onopen = () => { conn.send(JSON.stringify(marketDataRequest(type, symbols, 1))); };
+export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFunction): WebSocket {
+  var {app_id, access_token} = auth;
+  var query = `${MARKET_DATA_QUERY}&access_token=${app_id}:${access_token}`;
+  var conn  = new WebSocket(`${MARKET_DATA_URL}?${query}`);
   conn.onmessage = e => {
     if (typeof e.data === "string") {
       if (e.data !== "pong") fn(JSON.parse(e.data));
-      return;
     }
-    var binary = new DataView(e.data as ArrayBuffer);
-    fn({s: "ok", d: toMarketData(binary, 0)});
+    else {
+      var binary = new DataView(e.data as ArrayBuffer);
+      fn({s: "ok", d: toMarketData(binary, 0)});
+    }
   };
   return conn;
+}
+
+
+/**
+ * Subscribe to market quote.
+ * @param conn websocket connection
+ * @param symbols list of symbols
+ */
+export function subscribeMarketQuote(conn: WebSocket, symbols: string[]): void {
+  var req = {T: "SUB_DATA", TLIST: symbols, SUB_T: 1};
+  conn.send(JSON.stringify(req));
+}
+
+
+/**
+ * Subscribe to market depth.
+ * @param conn websocket connection
+ * @param symbols list of symbols
+ */
+export function subscribeMarketDepth(conn: WebSocket, symbols: string[]): void {
+  var req = {T: "SUB_L2", L2LIST: symbols, SUB_T: 1};
+  conn.send(JSON.stringify(req));
+}
+
+
+/**
+ * Unsubscribe to market quote.
+ * @param conn websocket connection
+ * @param symbols list of symbols
+ */
+export function unsubscribeMarketQuote(conn: WebSocket, symbols: string[]): void {
+  var req = {T: "SUB_DATA", TLIST: symbols, SUB_T: 0};
+  conn.send(JSON.stringify(req));
+}
+
+
+/**
+ * Unsubscribe to market depth.
+ * @param conn websocket connection
+ * @param symbols list of symbols
+ */
+export function unsubscribeMarketDepth(conn: WebSocket, symbols: string[]): void {
+  var req = {T: "SUB_L2", L2LIST: symbols, SUB_T: 0};
+  conn.send(JSON.stringify(req));
 }
 
 
@@ -548,40 +566,39 @@ export function subscribeMarketData(auth: Authorization | null, conn: WebSocket 
 // ORDER-STATUS
 // ------------
 
-function orderStatusRequest(subscribe: number): any {
-  return {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: subscribe};
+/**
+ * Connect to Order status URL with WebSocket.
+ * @param auth authorization {app_id, access_token}
+ * @param fn notified function
+ * @returns WebSocket connection
+ */
+export function connectOrderStatus(auth: Authorization, fn: OrderStatusNotifiedFunction): WebSocket {
+  var {app_id, access_token} = auth;
+  var query = `${ORDER_STATUS_QUERY}&access_token=${app_id}:${access_token}`;
+  var conn  = new WebSocket(`${ORDER_STATUS_URL}?${query}`);
+  conn.onmessage = e => {
+    if (typeof e.data !== "string") return;
+    if (e.data !== "pong") fn(JSON.parse(e.data));
+  };
+  return conn;
+}
+
+
+/**
+ * Subscribe to order status.
+ * @param conn websocket connection
+ */
+export function subscribeOrderStatus(conn: WebSocket): void {
+  var req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 1};
+  conn.send(JSON.stringify(req));
 }
 
 
 /**
  * Unsubscribe to order status.
- * @param auth authorization (unused)
  * @param conn websocket connection
- * @returns websocket connection
  */
- export function unsubscribeOrderStatus(auth: null, conn: WebSocket): WebSocket {
-  conn.send(JSON.stringify(orderStatusRequest(0)));
-  return conn;
-}
-
-
-/**
- * Subscribe to orders data.
- * @param auth authorization {app_id, access_token}
- * @param conn websocket connection (optional)
- * @param fn notified function
- * @returns websocket connection
- */
- export function subscribeOrderStatus(auth: Authorization | null, conn: WebSocket | null, fn: OrderStatusNotifiedFunction): WebSocket {
-  if (conn) { conn.send(JSON.stringify(orderStatusRequest(1))); return conn; }
-  var url  = `${ORDER_STATUS_URL}?type=orderUpdate&user-agent=fyers-api&access_token=${auth.app_id}:${auth.access_token}`;
-  var conn = new WebSocket(url);
-  conn.onopen = () => { conn.send(JSON.stringify(orderStatusRequest(1))); };
-  conn.onmessage = e => {
-    if (typeof e.data === "string") {
-      if (e.data !== "pong") fn(JSON.parse(e.data));
-      return;
-    }
-  };
-  return conn;
+export function unsubscribeOrderStatus(conn: WebSocket): void {
+  var req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 0};
+  conn.send(JSON.stringify(req));
 }
