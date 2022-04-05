@@ -7,7 +7,8 @@ import dts from "rollup-plugin-dts";
 
 const E       = process.env;
 const entries = !/web/i.test(E.TYPE)? [] : [
-  {find: './_http', replacement: './_http.web'}
+  {find: './_http',      replacement: './_http.web'},
+  {find: './_websocket', replacement: './_websocket.web'},
 ];
 
 

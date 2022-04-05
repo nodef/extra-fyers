@@ -545,6 +545,7 @@ export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedF
       if (conn.readyState !== WebSocket.OPEN) return;
       conn.send("ping");
     }, PING_INTERVAL);
+    conn.binaryType = "arraybuffer";
     conn.onerror = e => {
       for (var r of conn.recievers)
         r.reject(e.error);
@@ -604,6 +605,7 @@ export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFun
       if (conn.readyState !== WebSocket.OPEN) return;
       conn.send("ping");
     }, PING_INTERVAL);
+    conn.binaryType = "arraybuffer";
     conn.onerror = e => {
       for (var r of conn.recievers)
         r.reject(e.error);

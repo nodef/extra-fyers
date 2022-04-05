@@ -6,11 +6,12 @@ import * as websocket from "./websocket";
 
 
 
-// HTTP
-// ====
+// RE-EXPORT
+// =========
 
 export {HttpHeaders, HttpRequestOptions} from "./_http";
-export * as http from "./http";
+export * as http      from "./http";
+export * as websocket from "./websocket";
 
 
 
