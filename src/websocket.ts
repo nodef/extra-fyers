@@ -502,13 +502,13 @@ export type MarketDataNotifiedFunction = (notification: MarketDataNotification) 
 // -----------
 
 /** Handler for reciever which has passed (resolved). */
-type ResolvedReciever = (response: Response) => void;
+export type ResolvedReciever = (response: Response) => void;
 /** Handler for reciever which has failed (rejected). */
-type RejectedReciever = (error: Error) => void;
+export type RejectedReciever = (error: Error) => void;
 
 
 /** Reciever which can pass or fail (resolve or reject). */
-interface Reciever {
+export interface Reciever {
   /** Pass (resolve) handler for reciever. */
   resolve: ResolvedReciever,
   /** Fail (reject) handler for reciever. */

@@ -1,4 +1,5 @@
 # Source only
+.github/
 .gitmodules
 src/
 data/

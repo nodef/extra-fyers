@@ -5,9 +5,12 @@ A Javascript interface for FYERS API.<br>
 📰 [Docs](https://nodef.github.io/extra-fyers/).
 
 The objective of this package is to provide a cleaner interface to [FYERS API].
-The `http` namespace provides the same interface as FYERS HTTP API. The top
-namespace (global functions, classes) provide a [facade] for this HTTP API
-and provides additional utility functions, such as calculating charges.
+The `http` namespace provides the same interface as FYERS HTTP API. The
+`websocket` namespace provides the same interface as FYERS WebSocket API, along
+with parsing of binary market data. This allows you to recieve *instant*
+notifications of *order update* and *market data*. The top namespace (global
+functions, classes) provide a [facade] for the HTTP and the WebSocket APIs and
+provides additional utility functions, such as calculating charges.
 
 Global functions associated with FYERS API, such as `getPositions()`, are
 stateless and accept `Authorization` as the first parameter. On the other
@@ -16,9 +19,9 @@ the `Authorization` parameter (required while creating object). Note that
 this authorization can be obtained be performing login with `loginStep1()`
 and `loginStep2()`.
 
-The goals for the future include adding support for processing symbol master
-files (for getting a list of symbols and associated ISIN, description), and
-providing support for websocket interface.
+The goals for the future include doing a thorough interface check, and possibly
+writing a CLI interface. Obtaining details of symbols, including images and more
+could be done as part of a separate package.
 
 This package is available in both *Node.js* and *Web* formats. The web format
 is exposed as `extra_fyers` standalone variable and can be loaded from
@@ -144,7 +147,7 @@ main();
 | [connectOrderUpdate] | Connect to Order update URL with WebSocket. |
 | [subscribeOrderUpdate] | Subscribe to order update. |
 | [unsubscribeOrderUpdate] | Unsubscribe to order update. |
-| [Api] | Container for storing authorization details. |
+| [Api] | Stateful interface for FYERS API. |
 
 <br>
 <br>

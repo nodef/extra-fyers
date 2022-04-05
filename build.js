@@ -22,7 +22,7 @@ function isSubmodule(pth) {
 
 // Get filename keywords for main/sub package.
 function filenameKeywords(fil) {
-  if (fil !== srcts) return [path.keywordname(fil)];
+  if (fil !== srcts) return [path.symbolname(fil)];
   return fs.readdirSync('src').filter(isSubmodule).map(path.keywordname);
 }
 
@@ -31,7 +31,7 @@ function filenameKeywords(fil) {
 function exportKeywords(fil) {
   var txt  = fs.readFileTextSync(`src/${fil}`);
   var exps = javascript.exportSymbols(txt);
-  return exps.map(e => path.keywordname(e.name));
+  return exps.map(e => path.symbolname(e.name));
 }
 
 
@@ -49,7 +49,6 @@ function updateGithub() {
   var {name, description} = m;
   var homepage  = `https://www.npmjs.com/package/${name}`;
   var topics    = keywords(srcts);
-  topics.length = Math.min(topics.length, 20);
   github.updateDetails(owner, name, {description, homepage, topics});
 }
 
@@ -282,7 +281,7 @@ function updateMarkdownIndex(rkind) {
         if (!dmap.has(e.name)) continue;
         if (!rkind.test(e.kind)) continue;
         var key  = `[${e.name}]`;
-        var val = jsdoc.parse(dmap.get(e.name).jsdoc).description.trim();
+        var val = jsdoc.parse(dmap.get(e.name).jsdoc).description.replace(/\n+/g, ' ').trim();
         if (!rmap.has(key)) rows.push([key, val]);
         else rows[rmap.get(key)][1] = val;
       }

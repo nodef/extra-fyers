@@ -2830,12 +2830,13 @@ export interface MarketDepthNotification extends MarketQuoteNotification {
 export interface MarketDataNotification extends MarketDepthNotification {}
 
 
-function toMarketDataNotification(x: websocket.MarketDataNotification): MarketDataNotification {
+function toMarketDataNotification(x: websocket.MarketDataNotification, map: Map<string, string>): MarketDataNotification {
   var d = x.d;
+  var t = d.token.toString();
   var p = d.price_conv;
   return {
-    symbol: null,
-    token:  d.token.toString(),
+    symbol: map != null? map.get(t) || null : null,
+    token:  t,
     date:   d.tt,
     marketStatus: d.marketStat,
     currentPrice: d.ltp / p,
@@ -3606,9 +3607,9 @@ export async function unsubscribeOrderUpdate(conn: Connection): Promise<void> {
  * @param fn notified function
  * @returns WebSocket connection
  */
-export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFunction): Promise<Connection> {
+export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFunction, map: Map<string, string>=null): Promise<Connection> {
   return websocket.connectMarketData(fromAuthorization(auth), x => {
-    if (x.d) fn(toMarketDataNotification(x));
+    if (x.d) fn(toMarketDataNotification(x, map));
   });
 }
 
@@ -3662,7 +3663,7 @@ export async function unsubscribeMarketDepth(conn: Connection, symbols: string[]
 // STATEFUL INTERFACE
 // ==================
 
-/** Container for storing authorization details. */
+/** Stateful interface for FYERS API. */
 export class Api implements Authorization {
   appId: string;
   accessToken: string;
@@ -3677,7 +3678,7 @@ export class Api implements Authorization {
 
 
   /**
-   * Create a container for storing authorization details.
+   * Create a container that stores authorization, symbol maps, and connections (WebSocket).
    * @param appId unique app_id received after creating app
    * @param accessToken access token for the current trading day recieved after authorization
    */
@@ -3939,7 +3940,7 @@ export class Api implements Authorization {
    */
   async connectMarketData(fn: MarketDataNotifiedFunction): Promise<Connection> {
     if (this.marketDataConnection != null) this.marketDataConnection.then(c => c.close());
-    return this.marketDataConnection = connectMarketData(this, fn);
+    return this.marketDataConnection = connectMarketData(this, fn, this.tokenSymbol);
   }
 
   /**
