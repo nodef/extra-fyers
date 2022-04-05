@@ -2896,7 +2896,7 @@ function charge(x: number, p: number) {
 
 function equityDeliveryBuyCharges(x: number) {
   var sttctt = charge(x, 0.10);
-  var gst    = charge(x, 18.0);
+  var gst    = charge(sttctt, 18.0);
   var exch   = charge(x, 0.00325);
   var stamp  = charge(x, 0.015);
   var sebi   = charge(x, 0.0001);

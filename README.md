@@ -154,6 +154,7 @@ main();
 
 - [FYERS API Docs](https://myapi.fyers.in/docs/)
 - [FYERS Community](https://community.fyers.in/)
+- [FYERS Detailed Charges List](https://fyers.in/charges-list/)
 - [fyers-api-v2 package](https://www.npmjs.com/package/fyers-api-v2)
 - [C# wrapper of Fyers API v2 : ArthaChitra](https://github.com/arthachitra/FyersAPI)
 - [Fyers API golang client : Rishi Anand](https://github.com/rishi-anand/fyers-go-client)
