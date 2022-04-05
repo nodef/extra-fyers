@@ -1,4 +1,5 @@
 - Is http.MarketDepth {bids, ask} or {bids, asks}?
+- Fix charges GST
 
 /**
  * Provides the API for creating and managing a WebSocket connection to

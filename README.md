@@ -81,12 +81,24 @@ main();
 | [orderValidity] | Get order validity code. |
 | [optionTypeDescription] | Get option type description. |
 | [optionType] | Get option type code. |
+| [derivativeTypeDescription] | Get derivative type description. |
+| [derivativeType] | Get derivative type code. |
 | [holdingTypeDescription] | Get holding type description. |
 | [holdingType] | Get holding type code. |
 | [productTypeDescription] | Get product type description. |
 | [productType] | Get product type code. |
 | [instrumentTypeDescription] | Get instrument type description. |
 | [instrumentType] | Get instrument type code. |
+| [symbolName] | Get symbol exchange, underlying, currency-pair, or commodity name. |
+| [symbolExchange] | Get symbol exchange. |
+| [symbolSeries] | Get symbol exchange series. |
+| [symbolOptionType] | Get symbol option type. |
+| [symbolDerivativeType] | Get symbol derivative type. |
+| [symbolStrikePrice] | Get symbol strike price. |
+| [symbolToken] | Get symbol token, a unique identifier. |
+| [symbolDescription] | Get symbol description. |
+| [symbolIsin] | Get symbol ISIN. |
+| [symbolLotSize] | Get symbol minimum lot size. |
 | [equityDeliveryCharges] | Get equity delivery charges. |
 | [equityIntradayCharges] | Get equity intraday charges. |
 | [equityFuturesCharges] | Get equity futures charges. |
@@ -118,10 +130,20 @@ main();
 | [getMarketQuotes] | Get the current market quotes for a set of symbols. |
 | [getMarketDepth] | Get the current market depth for a particular symbol. |
 | [getSymbolMaster] | Get all the latest symbols of all the exchanges from the symbol master files. |
+| [processSymbolMaster] | Get details of symbols from the symbol master file text. |
+| [loadSymbolMaster] | Get details of symbols from the symbol master files. |
 | [generateEdisTpin] | Generate e-DIS TPIN for validating/authorising transaction. |
 | [getEdisTransactions] | Get the necessary information regarding the holdings you have on your and also the Status of the holdings. If the “sell” for the particular holdings is a success or not. |
 | [submitEdisHoldingsStep] | Redirect to CDSL page for login where you can submit your Holdings information and accordingly you can provide the same to exchange to Sell your holdings (browser only). |
 | [inquireEdisTransaction] | Inquire the information/status of the provided transaction Id for the respective holdings you have on your end. |
+| [connectMarketData] | Connect to Market data URL with WebSocket. |
+| [subscribeMarketQuote] | Subscribe to market quote. |
+| [subscribeMarketDepth] | Subscribe to market depth. |
+| [unsubscribeMarketQuote] | Unsubscribe to market quote. |
+| [unsubscribeMarketDepth] | Unsubscribe to market depth. |
+| [connectOrderUpdate] | Connect to Order update URL with WebSocket. |
+| [subscribeOrderUpdate] | Subscribe to order update. |
+| [unsubscribeOrderUpdate] | Unsubscribe to order update. |
 | [Api] | Container for storing authorization details. |
 
 <br>
@@ -132,6 +154,9 @@ main();
 
 - [FYERS API Docs](https://myapi.fyers.in/docs/)
 - [FYERS Community](https://community.fyers.in/)
+- [fyers-api-v2 package](https://www.npmjs.com/package/fyers-api-v2)
+- [C# wrapper of Fyers API v2 : ArthaChitra](https://github.com/arthachitra/FyersAPI)
+- [Fyers API golang client : Rishi Anand](https://github.com/rishi-anand/fyers-go-client)
 - [The Kite Connect API Javascript client - v4](https://kite.trade/docs/kiteconnectjs/v3/index.html)
 - [Intermarket Trading System (ITS)](https://www.investopedia.com/terms/i/intermarket-trading-system.asp)
 - [What are stop loss orders and how to use them?](https://support.zerodha.com/category/trading-and-markets/margin-leverage-and-product-and-order-types/articles/what-are-stop-loss-orders-and-how-to-use-them)
@@ -167,12 +192,24 @@ main();
 [orderValidity]: https://nodef.github.io/extra-fyers/modules.html#orderValidity
 [optionTypeDescription]: https://nodef.github.io/extra-fyers/modules.html#optionTypeDescription
 [optionType]: https://nodef.github.io/extra-fyers/modules.html#optionType
+[derivativeTypeDescription]: https://nodef.github.io/extra-fyers/modules.html#derivativeTypeDescription
+[derivativeType]: https://nodef.github.io/extra-fyers/modules.html#derivativeType
 [holdingTypeDescription]: https://nodef.github.io/extra-fyers/modules.html#holdingTypeDescription
 [holdingType]: https://nodef.github.io/extra-fyers/modules.html#holdingType
 [productTypeDescription]: https://nodef.github.io/extra-fyers/modules.html#productTypeDescription
 [productType]: https://nodef.github.io/extra-fyers/modules.html#productType
 [instrumentTypeDescription]: https://nodef.github.io/extra-fyers/modules.html#instrumentTypeDescription
 [instrumentType]: https://nodef.github.io/extra-fyers/modules.html#instrumentType
+[symbolName]: https://nodef.github.io/extra-fyers/modules.html#symbolName
+[symbolExchange]: https://nodef.github.io/extra-fyers/modules.html#symbolExchange
+[symbolSeries]: https://nodef.github.io/extra-fyers/modules.html#symbolSeries
+[symbolOptionType]: https://nodef.github.io/extra-fyers/modules.html#symbolOptionType
+[symbolDerivativeType]: https://nodef.github.io/extra-fyers/modules.html#symbolDerivativeType
+[symbolStrikePrice]: https://nodef.github.io/extra-fyers/modules.html#symbolStrikePrice
+[symbolToken]: https://nodef.github.io/extra-fyers/modules.html#symbolToken
+[symbolDescription]: https://nodef.github.io/extra-fyers/modules.html#symbolDescription
+[symbolIsin]: https://nodef.github.io/extra-fyers/modules.html#symbolIsin
+[symbolLotSize]: https://nodef.github.io/extra-fyers/modules.html#symbolLotSize
 [equityDeliveryCharges]: https://nodef.github.io/extra-fyers/modules.html#equityDeliveryCharges
 [equityIntradayCharges]: https://nodef.github.io/extra-fyers/modules.html#equityIntradayCharges
 [equityFuturesCharges]: https://nodef.github.io/extra-fyers/modules.html#equityFuturesCharges
@@ -204,8 +241,18 @@ main();
 [getMarketQuotes]: https://nodef.github.io/extra-fyers/modules.html#getMarketQuotes
 [getMarketDepth]: https://nodef.github.io/extra-fyers/modules.html#getMarketDepth
 [getSymbolMaster]: https://nodef.github.io/extra-fyers/modules.html#getSymbolMaster
+[processSymbolMaster]: https://nodef.github.io/extra-fyers/modules.html#processSymbolMaster
+[loadSymbolMaster]: https://nodef.github.io/extra-fyers/modules.html#loadSymbolMaster
 [generateEdisTpin]: https://nodef.github.io/extra-fyers/modules.html#generateEdisTpin
 [getEdisTransactions]: https://nodef.github.io/extra-fyers/modules.html#getEdisTransactions
 [submitEdisHoldingsStep]: https://nodef.github.io/extra-fyers/modules.html#submitEdisHoldingsStep
 [inquireEdisTransaction]: https://nodef.github.io/extra-fyers/modules.html#inquireEdisTransaction
+[connectMarketData]: https://nodef.github.io/extra-fyers/modules.html#connectMarketData
+[subscribeMarketQuote]: https://nodef.github.io/extra-fyers/modules.html#subscribeMarketQuote
+[subscribeMarketDepth]: https://nodef.github.io/extra-fyers/modules.html#subscribeMarketDepth
+[unsubscribeMarketQuote]: https://nodef.github.io/extra-fyers/modules.html#unsubscribeMarketQuote
+[unsubscribeMarketDepth]: https://nodef.github.io/extra-fyers/modules.html#unsubscribeMarketDepth
+[connectOrderUpdate]: https://nodef.github.io/extra-fyers/modules.html#connectOrderUpdate
+[subscribeOrderUpdate]: https://nodef.github.io/extra-fyers/modules.html#subscribeOrderUpdate
+[unsubscribeOrderUpdate]: https://nodef.github.io/extra-fyers/modules.html#unsubscribeOrderUpdate
 [Api]: https://nodef.github.io/extra-fyers/modules.html#Api

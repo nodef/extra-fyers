@@ -802,7 +802,7 @@ const OPTION_TYPE_DESCRIPTION: Map<OptionType, string> = new Map([
 
 /**
  * Get option type description.
- * @param code option type code (CALL, PUT)
+ * @param code option type code (CE, PE)
  * @returns option type description
  */
  export function optionTypeDescription(code: OptionType): string {
@@ -816,6 +816,47 @@ const OPTION_TYPE_DESCRIPTION: Map<OptionType, string> = new Map([
  */
 export function optionType(desc: string): OptionType {
   return /pe|put|sell/i.test(desc)? "PE" : "CE";
+}
+
+
+
+
+// DERIVATIVE-TYPE
+// ---------------
+
+/** Derivative type code. */
+export type DerivativeType = "FUT" | "CE" | "PE";
+
+const enum InternalDerivativeType {
+  FUT = "FUT",
+  CE  = "CE",
+  PE  = "PE",
+}
+
+
+const DERIVATIVE_TYPE_DESCRIPTION: Map<DerivativeType, string> = new Map([
+  ["FUT", "Future"],
+  ["CE",  "Call option"],
+  ["PE",  "Put option"],
+]);
+
+
+/**
+ * Get derivative type description.
+ * @param code derivative type code (FUT, CE, PE)
+ * @returns derivative type description
+ */
+ export function derivativeTypeDescription(code: DerivativeType): string {
+  return DERIVATIVE_TYPE_DESCRIPTION.get(code);
+}
+
+/**
+ * Get derivative type code.
+ * @param desc derivative type description
+ * @returns derivative type code (CE, PE)
+ */
+export function derivativeType(desc: string): DerivativeType {
+  return /fut|lat|buy/.test(desc)? "FUT" : optionType(desc);
 }
 
 
@@ -1134,9 +1175,44 @@ export function instrumentType(desc: string): InstrumentType {
 // SYMBOL-DETAILS
 // --------------
 
+/** Get symbol name [equity, future, monthly-expiry option, weekly-expiry option]. */
+const RSYMBOL_NAME = /^\w+:(\w+)-\w+|^\w+:(\w+)\d{2}\w{3}FUT|^\w+:(\w+)\d{2}\w{3}\d+[CP]E|^\w+:(\w+)\d{2}\w{1}\d{2}\d+[CP]E/;
+
+
+/** Essential details of a symbol, as given in Symbol master CSV file. */
+export interface SymbolDetails {
+  /** Eg: NSE:RCOM-EQ. */
+  symbol: string,
+  /** A unique identifier for every symbol. */
+  token: string,
+  /** Description of the symbol. */
+  description: string,
+  /** Minimum lot size for the symbol. */
+  lotSize: number,
+  /** ISIN code of stock. */
+  isin: string,
+}
+
+
+function toSymbolDetails(row: string): SymbolDetails {
+  var [token, description,, lotSize,, isin,,, symbol] = row.split(',');
+  return {symbol, token, description, lotSize: parseInt(lotSize, 10), isin: isin || ""};
+}
+
+
+/**
+ * Get symbol exchange, underlying, currency-pair, or commodity name.
+ * @param code symbol code
+ * @returns symbol name
+ */
+export function symbolName(code: string): string {
+  var m = RSYMBOL_NAME.exec(code);
+  return m[1] || m[2] || m[3] || m[4];
+}
+
 /**
  * Get symbol exchange.
- * @param code symbol
+ * @param code symbol code
  * @returns symbol exchange
  */
 export function symbolExchange(code: string): Exchange {
@@ -1144,81 +1220,84 @@ export function symbolExchange(code: string): Exchange {
   return code.substring(0, i) as Exchange;
 }
 
-/** Get ticker name [equity, future, monthly-expiry option, weekly-expiry option]. */
-const RTICKER = /^\w+:(\w+)-\w+|^\w+:(\w+)\d{2}\w{3}FUT|^\w+:(\w+)\d{2}\w{3}\d+[CP]E|^\w+:(\w+)\d{2}\w{1}\d{2}\d+[CP]E/;
-
 /**
- * Get symbol ticker (exchange symbol, underlying symbol, currency pair, or commodity).
- * @param code symbol
- * @returns symbol ticker
+ * Get symbol exchange series.
+ * @param code symbol code
+ * @returns symbol exchange series (EQ, BE, MF, ME, ...)
  */
-export function symbolTicker(code: string): string {
-  var m = RTICKER.exec(code);
-  return m[1] || m[2] || m[3] || m[4];
-}
-
-function symbolSeries(code: string): string | null {
+export function symbolSeries(code: string): string | null {
   var i = code.lastIndexOf("-");
   return i > 0? code.substring(i) : null;
 }
 
-function symbolOptionType(code: string): OptionType | null {
+/**
+ * Get symbol option type.
+ * @param code symbol code
+ * @returns symbol option type
+ */
+export function symbolOptionType(code: string): OptionType | null {
   var a = code.substring(code.length - 2);
   return a === "CE" || a === "PE"? a : null;
 }
 
-function symbolIsOption(code: string): boolean {
-  return symbolOptionType(code) != null;
+/**
+ * Get symbol derivative type.
+ * @param code symbol code
+ * @returns symbol derivative type
+ */
+export function symbolDerivativeType(code: string): DerivativeType | null {
+  var m = /(?:FUT|CE|PE)$/.exec(code);
+  return m != null? m[0] as DerivativeType : null;
 }
 
-function symbolIsFuture(code: string): boolean {
-  var a = code.substring(code.length - 3);
-  return a === "FUT";
+/**
+ * Get symbol strike price.
+ * @param code symbol code
+ * @returns symbol strike price
+ */
+export function symbolStrikePrice(code: string): number {
+  var RSTRIKE = /([\d\.]+)[CP]E$/, m = RSTRIKE.exec(code);
+  return m != null? parseFloat(m[1]) : 0;
 }
 
-function symbolIsDerivative(code: string): boolean {
-  return symbolIsOption(code) || symbolIsFuture(code);
+/**
+ * Get symbol token, a unique identifier.
+ * @param code symbol code
+ * @param map symbol details map
+ * @returns symbol token
+ */
+export function symbolToken(code: string, map: Map<string, SymbolDetails>): string {
+  return map.get(code).token;
 }
 
-function symbolStrikePrice(code: string): number {
-  var RSTRIKE = /(\d+)[CP]E$/, m = RSTRIKE.exec(code);
-  return m != null? parseInt(m[1], 10) : 0;
+/**
+ * Get symbol description.
+ * @param code symbol code
+ * @param map symbol details map
+ * @returns symbol description
+ */
+export function symbolDescription(code: string, map: Map<string, SymbolDetails>): string {
+  return map.get(code).description;
 }
 
-
-
-
-interface SymbolMasterNseCm {
-  symbol: string,
-  symbolToken: BigInt,
-  symbolDescription: string,
-  instrumentType: number, // 0
-  minimumLotSize: number, // 1
-  tickSize: number, // 0.05
-  isin: string,
-  tradingSession: string, // 0915-1530|1815-1915:17
+/**
+ * Get symbol ISIN.
+ * @param code symbol code
+ * @param map symbol details map
+ * @returns symbol ISIN
+ */
+export function symbolIsin(code: string, map: Map<string, SymbolDetails>): string {
+  return map.get(code).isin;
 }
 
-interface SymbolMasterBseCm {
-  symbol: string,
-  symbolToken: BigInt,
-  symbolDescription: string,
-  instrumentType: number, // 50
-  minimumLotSize: number, // 1
-  tickSize: number, // 0.05 / 0.01
-  isin: string,
-  tradingSession: string, // 0915-1530|1815-1915:17
-}
-
-interface SymbolMasterNseMcxCom {
-  symbol: string,
-  symbolToken: BigInt,
-  symbolDescription: string,
-  instrumentType: number, // 31
-  tickSize: number, // 0.05 / 0.01
-  tradingSession: string, // 0915-1530|1815-1915:17
-  strikePrice: number,
-  optionType: number,
+/**
+ * Get symbol minimum lot size.
+ * @param code symbol code
+ * @param map symbol details map
+ * @returns symbol minimum lot size
+ */
+export function symbolLotSize(code: string, map: Map<string, SymbolDetails>): number {
+  return map.get(code).lotSize;
 }
 
 
@@ -3397,6 +3476,33 @@ export function getSymbolMaster(auth: null, exchange: string, segment: string): 
 }
 
 
+/**
+ * Get details of symbols from the symbol master file text.
+ * @param csv symbol master file text
+ * @returns list of symbol details
+ */
+export function processSymbolMaster(csv: string): SymbolDetails[] {
+  var a: SymbolDetails[] = [];
+  var RLINE = /[^\n]+/g, m = null;
+  while ((m = RLINE.exec(csv)) != null)
+    a.push(toSymbolDetails(m[0]));
+  return a;
+}
+
+
+/**
+ * Get details of symbols from the symbol master files.
+ * @param auth authorization (unused)
+ * @param exchange exchange name
+ * @param segment segment name
+ * @returns list of symbol details
+ */
+export async function loadSymbolMaster(auth: null, exchange: string, segment: string): Promise<SymbolDetails[]> {
+  var csv = await getSymbolMaster(null, exchange, segment);
+  return processSymbolMaster(csv);
+}
+
+
 
 
 // EDIS
@@ -3560,6 +3666,10 @@ export async function unsubscribeOrderUpdate(conn: Connection): Promise<void> {
 export class Api implements Authorization {
   appId: string;
   accessToken: string;
+  /** Symbol to symbol details map. */
+  symbolDetails: Map<string, SymbolDetails>;
+  /** Token to symbol map. */
+  tokenSymbol: Map<string, string>;
 
 
   /**
@@ -3570,6 +3680,8 @@ export class Api implements Authorization {
   constructor(appId: string, accessToken: string) {
     this.appId       = appId;
     this.accessToken = accessToken;
+    this.symbolDetails = new Map();
+    this.tokenSymbol   = new Map();
   }
 
 
@@ -3593,6 +3705,14 @@ export class Api implements Authorization {
   static loginStep2(appHash: string, authorizationCode: string): HttpRequestOptions {
     return loginStep2(appHash, authorizationCode);
   }
+
+  /**
+   * Get all the latest symbols of all the exchanges from the symbol master files.
+   * @param exchange exchange name
+   * @param segment segment name
+   * @returns symbol master file as text
+   */
+  static getSymbolMaster(exchange: string, segment: string) { return getSymbolMaster(null, exchange, segment); }
 
   /**
    * Get basic details of the client.
@@ -3727,12 +3847,33 @@ export class Api implements Authorization {
   getMarketDepth(symbol: string) { return getMarketDepth(this, symbol); }
 
   /**
-   * Get all the latest symbols of all the exchanges from the symbol master files.
+   * Get details of symbols from the symbol master file text.
+   * @param csv symbol master file text
+   * @returns list of symbol details
+   */
+  processSymbolMaster(csv: string): SymbolDetails[] {
+    var rs = processSymbolMaster(csv);
+    for (var r of rs) {
+      this.symbolDetails.set(r.symbol, r);
+      this.tokenSymbol.set(r.token, r.symbol);
+    }
+    return rs;
+  }
+
+  /**
+   * Get details of symbols from the symbol master files.
    * @param exchange exchange name
    * @param segment segment name
-   * @returns symbol master file as text
+   * @returns list of symbol details
    */
-  static getSymbolMaster(exchange: string, segment: string) { return getSymbolMaster(null, exchange, segment); }
+  async loadSymbolMaster(exchange: string, segment: string): Promise<SymbolDetails[]> {
+    var rs = await loadSymbolMaster(null, exchange, segment);
+    for (var r of rs) {
+      this.symbolDetails.set(r.symbol, r);
+      this.tokenSymbol.set(r.token, r.symbol);
+    }
+    return rs;
+  }
 
   /**
    * Generate e-DIS TPIN for validating/authorising transaction.
