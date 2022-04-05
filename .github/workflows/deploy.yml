@@ -1,0 +1,16 @@
+on: [push]
+env:
+  GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '17'
+      - run: git clone https://${GITHUB_TOKEN}@github.com/nodef/deploy "$HOME/deploy"
+      - run: chmod 777 "$HOME/deploy/"*.sh
+      - run: bash "$HOME/deploy/before_install.sh"
+      - run: npm i -g typescript rollup typedoc browserify terser
+      - run: bash "$HOME/deploy/script.sh"
