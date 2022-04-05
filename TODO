@@ -1,1 +1,50 @@
 - Is http.MarketDepth {bids, ask} or {bids, asks}?
+
+/**
+ * Provides the API for creating and managing a WebSocket connection to
+ * a server, as well as for sending and receiving data on the connection.
+ */
+export class Connection extends WebSocket {
+  /** To recieve response to a request. */
+  recievers: Reciever[] = []
+
+  setup() {
+    var ping = setInterval(() => {
+      if (this.readyState !== WebSocket.OPEN) return;
+      this.send("ping");
+    }, PING_INTERVAL);
+    this.binaryType = "arraybuffer";
+    this.onerror = e => {
+      for (var r of this.recievers)
+        r.reject(e.error);
+      clearInterval(ping);
+      reject(e.error);
+    };
+    this.onopen = () => resolve(this);
+    this.onmessage = e => {
+      if (typeof e.data !== "string") return;
+      if (e.data === "pong") return;
+      var x = JSON.parse(e.data); fn(x);
+      if (!x.hasOwnProperty("d") && this.recievers.length > 0) this.recievers.shift().resolve(x);
+    };
+  }
+
+  /**
+   * Send a request through connection.
+   * @param data request data
+   * @returns response {s, code, message}
+   */
+  sendRequest(data: any): Promise<Response> {
+    var r: Reciever = null;
+    this.send(JSON.stringify(data), err => {
+      if (r == null) return;
+      var i = this.recievers.indexOf(r);
+      this.recievers.splice(i, 1);
+      r.reject(err);
+    });
+    return new Promise((resolve, reject) => {
+      r = {resolve, reject};
+      this.recievers.push(r);
+    });
+  }
+}

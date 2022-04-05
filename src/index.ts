@@ -2403,6 +2403,14 @@ function toMarketOffer(x: http.MarketOffer): MarketOffer {
   };
 }
 
+function toMarketOfferL2(x: websocket.L2MarketOffer, p: number): MarketOffer {
+  return {
+    price:  x.price / p,
+    volume: x.volume,
+    orders: x.ord,
+  };
+}
+
 
 /** A measure of the supply and demand for a symbol. */
 export interface MarketDepth {
@@ -2722,9 +2730,9 @@ export interface MarketQuoteNotification {
   /** Today's volume. */
   volume: number,
   /** Total buy quantity. */
-  buyQuantity: BigInt,
+  buyQuantity: number,
   /** Total sell quantity. */
-  sellQuantity: BigInt,
+  sellQuantity: number,
   /** Highest bid price. */
   buyPrice: number,
   /** Lowest ask price. */
@@ -2768,14 +2776,14 @@ function toMarketDataNotification(x: websocket.MarketDataNotification): MarketDa
     previousOpenInterest: Number(d.pdoi),
     tradedQuantity: d.LTQ,
     tradedDate:     d.L2_LTT,
-    tradedPrice:    d.ATP,
+    tradedPrice:    d.ATP / p,
     volume: d.volume,
-    buyQuantity:  d.tot_buy,
-    sellQuantity: d.tot_sell,
-    buyPrice:     d.bids == null? d.bid : d.bids[0].price,
-    sellPrice:    d.asks == null? d.ask : d.asks[0].price,
-    buyOffers:    d.bids == null? null  : d.bids.map(toMarketOffer),
-    sellOffers:   d.asks == null? null  : d.asks.map(toMarketOffer),
+    buyQuantity:  Number(d.tot_buy),
+    sellQuantity: Number(d.tot_sell),
+    buyPrice:     d.bids == null? d.bid / p : d.bids[0].price / p,
+    sellPrice:    d.asks == null? d.ask / p : d.asks[0].price / p,
+    buyOffers:    d.bids == null? null  : d.bids.map(x => toMarketOfferL2(x, p)),
+    sellOffers:   d.asks == null? null  : d.asks.map(x => toMarketOfferL2(x, p)),
   };
 }
 

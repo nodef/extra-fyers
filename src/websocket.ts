@@ -223,7 +223,7 @@ export interface CommonData {
 }
 
 
-function toCommonData(x: DataView, i: number): CommonData {
+function toCommonData(x: DataView, i: number, hasOi: boolean): CommonData {
   return {
     price_conv: x.getUint32(i + 0),
     ltp:        x.getUint32(i + 4),
@@ -236,12 +236,12 @@ function toCommonData(x: DataView, i: number): CommonData {
     l:    x.getUint32(i + 32),
     c:    x.getUint32(i + 36),
     v:    x.getBigUint64(i + 40),
-    oi:   x.getBigUint64(i + 48),
-    pdoi: x.getBigUint64(i + 56),
+    oi:   hasOi? x.getBigUint64(i + 48) : BigInt(0),
+    pdoi: hasOi? x.getBigUint64(i + 56) : BigInt(0),
   };
 }
 
-function writeCommonData(a: CommonData, x: DataView, i: number): void {
+function writeCommonData(a: CommonData, x: DataView, i: number, hasOi: boolean): void {
   a.price_conv = x.getUint32(i + 0);
   a.ltp        = x.getUint32(i + 4);
   a.open_price = x.getUint32(i + 8);
@@ -253,6 +253,7 @@ function writeCommonData(a: CommonData, x: DataView, i: number): void {
   a.l    = x.getUint32(i + 32);
   a.c    = x.getUint32(i + 36);
   a.v    = x.getBigUint64(i + 40);
+  if (!hasOi) return;
   a.oi   = x.getBigUint64(i + 48);
   a.pdoi = x.getBigUint64(i + 56);
 }
@@ -355,18 +356,18 @@ function toL2MarketOffer(x: DataView, i: number): L2MarketOffer {
 
 function toL2Data(x: DataView, i: number): L2Data {
   var bids = [], asks = [];
-  for (var i = 0; i < 60; i += 12) {
-    bids.push(toL2MarketOffer(x, i));
-    asks.push(toL2MarketOffer(x, i + 60));
+  for (var j = 0; j < 60; j += 12) {
+    bids.push(toL2MarketOffer(x, i + j));
+    asks.push(toL2MarketOffer(x, i + j + 60));
   }
   return {bids, asks};
 }
 
 function writeL2Data(a: L2Data, x: DataView, i: number): void {
   var bids = [], asks = [];
-  for (var i = 0; i < 60; i += 12) {
-    bids.push(toL2MarketOffer(x, i));
-    asks.push(toL2MarketOffer(x, i + 60));
+  for (var j = 0; j < 60; j += 12) {
+    bids.push(toL2MarketOffer(x, i + j));
+    asks.push(toL2MarketOffer(x, i + j + 60));
   }
   a.bids = bids;
   a.asks = asks;
@@ -397,6 +398,8 @@ export interface MarketData extends Header, CommonData, L1Data, L2Data {}
 function toSplitMarketData(x: DataView, i: number): SplitMarketData {
   var fyCode = x.getUint16(i + 12);
   var L2     = x.getUint8(i + 18);
+  var hasOi  = fyCode === 7202 || fyCode === 31038;
+  var l1Off  = hasOi? 88 : 72;
   return {
     token:       x.getBigUint64(i + 0),
     tt:          x.getUint32(i + 8),
@@ -404,19 +407,21 @@ function toSplitMarketData(x: DataView, i: number): SplitMarketData {
     marketStat:  x.getUint16(i + 14),
     pktlen:      x.getUint16(i + 16),
     L2:          x.getUint8(i + 18),
-    oi_data:     fyCode === 7202? toOiData(x, i + OI_DATA_OFFSET) : null,
-    common_data: fyCode !== 7202? toCommonData(x, i + COMMON_DATA_OFFSET) : null,
-    l1_data:     fyCode === 7208 || fyCode === 31038? toL1Data(x, i + L1_DATA_OFFSET, L2 !== 1) : null,
-    l2_data:     L2 === 1? toL2Data(x, i + L2_DATA_OFFSET) : null,
+    oi_data:     fyCode === 7202? toOiData(x, i + 24) : null,
+    common_data: fyCode !== 7202? toCommonData(x, i + 24, hasOi) : null,
+    l1_data:     fyCode === 7208 || fyCode === 31038? toL1Data(x, i + l1Off, L2 !== 1) : null,
+    l2_data:     L2 === 1? toL2Data(x, i + l1Off + 32) : null,
   };
 }
 
 function writeMarketData(a: MarketData, x: DataView, i: number): void {
-  writeHeader(a, x, i + HEADER_OFFSET);
-  if (a.fyCode === 7202) writeOiData(a, x, i + OI_DATA_OFFSET);
-  else writeCommonData(a, x, i + COMMON_DATA_OFFSET);
-  if (a.fyCode === 7208 || a.fyCode === 31038) writeL1Data(a, x, i + L1_DATA_OFFSET, a.L2 !== 1);
-  if (a.L2 === 1) writeL2Data(a, x, i + L2_DATA_OFFSET);
+  writeHeader(a, x, i + 0);
+  var hasOi = a.fyCode === 7202 || a.fyCode === 31038;
+  var l1Off = hasOi? 88 : 72;
+  if (a.fyCode === 7202) writeOiData(a, x, i + 24);
+  else writeCommonData(a, x, i + 24, hasOi);
+  if (a.fyCode === 7208 || a.fyCode === 31038) writeL1Data(a, x, i + l1Off, a.L2 !== 1);
+  if (a.L2 === 1) writeL2Data(a, x, i + l1Off + 32);
 }
 
 function toMarketData(x: DataView, i: number): MarketData {
