@@ -521,7 +521,8 @@ interface Reciever {
  * a server, as well as for sending and receiving data on the connection.
  */
 export class Connection extends WebSocket {
-  recievers: Reciever[] = []
+  /** To recieve response to a request. */
+  recievers: Reciever[] = [];
 }
 
 // Wait for response to request.

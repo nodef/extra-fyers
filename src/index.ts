@@ -3559,6 +3559,44 @@ export async function inquireEdisTransaction(auth: Authorization, id: string): P
 // NOTIFICATIONS
 // =============
 
+// ORDER-UPDATE
+// ------------
+
+/**
+ * Connect to Order update URL with WebSocket.
+ * @param auth authorization {appId, accessToken}
+ * @param fn notified function
+ * @returns WebSocket connection
+ */
+export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedFunction): Promise<Connection> {
+  return websocket.connectOrderUpdate(fromAuthorization(auth), x => {
+    if (x.d) fn(toOrderUpdateNotification(x));
+  });
+}
+
+
+/**
+ * Subscribe to order update.
+ * @param conn websocket connection
+ */
+export async function subscribeOrderUpdate(conn: Connection): Promise<void> {
+  var a = await websocket.subscribeOrderUpdate(conn);
+  if (a.code < 0) throw new ApiError(a.code, a.message);
+}
+
+
+/**
+ * Unsubscribe to order update.
+ * @param conn websocket connection
+ */
+export async function unsubscribeOrderUpdate(conn: Connection): Promise<void> {
+  var a = await websocket.unsubscribeOrderUpdate(conn);
+  if (a.code < 0) throw new ApiError(a.code, a.message);
+}
+
+
+
+
 // MARKET-DATA
 // -----------
 
@@ -3621,44 +3659,6 @@ export async function unsubscribeMarketDepth(conn: Connection, symbols: string[]
 
 
 
-// ORDER-UPDATE
-// ------------
-
-/**
- * Connect to Order update URL with WebSocket.
- * @param auth authorization {appId, accessToken}
- * @param fn notified function
- * @returns WebSocket connection
- */
-export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedFunction): Promise<Connection> {
-  return websocket.connectOrderUpdate(fromAuthorization(auth), x => {
-    if (x.d) fn(toOrderUpdateNotification(x));
-  });
-}
-
-
-/**
- * Subscribe to order update.
- * @param conn websocket connection
- */
-export async function subscribeOrderUpdate(conn: Connection): Promise<void> {
-  var a = await websocket.subscribeOrderUpdate(conn);
-  if (a.code < 0) throw new ApiError(a.code, a.message);
-}
-
-
-/**
- * Unsubscribe to order update.
- * @param conn websocket connection
- */
-export async function unsubscribeOrderUpdate(conn: Connection): Promise<void> {
-  var a = await websocket.unsubscribeOrderUpdate(conn);
-  if (a.code < 0) throw new ApiError(a.code, a.message);
-}
-
-
-
-
 // STATEFUL INTERFACE
 // ==================
 
@@ -3670,6 +3670,10 @@ export class Api implements Authorization {
   symbolDetails: Map<string, SymbolDetails>;
   /** Token to symbol map. */
   tokenSymbol: Map<string, string>;
+  /** Order update notification connection. */
+  orderUpdateConnection: Promise<Connection>;
+  /** Market data notification connection. */
+  marketDataConnection: Promise<Connection>;
 
 
   /**
@@ -3682,6 +3686,8 @@ export class Api implements Authorization {
     this.accessToken = accessToken;
     this.symbolDetails = new Map();
     this.tokenSymbol   = new Map();
+    this.orderUpdateConnection = null;
+    this.marketDataConnection  = null;
   }
 
 
@@ -3900,4 +3906,71 @@ export class Api implements Authorization {
    * @returns edis status
    */
   inquireEdisTransaction(id: string) { return inquireEdisTransaction(this, id); }
+
+
+  /**
+   * Connect to Order update URL with WebSocket.
+   * @param fn notified function
+   * @returns WebSocket connection
+   */
+  connectOrderUpdate(fn: OrderUpdateNotifiedFunction): Promise<Connection> {
+    if (this.orderUpdateConnection != null) this.orderUpdateConnection.then(c => c.close());
+    return this.orderUpdateConnection = connectOrderUpdate(this, fn);
+  }
+
+  /**
+   * Subscribe to order update.
+   */
+  async subscribeOrderUpdate(): Promise<void> {
+    return subscribeOrderUpdate(await this.orderUpdateConnection);
+  }
+
+  /**
+   * Unsubscribe to order update.
+   */
+  async unsubscribeOrderUpdate(): Promise<void> {
+    return unsubscribeOrderUpdate(await this.orderUpdateConnection);
+  }
+
+  /**
+   * Connect to Market data URL with WebSocket.
+   * @param fn notified function
+   * @returns WebSocket connection
+   */
+  async connectMarketData(fn: MarketDataNotifiedFunction): Promise<Connection> {
+    if (this.marketDataConnection != null) this.marketDataConnection.then(c => c.close());
+    return this.marketDataConnection = connectMarketData(this, fn);
+  }
+
+  /**
+   * Subscribe to market quote.
+   * @param symbols list of symbols
+   */
+  async subscribeMarketQuote(symbols: string[]): Promise<void> {
+    return subscribeMarketQuote(await this.marketDataConnection, symbols);
+  }
+
+  /**
+   * Subscribe to market depth.
+   * @param symbols list of symbols
+   */
+  async subscribeMarketDepth(symbols: string[]): Promise<void> {
+    return subscribeMarketDepth(await this.marketDataConnection, symbols);
+  }
+
+  /**
+   * Unsubscribe to market quote.
+   * @param symbols list of symbols
+   */
+  async unsubscribeMarketQuote(symbols: string[]): Promise<void> {
+    return unsubscribeMarketQuote(await this.marketDataConnection, symbols);
+  }
+
+  /**
+   * Unsubscribe to market depth.
+   * @param symbols list of symbols
+   */
+  async unsubscribeMarketDepth(symbols: string[]): Promise<void> {
+    return unsubscribeMarketDepth(await this.marketDataConnection, symbols);
+  }
 }
