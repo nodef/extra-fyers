@@ -2906,13 +2906,13 @@ function toMarketDataNotification(x: websocket.MarketDataNotification, map: Map<
  * Market data notified function.
  * @param notification notification
  */
-export type MarketDataNotifiedFunction = (notification: MarketDataNotification) => void;
+export type OnMarketDataNotification = (notification: MarketDataNotification) => void;
 
 /**
  * Order update notified function.
  * @param notification notification
  */
-export type OrderUpdateNotifiedFunction = (notification: OrderUpdateNotification) => void;
+export type OnOrderUpdateNotification = (notification: OrderUpdateNotification) => void;
 
 
 
@@ -3598,7 +3598,7 @@ export async function inquireEdisTransaction(auth: Authorization, id: string): P
  * @param fn notified function
  * @returns WebSocket connection
  */
-export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedFunction): Promise<Connection> {
+export function connectOrderUpdate(auth: Authorization, fn: OnOrderUpdateNotification): Promise<Connection> {
   return websocket.connectOrderUpdate(fromAuthorization(auth), x => {
     if (x.d) fn(toOrderUpdateNotification(x));
   });
@@ -3636,7 +3636,7 @@ export async function unsubscribeOrderUpdate(conn: Connection): Promise<void> {
  * @param fn notified function
  * @returns WebSocket connection
  */
-export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFunction, map: Map<string, string>=null): Promise<Connection> {
+export function connectMarketData(auth: Authorization, fn: OnMarketDataNotification, map: Map<string, string>=null): Promise<Connection> {
   return websocket.connectMarketData(fromAuthorization(auth), x => {
     if (x.d) fn(toMarketDataNotification(x, map));
   });
@@ -3943,7 +3943,7 @@ export class Api implements Authorization {
    * @param fn notified function
    * @returns WebSocket connection
    */
-  connectOrderUpdate(fn: OrderUpdateNotifiedFunction): Promise<Connection> {
+  connectOrderUpdate(fn: OnOrderUpdateNotification): Promise<Connection> {
     if (this.orderUpdateConnection != null) this.orderUpdateConnection.then(c => c.close());
     return this.orderUpdateConnection = connectOrderUpdate(this, fn);
   }
@@ -3967,7 +3967,7 @@ export class Api implements Authorization {
    * @param fn notified function
    * @returns WebSocket connection
    */
-  async connectMarketData(fn: MarketDataNotifiedFunction): Promise<Connection> {
+  async connectMarketData(fn: OnMarketDataNotification): Promise<Connection> {
     if (this.marketDataConnection != null) this.marketDataConnection.then(c => c.close());
     return this.marketDataConnection = connectMarketData(this, fn, this.tokenSymbol);
   }

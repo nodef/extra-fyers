@@ -481,19 +481,19 @@ export interface MarketDataNotification extends Notification {
  * Notified function.
  * @param notification notification
  */
-export type NotifiedFunction = (notification: Notification) => void;
+export type OnNotification = (notification: Notification) => void;
 
 /**
  * Order update notified function.
  * @param notification notification
  */
-export type OrderUpdateNotifiedFunction = (notification: OrderUpdateNotification) => void;
+export type OnOrderUpdateNotification = (notification: OrderUpdateNotification) => void;
 
 /**
  * Market data notified function.
  * @param notification notification
  */
-export type MarketDataNotifiedFunction = (notification: MarketDataNotification) => void;
+export type OnMarketDataNotification = (notification: MarketDataNotification) => void;
 
 
 
@@ -502,17 +502,17 @@ export type MarketDataNotifiedFunction = (notification: MarketDataNotification) 
 // -----------
 
 /** Handler for reciever which has passed (resolved). */
-export type ResolvedReciever = (response: Response) => void;
+export type OnResolve = (response: Response) => void;
 /** Handler for reciever which has failed (rejected). */
-export type RejectedReciever = (error: Error) => void;
+export type OnReject = (error: Error) => void;
 
 
-/** Reciever which can pass or fail (resolve or reject). */
+/** Recieve response to a request, which can pass or fail. */
 export interface Reciever {
   /** Pass (resolve) handler for reciever. */
-  resolve: ResolvedReciever,
+  resolve: OnResolve,
   /** Fail (reject) handler for reciever. */
-  reject: RejectedReciever;
+  reject: OnReject;
 }
 
 
@@ -542,7 +542,7 @@ function waitResponse(conn: Connection): Promise<Response> {
  * @param fn notified function
  * @returns WebSocket connection
  */
-export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedFunction): Promise<Connection> {
+export function connectOrderUpdate(auth: Authorization, fn: OnOrderUpdateNotification): Promise<Connection> {
   return new Promise((resolve, reject) => {
     var {app_id, access_token} = auth;
     var query = `${ORDER_UPDATE_QUERY}&access_token=${app_id}:${access_token}`;
@@ -603,7 +603,7 @@ export function unsubscribeOrderUpdate(conn: Connection): Promise<Response> {
  * @param fn notified function
  * @returns WebSocket connection
  */
-export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFunction): Promise<Connection> {
+export function connectMarketData(auth: Authorization, fn: OnMarketDataNotification): Promise<Connection> {
   return new Promise((resolve, reject) => {
     var {app_id, access_token} = auth;
     var query = `${MARKET_DATA_QUERY}&access_token=${app_id}:${access_token}`;

@@ -5,6 +5,7 @@ src/
 data/
 wiki/
 tests/
+test*.?js
 TODO
 
 # Build
