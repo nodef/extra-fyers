@@ -2833,7 +2833,7 @@ export interface MarketDataNotification extends MarketDepthNotification {}
 function toMarketDataNotification(x: websocket.MarketDataNotification, map: Map<string, string>): MarketDataNotification {
   var d = x.d;
   var t = d.token.toString();
-  var p = d.price_conv;
+  var p = d.price_conv || 1;
   return {
     symbol: map != null? map.get(t) || null : null,
     token:  t,
