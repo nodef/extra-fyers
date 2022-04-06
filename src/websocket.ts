@@ -563,8 +563,9 @@ export function connectOrderUpdate(auth: Authorization, fn: OrderUpdateNotifiedF
       if (typeof e.data !== "string") return;
       if (e.data === "pong") return;
       var x = JSON.parse(e.data); fn(x);
-      if (!x.hasOwnProperty("d") && conn.recievers.length > 0) conn.recievers.shift().resolve(x);
-    };
+      if (x.hasOwnProperty("d") || x.code === 0) return;
+      if (conn.recievers.length > 0) conn.recievers.shift().resolve(x);
+  };
   });
 }
 
@@ -623,7 +624,8 @@ export function connectMarketData(auth: Authorization, fn: MarketDataNotifiedFun
       if (typeof e.data === "string") {
         if (e.data === "pong") return;
         var x = JSON.parse(e.data); fn(x);
-        if (!x.hasOwnProperty("d") && conn.recievers.length > 0) conn.recievers.shift().resolve(x);
+        if (x.hasOwnProperty("d") || x.code === 0) return;
+        if (conn.recievers.length > 0) conn.recievers.shift().resolve(x);
       }
       else {
         var binary = new DataView(e.data as ArrayBuffer);
