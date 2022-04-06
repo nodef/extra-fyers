@@ -231,7 +231,7 @@ export interface Order {
   symbol: string,
   /** Fytoken is a unique identifier for every symbol. */
   fytoken: string,
-  /** The ticker symbol for which order is placed. */
+  /** Short name for the symbol Eg: “SBIN-EQ”. */
   ex_sym: string,
   /** Description of symbol for which order is placed. */
   description: string,

@@ -1643,16 +1643,16 @@ export interface Order {
   symbol: string,
   /** A unique identifier for every symbol. */
   token: string,
-  /** The ticker symbol for which order is placed. */
-  ticker: string,
-  /** Description of symbol for which order is placed. */
-  description: string,
+  /** The name of symbol for which order is placed. */
+  name: string,
+  /** The exchange in which order is placed. */
+  exchange: Exchange,
+  /** Short name for the symbol Eg: “SBIN-EQ”. */
+  description?: string,
   /** The segment this order is placed in. */
   segment: Segment,
   /** Exchange instrument type. */
   instrument: InstrumentType,
-  /** The exchange in which order is placed. */
-  exchange: Exchange,
   /** The type of order. */
   type: OrderType,
   /** The order is buy or sell. */
@@ -1707,7 +1707,7 @@ function toOrder(x: http.Order): Order {
     id:     x.id,
     symbol: x.symbol,
     token:  x.fytoken,
-    ticker: x.ex_sym,
+    name: x.ex_sym,
     description:  x.description,
     segment:      toSegment(x.segment),
     instrument:   toInstrumentType(x.instrument),
@@ -2403,19 +2403,11 @@ export interface MarketQuote {
   /** Name of the exchange. Eg: “NSE” or “BSE”. */
   exchange: Exchange,
   /** Description of the symbol. */
-  description: string,
-  /** Change value. */
-  priceChange: number,
-  /** Percentage of change between the current value and the previous day's market close. */
-  priceChangePercent: number,
+  description?: string,
+  /** Today’s time. */
+  date: number,
   /** Last traded price. */
   currentPrice: number,
-  /** Difference between lowest asking and highest bidding price. */
-  priceSpread: number,
-  /** Asking price for the symbol. */
-  sellPrice: number,
-  /** Bidding price for the symbol. */
-  buyPrice: number,
   /** Price at market opening time. */
   openPrice: number,
   /** Highest price for the day. */
@@ -2426,10 +2418,18 @@ export interface MarketQuote {
   closePrice: number,
   /** Volume traded. */
   volume: number,
-  /** Today’s time. */
-  date: number,
+  /** Change value. */
+  priceChange: number,
+  /** Percentage of change between the current value and the previous day's market close. */
+  priceChangePercent: number,
   /** Current time, open, high, low price and volume with HH:MM timestamp. */
   candle: Candle,
+  /** Asking price for the symbol. */
+  sellPrice: number,
+  /** Bidding price for the symbol. */
+  buyPrice: number,
+  /** Difference between lowest asking and highest bidding price. */
+  priceSpread: number,
 }
 
 
@@ -2493,14 +2493,22 @@ function toMarketOfferL2(x: websocket.L2MarketOffer, p: number): MarketOffer {
 
 /** A measure of the supply and demand for a symbol. */
 export interface MarketDepth {
-  /** Total buying quantity. */
-  buyQuantity: number,
-  /** Total selling quantity. */
-  sellQuantity: number,
-  /** Bidding price along with volume and total number of orders. */
-  buyOffers: MarketOffer[],
-  /** Offer price with volume and total number of orders. */
-  sellOffers: MarketOffer[],
+  /** Symbol name provided by the user. */
+  symbol: string,
+  /** A unique identifier for every symbol. */
+  token: string | null,
+  /** Short name for the symbol Eg: “SBIN-EQ”. */
+  name: string,
+  /** Name of the exchange. Eg: “NSE” or “BSE”. */
+  exchange: Exchange,
+  /** Expiry date. */
+  expiryDate: string,
+  /** Last traded price. */
+  currentPrice: number,
+  /** Lower circuit price. */
+  lowerCircuitPrice: number,
+  /** Upper circuit price. */
+  upperCircuitPrice: number,
   /** Price at market opening time. */
   openPrice?: number,
   /** Highest price for the day. */
@@ -2515,40 +2523,43 @@ export interface MarketDepth {
   priceChange: number,
   /** Percentage of change between the current value and the previous day's market close. */
   priceChangePercent: number,
-  /** Last traded quantity. */
-  tradedQuantity: number,
-  /** Last traded price. */
-  tradedPrice: number,
-  /** Last traded time. */
-  tradedDate: number,
-  /** Average traded price. */
-  netPrice: number,
-  /** Lower circuit price. */
-  lowerCircuitPrice: number,
-  /** Upper circuit price. */
-  upperCircuitPrice: number,
-  /** Expiry date. */
-  expiryDate: string,
   /** Open interest. */
   openInterest: number,
-  /** Boolean flag for OI data, true or false. */
-  openInterestEnabled: boolean,
   /** Previous day open interest. */
   previousOpenInterest: number,
   /** Change in open Interest percentage. */
   openInterestChangePercent: number,
+  /** Last traded time. */
+  tradedDate: number,
+  /** Last traded quantity. */
+  tradedQuantity: number,
+  /** Average traded price. */
+  netPrice: number,
+  /** Total buying quantity. */
+  buyQuantity: number,
+  /** Total selling quantity. */
+  sellQuantity: number,
+  /** Bidding price along with volume and total number of orders. */
+  buyOffers: MarketOffer[],
+  /** Offer price with volume and total number of orders. */
+  sellOffers: MarketOffer[],
 }
 
 
 function toMarketDepth(x: http.GetMarketDepthResponse): MarketDepth {
   var ks = Object.keys(x.d);
   if (ks.length === 0) return null;  // TODO: OK?
-  var v  = x.d[ks[0]];
+  var s = ks[0];
+  var v = x.d[s];
   return {
-    buyQuantity:  v.totalbuyqty,
-    sellQuantity: v.totalsellqty,
-    buyOffers:  v.bids.map(toMarketOffer),
-    sellOffers: v.ask.map(toMarketOffer),
+    symbol: s,
+    token:  null,
+    name:   symbolName(s),
+    exchange: symbolExchange(s),
+    expiryDate:   v.expiry,
+    currentPrice: v.ltq,
+    lowerCircuitPrice: v.lower_ckt,
+    upperCircuitPrice: v.upper_ckt,
     openPrice:  v.o,
     highPrice:  v.h,
     lowPrice:   v.l,
@@ -2556,17 +2567,16 @@ function toMarketDepth(x: http.GetMarketDepthResponse): MarketDepth {
     volume:     v.v,
     priceChange:        v.ch,
     priceChangePercent: v.chp,
-    tradedQuantity: v.ltq,
-    tradedPrice:    v.ltq,
-    tradedDate:     v.ltt,
-    netPrice:       v.atp,
-    lowerCircuitPrice: v.lower_ckt,
-    upperCircuitPrice: v.upper_ckt,
-    expiryDate:   v.expiry,
     openInterest: v.oi,
-    openInterestEnabled:  v.oiflag,
     previousOpenInterest: v.pdoi,
     openInterestChangePercent: v.oipercent,
+    tradedQuantity: v.ltq,
+    tradedDate:     v.ltt,
+    netPrice:       v.atp,
+    buyQuantity:  v.totalbuyqty,
+    sellQuantity: v.totalsellqty,
+    buyOffers:  v.bids.map(toMarketOffer),
+    sellOffers: v.ask.map(toMarketOffer),
   };
 }
 
@@ -2716,7 +2726,7 @@ export interface OrderUpdateNotification {
   /** Day or IOC. */
   validity: OrderValidity,
   /** True when placing AMO order. */
-  offlineOrder: boolean,
+  offline: boolean,
   /** The original order qty. */
   quantity: number,
   /** The remaining qty. */
@@ -2753,7 +2763,7 @@ function toOrderUpdateNotification(x: websocket.OrderUpdateNotification): OrderU
     productType:  toProductType(d.productType),
     status:       toOrderStatus(d.status),
     validity:     toOrderValidity(d.orderValidity),
-    offlineOrder: d.offlineOrder,
+    offline:      d.offlineOrder,
     quantity:     d.qty,
     remainingQuantity: d.remainingQuantity,
     filledQuantity:    d.filledQty,
@@ -2780,6 +2790,10 @@ export interface MarketQuoteNotification {
   symbol?: string,
   /** A unique identifier for every symbol. */
   token: string,
+  /** Short name for the symbol Eg: “SBIN-EQ”. */
+  name: string | null,
+  /** Name of the exchange. Eg: “NSE” or “BSE”. */
+  exchange: Exchange | null,
   /** Timestamp sent by exchange (UNIX epoch). */
   date: number,
   /** Market status flag? */
@@ -2794,6 +2808,10 @@ export interface MarketQuoteNotification {
   lowPrice: number,
   /** Close price of the previous trading day. */
   closePrice: number,
+  /** Change value. */
+  priceChange: number,
+  /** Percentage of change between the current value and the previous day's market close. */
+  priceChangePercent: number,
   /** 1 minute candle. */
   candle: Candle,
   /** Open interest. */
@@ -2816,6 +2834,8 @@ export interface MarketQuoteNotification {
   buyPrice: number,
   /** Lowest ask price. */
   sellPrice: number,
+  /** Difference between lowest asking and highest bidding price. */
+  priceSpread: number,
 }
 
 /** Market depth notification from WebSocket. */
@@ -2834,9 +2854,15 @@ function toMarketDataNotification(x: websocket.MarketDataNotification, map: Map<
   var d = x.d;
   var t = d.token.toString();
   var p = d.price_conv || 1;
+  var s = map != null? map.get(t) || null : null;
+  var priceChange = d.ltp - d.prev_close_price;
+  var bid = d.bids == null? d.bid : d.bids[0].price;
+  var ask = d.asks == null? d.ask : d.asks[0].price;
   return {
-    symbol: map != null? map.get(t) || null : null,
+    symbol: s,
     token:  t,
+    name:     s != null? symbolName(s)     : null,
+    exchange: s != null? symbolExchange(s) : null,
     date:   d.tt,
     marketStatus: d.marketStat,
     currentPrice: d.ltp / p,
@@ -2844,6 +2870,8 @@ function toMarketDataNotification(x: websocket.MarketDataNotification, map: Map<
     highPrice:    d.high_price / p,
     lowPrice:     d.low_price / p,
     closePrice:   d.prev_close_price / p,
+    priceChange:  priceChange / p,
+    priceChangePercent: priceChange / d.prev_close_price,
     candle: {
       date: d.tt,
       openPrice:  d.o / p,
@@ -2860,10 +2888,11 @@ function toMarketDataNotification(x: websocket.MarketDataNotification, map: Map<
     volume: d.volume,
     buyQuantity:  Number(d.tot_buy),
     sellQuantity: Number(d.tot_sell),
-    buyPrice:     d.bids == null? d.bid / p : d.bids[0].price / p,
-    sellPrice:    d.asks == null? d.ask / p : d.asks[0].price / p,
-    buyOffers:    d.bids == null? null  : d.bids.map(x => toMarketOfferL2(x, p)),
-    sellOffers:   d.asks == null? null  : d.asks.map(x => toMarketOfferL2(x, p)),
+    buyPrice:     bid / p,
+    sellPrice:    ask / p,
+    priceSpread:  (ask - bid) / p,
+    buyOffers:    d.bids == null? null : d.bids.map(x => toMarketOfferL2(x, p)),
+    sellOffers:   d.asks == null? null : d.asks.map(x => toMarketOfferL2(x, p)),
   };
 }
 
