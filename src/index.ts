@@ -1195,7 +1195,7 @@ export interface SymbolDetails {
 
 
 function toSymbolDetails(row: string): SymbolDetails {
-  var [token, description,, lotSize,, isin,,, symbol] = row.split(',');
+  var [token, description,, lotSize,, isin,,,, symbol] = row.split(',');
   return {symbol, token, description, lotSize: parseInt(lotSize, 10), isin: isin || ""};
 }
 
