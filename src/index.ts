@@ -3320,7 +3320,7 @@ export async function getTrades(auth: Authorization): Promise<Trades> {
 /**
  * Place an order to any exchange via Fyers.
  * @param auth authorization {appId, accessToken}
- * @param order details of an order {symbol, qty, type, side, ...}
+ * @param order details of an order {symbol, type, side, ...}
  * @returns order id
  */
 export async function placeOrder(auth: Authorization, order: PlaceOrder): Promise<string> {
@@ -3333,7 +3333,7 @@ export async function placeOrder(auth: Authorization, order: PlaceOrder): Promis
 /**
  * Place multiple orders to any exchange via Fyers.
  * @param auth authorization {appId, accessToken}
- * @param orders details of multiple orders [{symbol, qty, type, side, ...}]
+ * @param orders details of multiple orders [{symbol, type, side, ...}]
  * @returns unique order ids
  */
 export function placeOrders(auth: Authorization, orders: PlaceOrder[]): Promise<string>[] {
@@ -3354,7 +3354,7 @@ export function placeOrders(auth: Authorization, orders: PlaceOrder[]): Promise<
 /**
  * Modifies an order placed on any exchange via Fyers.
  * @param auth authorization {appId, accessToken}
- * @param order details of order {id, qty, type, side, ...}
+ * @param order details of order {id, type, quantity, ...}
  * @returns order id
  */
 export async function modifyOrder(auth: Authorization, order: ModifyOrder): Promise<string> {
@@ -3367,7 +3367,7 @@ export async function modifyOrder(auth: Authorization, order: ModifyOrder): Prom
 /**
  * Modifies orders placed on any exchange via Fyers.
  * @param auth authorization {appId, accessToken}
- * @param orders details of orders [{id, qty, type, side, ...}]
+ * @param orders details of orders [{id, type, quantity, ...}]
  * @returns unique order ids
  */
 export function modifyOrders(auth: Authorization, orders: ModifyOrder[]): Promise<void>[] {
@@ -3458,7 +3458,7 @@ export async function getMarketStatus(auth: Authorization): Promise<MarketsStatu
 /**
  * Get the market history for a particular symbol.
  * @param auth authorization {appId, accessToken}
- * @param market market details {symbol, resolution, dateFormat, ...}
+ * @param market market details {symbol, resolution, fromDate, ...}
  * @returns market history {details: [{date, ...}], overall: {dateFrom, ...}}
  */
 export async function getMarketHistory(auth: Authorization, market: GetMarketHistory): Promise<MarketHistory> {
@@ -3509,7 +3509,7 @@ export function getSymbolMaster(auth: null, exchange: string, segment: string): 
 /**
  * Get details of symbols from the symbol master file text.
  * @param csv symbol master file text
- * @returns list of symbol details
+ * @returns list of symbol details [{symbol, description, lotSize, ...}]
  */
 export function processSymbolMaster(csv: string): SymbolDetails[] {
   var a: SymbolDetails[] = [];
@@ -3525,7 +3525,7 @@ export function processSymbolMaster(csv: string): SymbolDetails[] {
  * @param auth authorization (unused)
  * @param exchange exchange name
  * @param segment segment name
- * @returns list of symbol details
+ * @returns list of symbol details [{symbol, description, lotSize, ...}]
  */
 export async function loadSymbolMaster(auth: null, exchange: string, segment: string): Promise<SymbolDetails[]> {
   var csv = await getSymbolMaster(null, exchange, segment);
@@ -3551,7 +3551,7 @@ export async function generateEdisTpin(auth: Authorization): Promise<void> {
 /**
  * Get the necessary information regarding the holdings you have on your and also the Status of the holdings. If the “sell” for the particular holdings is a success or not.
  * @param auth authorization {appId, accessToken}
- * @returns list of e-DIS transactions {data: [{transactionId, internalTxnId, ...}]}
+ * @returns list of e-DIS transactions {details: [{id, isin, ...}], overall: {count, quantity, ...}}
  */
 export async function getEdisTransactions(auth: Authorization): Promise<EdisTransactions> {
   var a = await http.getEdisTransactions(fromAuthorization(auth));
@@ -3563,7 +3563,7 @@ export async function getEdisTransactions(auth: Authorization): Promise<EdisTran
 /**
  * Redirect to CDSL page for login where you can submit your Holdings information and accordingly you can provide the same to exchange to Sell your holdings (browser only).
  * @param auth authorization {appId, accessToken}
- * @param holdings holding details {recordLst: [{isin_code, qty}]}
+ * @param holdings holding details [{isin, quantity}]
  * @returns HTTP(s) request options (manual)
  */
 export function submitEdisHoldingsStep(auth: Authorization, holdings: EdisHolding[]): HttpRequestOptions {
@@ -3795,28 +3795,28 @@ export class Api implements Authorization {
 
   /**
    * Place an order to any exchange via Fyers.
-   * @param order details of an order {symbol, qty, type, side, ...}
+   * @param order details of an order {symbol, type, side, ...}
    * @returns order id
    */
   placeOrder(order: PlaceOrder) { return placeOrder(this, order); }
 
   /**
    * Place multiple orders to any exchange via Fyers.
-   * @param orders details of multiple orders [{symbol, qty, type, side, ...}]
+   * @param orders details of multiple orders [{symbol, type, side, ...}]
    * @returns unique order ids
    */
   placeOrders(orders: PlaceOrder[]) { return placeOrders(this, orders); }
 
   /**
    * Modifies an order placed on any exchange via Fyers.
-   * @param order details of order {id, qty, type, side, ...}
+   * @param order details of order {id, type, quantity, ...}
    * @returns order id
    */
   modifyOrder(order: ModifyOrder) { return modifyOrder(this, order); }
 
   /**
    * Modifies orders placed on any exchange via Fyers.
-   * @param orders details of orders [{id, qty, type, side, ...}]
+   * @param orders details of orders [{id, type, quantity, ...}]
    * @returns unique order ids
    */
   modifyOrders(orders: ModifyOrder[]) { return modifyOrders(this, orders); }
@@ -3863,7 +3863,7 @@ export class Api implements Authorization {
 
   /**
    * Get the market history for a particular symbol.
-   * @param market market details {symbol, resolution, dateFormat, ...}
+   * @param market market details {symbol, resolution, fromDate, ...}
    * @returns market history {details: [{date, ...}], overall: {dateFrom, ...}}
    */
   getMarketHistory(market: GetMarketHistory) { return getMarketHistory(this, market); }
@@ -3885,7 +3885,7 @@ export class Api implements Authorization {
   /**
    * Get details of symbols from the symbol master file text.
    * @param csv symbol master file text
-   * @returns list of symbol details
+   * @returns list of symbol details [{symbol, description, lotSize, ...}]
    */
   processSymbolMaster(csv: string): SymbolDetails[] {
     var rs = processSymbolMaster(csv);
@@ -3900,7 +3900,7 @@ export class Api implements Authorization {
    * Get details of symbols from the symbol master files.
    * @param exchange exchange name
    * @param segment segment name
-   * @returns list of symbol details
+   * @returns list of symbol details [{symbol, description, lotSize, ...}]
    */
   async loadSymbolMaster(exchange: string, segment: string): Promise<SymbolDetails[]> {
     var rs = await loadSymbolMaster(null, exchange, segment);
@@ -3919,13 +3919,13 @@ export class Api implements Authorization {
 
   /**
    * Get the necessary information regarding the holdings you have on your and also the Status of the holdings. If the “sell” for the particular holdings is a success or not.
-   * @returns list of e-DIS transactions {data: [{transactionId, internalTxnId, ...}]}
+   * @returns list of e-DIS transactions {details: [{id, isin, ...}], overall: {count, quantity, ...}}
    */
   getEdisTransactions() { return getEdisTransactions(this); }
 
   /**
    * Redirect to CDSL page for login where you can submit your Holdings information and accordingly you can provide the same to exchange to Sell your holdings (browser only).
-   * @param holdings holding details {recordLst: [{isin_code, qty}]}
+   * @param holdings holding details [{isin, quantity}]
    * @returns HTTP(s) request options (manual)
    */
   submitEdisHoldingsStep(holdings: EdisHolding[]) { return submitEdisHoldingsStep(this, holdings); }
