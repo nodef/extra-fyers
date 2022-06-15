@@ -6,6 +6,7 @@ data/
 wiki/
 tests/
 test*.?js
+CITATION.cff
 TODO
 
 # Build

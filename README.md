@@ -177,6 +177,8 @@ main();
 <br>
 
 [![](https://img.youtube.com/vi/AGCC-_Cuhhw/maxresdefault.jpg)](https://www.youtube.com/watch?v=AGCC-_Cuhhw)
+[![DOI](https://zenodo.org/badge/459926913.svg)](https://zenodo.org/badge/latestdoi/459926913)
+
 
 [exchangeDescription]: https://nodef.github.io/extra-fyers/modules.html#exchangeDescription
 [exchange]: https://nodef.github.io/extra-fyers/modules.html#exchange
