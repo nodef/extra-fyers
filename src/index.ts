@@ -2453,7 +2453,7 @@ function toMarketQuote(x: http.MarketQuote): MarketQuote {
     closePrice: v.prev_close_price,
     volume:     v.volume,
     date:       v.tt,
-    candle:     toCandle(v.cmd),
+    candle:     v.cmd? toCandle(v.cmd) : null,
   };
 }
 
