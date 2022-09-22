@@ -3224,8 +3224,8 @@ function validateApiOrder(x: http.OrderResponse) {
 
 /**
  * Get basic details of the client.
- * @param auth authorization {appId, accessToken}
- * @returns details of user's profile {id, email, name, ...}
+ * @param auth authorization \{appId, accessToken\}
+ * @returns details of user's profile \{id, email, name, ...\}
  */
 export async function getProfile(auth: Authorization): Promise<Profile> {
   var a = await http.getProfile(fromAuthorization(auth));
@@ -3236,8 +3236,8 @@ export async function getProfile(auth: Authorization): Promise<Profile> {
 
 /**
  * Get balance available for the user for capital as well as the commodity market.
- * @param auth authorization {appId, accessToken}
- * @returns details of user's funds {equity: {start, ...}, commodity: {start, ...}}
+ * @param auth authorization \{appId, accessToken\}
+ * @returns details of user's funds \{equity: \{start, ...\}, commodity: \{start, ...\}\}
  */
 export async function getFunds(auth: Authorization): Promise<Funds> {
   var a = await http.getFunds(fromAuthorization(auth));
@@ -3248,8 +3248,8 @@ export async function getFunds(auth: Authorization): Promise<Funds> {
 
 /**
  * Get the equity and mutual fund holdings which the user has in this demat account.
- * @param auth authorization {appId, accessToken}
- * @returns details of user's holdings {details: [{isin, ...}], overall: {count, ...}}
+ * @param auth authorization \{appId, accessToken\}
+ * @returns details of user's holdings \{details: [\{isin, ...\}], overall: \{count, ...\}\}
  */
 export async function getHoldings(auth: Authorization): Promise<Holdings> {
   var a = await http.getHoldings(fromAuthorization(auth));
@@ -3265,9 +3265,9 @@ export async function getHoldings(auth: Authorization): Promise<Holdings> {
 
 /**
  * Get details of an order placed in the current trading day.
- * @param auth authorization {appId, accessToken}
+ * @param auth authorization \{appId, accessToken\}
  * @param id order id
- * @returns details of an order {id, symbol, ticker, ...}
+ * @returns details of an order \{id, symbol, ticker, ...\}
  */
 export async function getOrder(auth: Authorization, id: string): Promise<Order> {
   var a = await http.getOrder(fromAuthorization(auth), {id});
@@ -3278,8 +3278,8 @@ export async function getOrder(auth: Authorization, id: string): Promise<Order> 
 
 /**
  * Get details of all the orders placed in the current trading day.
- * @param auth authorization {appId, accessToken}
- * @returns details of orders {details: [{id, ...}], overall: {count, ...}}
+ * @param auth authorization \{appId, accessToken\}
+ * @returns details of orders \{details: [\{id, ...\}], overall: \{count, ...\}\}
  */
 export async function getOrders(auth: Authorization): Promise<Orders> {
   var a = await http.getOrders(fromAuthorization(auth));
@@ -3290,8 +3290,8 @@ export async function getOrders(auth: Authorization): Promise<Orders> {
 
 /**
  * Get details of all the positions in the current trading day.
- * @param auth authorization {appId, accessToken}
- * @returns details of positions {details: [{id, ...}], overall: {count, ...}}
+ * @param auth authorization \{appId, accessToken\}
+ * @returns details of positions \{details: [\{id, ...\}], overall: \{count, ...\}\}
  */
 export async function getPositions(auth: Authorization): Promise<Positions> {
   var a = await http.getPositions(fromAuthorization(auth));
@@ -3302,8 +3302,8 @@ export async function getPositions(auth: Authorization): Promise<Positions> {
 
 /**
  * Get details of all the trades in the current trading day.
- * @param auth authorization {appId, accessToken}
- * @returns details of trades {details: [{id, ...}], overall: {count, ...}}
+ * @param auth authorization \{appId, accessToken\}
+ * @returns details of trades \{details: [\{id, ...\}], overall: \{count, ...\}\}
  */
 export async function getTrades(auth: Authorization): Promise<Trades> {
   var a = await http.getTrades(fromAuthorization(auth));
@@ -3319,8 +3319,8 @@ export async function getTrades(auth: Authorization): Promise<Trades> {
 
 /**
  * Place an order to any exchange via Fyers.
- * @param auth authorization {appId, accessToken}
- * @param order details of an order {symbol, type, side, ...}
+ * @param auth authorization \{appId, accessToken\}
+ * @param order details of an order \{symbol, type, side, ...\}
  * @returns order id
  */
 export async function placeOrder(auth: Authorization, order: PlaceOrder): Promise<string> {
@@ -3332,8 +3332,8 @@ export async function placeOrder(auth: Authorization, order: PlaceOrder): Promis
 
 /**
  * Place multiple orders to any exchange via Fyers.
- * @param auth authorization {appId, accessToken}
- * @param orders details of multiple orders [{symbol, type, side, ...}]
+ * @param auth authorization \{appId, accessToken\}
+ * @param orders details of multiple orders [\{symbol, type, side, ...\}]
  * @returns unique order ids
  */
 export function placeOrders(auth: Authorization, orders: PlaceOrder[]): Promise<string>[] {
@@ -3353,8 +3353,8 @@ export function placeOrders(auth: Authorization, orders: PlaceOrder[]): Promise<
 
 /**
  * Modifies an order placed on any exchange via Fyers.
- * @param auth authorization {appId, accessToken}
- * @param order details of order {id, type, quantity, ...}
+ * @param auth authorization \{appId, accessToken\}
+ * @param order details of order \{id, type, quantity, ...\}
  * @returns order id
  */
 export async function modifyOrder(auth: Authorization, order: ModifyOrder): Promise<string> {
@@ -3366,8 +3366,8 @@ export async function modifyOrder(auth: Authorization, order: ModifyOrder): Prom
 
 /**
  * Modifies orders placed on any exchange via Fyers.
- * @param auth authorization {appId, accessToken}
- * @param orders details of orders [{id, type, quantity, ...}]
+ * @param auth authorization \{appId, accessToken\}
+ * @param orders details of orders [\{id, type, quantity, ...\}]
  * @returns unique order ids
  */
 export function modifyOrders(auth: Authorization, orders: ModifyOrder[]): Promise<void>[] {
@@ -3381,7 +3381,7 @@ export function modifyOrders(auth: Authorization, orders: ModifyOrder[]): Promis
 
 /**
  * Cancels an order placed on any exchange via Fyers.
- * @param auth authorization {appId, accessToken}
+ * @param auth authorization \{appId, accessToken\}
  * @param id order id
  * @returns order id
  */
@@ -3393,7 +3393,7 @@ export async function cancelOrder(auth: Authorization, id: string): Promise<void
 
 /**
  * Cancels orders placed on any exchange via Fyers.
- * @param auth authorization {appId, accessToken}
+ * @param auth authorization \{appId, accessToken\}
  * @param ids unique order ids
  * @returns unique order ids
  */
@@ -3408,7 +3408,7 @@ export function cancelOrders(auth: Authorization, ids: string[]): Promise<void>[
 
 /**
  * Exits a position on the current trading day.
- * @param auth authorization {appId, accessToken}
+ * @param auth authorization \{appId, accessToken\}
  * @param id position id
  */
 export async function exitPosition(auth: Authorization, id: string): Promise<void> {
@@ -3419,7 +3419,7 @@ export async function exitPosition(auth: Authorization, id: string): Promise<voi
 
 /**
  * Exits all positions on the current trading day.
- * @param auth authorization {appId, accessToken}
+ * @param auth authorization \{appId, accessToken\}
  */
 export async function exitAllPositions(auth: Authorization): Promise<void> {
   var a = await http.exitAllPositions(fromAuthorization(auth));
@@ -3429,8 +3429,8 @@ export async function exitAllPositions(auth: Authorization): Promise<void> {
 
 /**
  * Converts a position on the current trading day.
- * @param auth authorization {appId, accessToken}
- * @param conversion details of conversion {symbol, side, quantity, ...}
+ * @param auth authorization \{appId, accessToken\}
+ * @param conversion details of conversion \{symbol, side, quantity, ...\}
  */
 export async function convertPosition(auth: Authorization, conversion: ConvertPosition): Promise<void> {
   var a = await http.convertPosition(fromAuthorization(auth), fromConvertPosition(conversion));
@@ -3445,8 +3445,8 @@ export async function convertPosition(auth: Authorization, conversion: ConvertPo
 
 /**
  * Get the current market status of all the exchanges and their segments.
- * @param auth authorization {appId, accessToken}
- * @returns markets status {details: [{exchange, ...}], overall: {count, ...}}
+ * @param auth authorization \{appId, accessToken\}
+ * @returns markets status \{details: [\{exchange, ...\}], overall: \{count, ...\}\}
  */
 export async function getMarketStatus(auth: Authorization): Promise<MarketsStatus> {
   var a = await http.getMarketStatus(fromAuthorization(auth));
@@ -3457,9 +3457,9 @@ export async function getMarketStatus(auth: Authorization): Promise<MarketsStatu
 
 /**
  * Get the market history for a particular symbol.
- * @param auth authorization {appId, accessToken}
- * @param market market details {symbol, resolution, fromDate, ...}
- * @returns market history {details: [{date, ...}], overall: {dateFrom, ...}}
+ * @param auth authorization \{appId, accessToken\}
+ * @param market market details \{symbol, resolution, fromDate, ...\}
+ * @returns market history \{details: [\{date, ...\}], overall: \{dateFrom, ...\}\}
  */
 export async function getMarketHistory(auth: Authorization, market: GetMarketHistory): Promise<MarketHistory> {
   var a = await http.getMarketHistory(fromAuthorization(auth), fromGetMarketHistory(market));
@@ -3470,9 +3470,9 @@ export async function getMarketHistory(auth: Authorization, market: GetMarketHis
 
 /**
  * Get the current market quotes for a set of symbols.
- * @param auth authorization {appId, accessToken}
+ * @param auth authorization \{appId, accessToken\}
  * @param symbols list of symbols
- * @returns market quotes [{symbol, name, exchange, ...}]
+ * @returns market quotes [\{symbol, name, exchange, ...\}]
  */
 export async function getMarketQuotes(auth: Authorization, symbols: string[]): Promise<MarketQuote[]> {
   var a = await http.getMarketQuotes(fromAuthorization(auth), {symbols: symbols.join()});
@@ -3483,9 +3483,9 @@ export async function getMarketQuotes(auth: Authorization, symbols: string[]): P
 
 /**
  * Get the current market depth for a particular symbol.
- * @param auth authorization {appId, accessToken}
+ * @param auth authorization \{appId, accessToken\}
  * @param symbol symbol name
- * @returns market depth {buyQuantity, sellQuantity, buyOffers, ...}
+ * @returns market depth \{buyQuantity, sellQuantity, buyOffers, ...\}
  */
 export async function getMarketDepth(auth: Authorization, symbol: string): Promise<MarketDepth> {
   var a = await http.getMarketDepth(fromAuthorization(auth), {symbol, ohlcv_flag: 1});
@@ -3509,7 +3509,7 @@ export function getSymbolMaster(auth: null, exchange: string, segment: string): 
 /**
  * Get details of symbols from the symbol master file text.
  * @param csv symbol master file text
- * @returns list of symbol details [{symbol, description, lotSize, ...}]
+ * @returns list of symbol details [\{symbol, description, lotSize, ...\}]
  */
 export function processSymbolMaster(csv: string): SymbolDetails[] {
   var a: SymbolDetails[] = [];
@@ -3525,7 +3525,7 @@ export function processSymbolMaster(csv: string): SymbolDetails[] {
  * @param auth authorization (unused)
  * @param exchange exchange name
  * @param segment segment name
- * @returns list of symbol details [{symbol, description, lotSize, ...}]
+ * @returns list of symbol details [\{symbol, description, lotSize, ...\}]
  */
 export async function loadSymbolMaster(auth: null, exchange: string, segment: string): Promise<SymbolDetails[]> {
   var csv = await getSymbolMaster(null, exchange, segment);
@@ -3540,7 +3540,7 @@ export async function loadSymbolMaster(auth: null, exchange: string, segment: st
 
 /**
  * Generate e-DIS TPIN for validating/authorising transaction.
- * @param auth authorization {appId, accessToken}
+ * @param auth authorization \{appId, accessToken\}
  */
 export async function generateEdisTpin(auth: Authorization): Promise<void> {
   var a = await http.generateEdisTpin(fromAuthorization(auth));
@@ -3550,8 +3550,8 @@ export async function generateEdisTpin(auth: Authorization): Promise<void> {
 
 /**
  * Get the necessary information regarding the holdings you have on your and also the Status of the holdings. If the “sell” for the particular holdings is a success or not.
- * @param auth authorization {appId, accessToken}
- * @returns list of e-DIS transactions {details: [{id, isin, ...}], overall: {count, quantity, ...}}
+ * @param auth authorization \{appId, accessToken\}
+ * @returns list of e-DIS transactions \{details: [\{id, isin, ...\}], overall: \{count, quantity, ...\}\}
  */
 export async function getEdisTransactions(auth: Authorization): Promise<EdisTransactions> {
   var a = await http.getEdisTransactions(fromAuthorization(auth));
@@ -3562,8 +3562,8 @@ export async function getEdisTransactions(auth: Authorization): Promise<EdisTran
 
 /**
  * Redirect to CDSL page for login where you can submit your Holdings information and accordingly you can provide the same to exchange to Sell your holdings (browser only).
- * @param auth authorization {appId, accessToken}
- * @param holdings holding details [{isin, quantity}]
+ * @param auth authorization \{appId, accessToken\}
+ * @param holdings holding details [\{isin, quantity\}]
  * @returns HTTP(s) request options (manual)
  */
 export function submitEdisHoldingsStep(auth: Authorization, holdings: EdisHolding[]): HttpRequestOptions {
@@ -3573,7 +3573,7 @@ export function submitEdisHoldingsStep(auth: Authorization, holdings: EdisHoldin
 
 /**
  * Inquire the information/status of the provided transaction Id for the respective holdings you have on your end.
- * @param auth authorization {appId, accessToken}
+ * @param auth authorization \{appId, accessToken\}
  * @param id transaction id
  * @returns edis status
  */
@@ -3594,7 +3594,7 @@ export async function inquireEdisTransaction(auth: Authorization, id: string): P
 
 /**
  * Connect to Order update URL with WebSocket.
- * @param auth authorization {appId, accessToken}
+ * @param auth authorization \{appId, accessToken\}
  * @param fn notified function
  * @returns WebSocket connection
  */
@@ -3632,7 +3632,7 @@ export async function unsubscribeOrderUpdate(conn: Connection): Promise<void> {
 
 /**
  * Connect to Market data URL with WebSocket.
- * @param auth authorization {appId, accessToken}
+ * @param auth authorization \{appId, accessToken\}
  * @param fn notified function
  * @returns WebSocket connection
  */
@@ -3752,71 +3752,71 @@ export class Api implements Authorization {
 
   /**
    * Get basic details of the client.
-   * @returns details of user's profile {id, email, name, ...}
+   * @returns details of user's profile \{id, email, name, ...\}
    */
   getProfile() { return getProfile(this); }
 
   /**
    * Get balance available for the user for capital as well as the commodity market.
-   * @returns details of user's funds {equity: {start, ...}, commodity: {start, ...}}
+   * @returns details of user's funds \{equity: \{start, ...\}, commodity: \{start, ...\}\}
    */
   getFunds() { return getFunds(this); }
 
   /**
    * Get the equity and mutual fund holdings which the user has in this demat account.
-   * @returns details of user's holdings {details: [{isin, ...}], overall: {count, ...}}
+   * @returns details of user's holdings \{details: [\{isin, ...\}], overall: \{count, ...\}\}
    */
   getHoldings() { return getHoldings(this); }
 
   /**
    * Get details of an order placed in the current trading day.
    * @param id order id
-   * @returns details of an order {id, symbol, ticker, ...}
+   * @returns details of an order \{id, symbol, ticker, ...\}
    */
   getOrder(id: string) { return getOrder(this, id); }
 
   /**
    * Get details of all the orders placed in the current trading day.
-   * @returns details of orders {details: [{id, ...}], overall: {count, ...}}
+   * @returns details of orders \{details: [\{id, ...\}], overall: \{count, ...\}\}
    */
   getOrders() { return getOrders(this); }
 
   /**
    * Get details of all the positions in the current trading day.
-   * @returns details of positions {details: [{id, ...}], overall: {count, ...}}
+   * @returns details of positions \{details: [\{id, ...\}], overall: \{count, ...\}\}
    */
   getPositions() { return getPositions(this); }
 
   /**
    * Get details of all the trades in the current trading day.
-   * @returns details of trades {details: [{id, ...}], overall: {count, ...}}
+   * @returns details of trades \{details: [\{id, ...\}], overall: \{count, ...\}\}
    */
   getTrades() { return getTrades(this); }
 
   /**
    * Place an order to any exchange via Fyers.
-   * @param order details of an order {symbol, type, side, ...}
+   * @param order details of an order \{symbol, type, side, ...\}
    * @returns order id
    */
   placeOrder(order: PlaceOrder) { return placeOrder(this, order); }
 
   /**
    * Place multiple orders to any exchange via Fyers.
-   * @param orders details of multiple orders [{symbol, type, side, ...}]
+   * @param orders details of multiple orders [\{symbol, type, side, ...\}]
    * @returns unique order ids
    */
   placeOrders(orders: PlaceOrder[]) { return placeOrders(this, orders); }
 
   /**
    * Modifies an order placed on any exchange via Fyers.
-   * @param order details of order {id, type, quantity, ...}
+   * @param order details of order \{id, type, quantity, ...\}
    * @returns order id
    */
   modifyOrder(order: ModifyOrder) { return modifyOrder(this, order); }
 
   /**
    * Modifies orders placed on any exchange via Fyers.
-   * @param orders details of orders [{id, type, quantity, ...}]
+   * @param orders details of orders [\{id, type, quantity, ...\}]
    * @returns unique order ids
    */
   modifyOrders(orders: ModifyOrder[]) { return modifyOrders(this, orders); }
@@ -3850,42 +3850,42 @@ export class Api implements Authorization {
 
   /**
    * Converts a position on the current trading day.
-   * @param conversion details of conversion {symbol, side, quantity, ...}
+   * @param conversion details of conversion \{symbol, side, quantity, ...\}
    * @returns conversion status
    */
   convertPosition(conversion: ConvertPosition) { return convertPosition(this, conversion); }
 
   /**
    * Get the current market status of all the exchanges and their segments.
-   * @returns markets status {details: [{exchange, ...}], overall: {count, ...}}
+   * @returns markets status \{details: [\{exchange, ...\}], overall: \{count, ...\}\}
    */
   getMarketStatus() { return getMarketStatus(this); }
 
   /**
    * Get the market history for a particular symbol.
-   * @param market market details {symbol, resolution, fromDate, ...}
-   * @returns market history {details: [{date, ...}], overall: {dateFrom, ...}}
+   * @param market market details \{symbol, resolution, fromDate, ...\}
+   * @returns market history \{details: [\{date, ...\}], overall: \{dateFrom, ...\}\}
    */
   getMarketHistory(market: GetMarketHistory) { return getMarketHistory(this, market); }
 
   /**
    * Get the current market quotes for a set of symbols.
    * @param symbols list of symbols
-   * @returns market quotes [{symbol, name, exchange, ...}]
+   * @returns market quotes [\{symbol, name, exchange, ...\}]
    */
   getMarketQuotes(symbols: string[]) { return getMarketQuotes(this, symbols); }
 
   /**
    * Get the current market depth for a particular symbol.
    * @param symbol symbol name
-   * @returns market depth {buyQuantity, sellQuantity, buyOffers, ...}
+   * @returns market depth \{buyQuantity, sellQuantity, buyOffers, ...\}
    */
   getMarketDepth(symbol: string) { return getMarketDepth(this, symbol); }
 
   /**
    * Get details of symbols from the symbol master file text.
    * @param csv symbol master file text
-   * @returns list of symbol details [{symbol, description, lotSize, ...}]
+   * @returns list of symbol details [\{symbol, description, lotSize, ...\}]
    */
   processSymbolMaster(csv: string): SymbolDetails[] {
     var rs = processSymbolMaster(csv);
@@ -3900,7 +3900,7 @@ export class Api implements Authorization {
    * Get details of symbols from the symbol master files.
    * @param exchange exchange name
    * @param segment segment name
-   * @returns list of symbol details [{symbol, description, lotSize, ...}]
+   * @returns list of symbol details [\{symbol, description, lotSize, ...\}]
    */
   async loadSymbolMaster(exchange: string, segment: string): Promise<SymbolDetails[]> {
     var rs = await loadSymbolMaster(null, exchange, segment);
@@ -3919,13 +3919,13 @@ export class Api implements Authorization {
 
   /**
    * Get the necessary information regarding the holdings you have on your and also the Status of the holdings. If the “sell” for the particular holdings is a success or not.
-   * @returns list of e-DIS transactions {details: [{id, isin, ...}], overall: {count, quantity, ...}}
+   * @returns list of e-DIS transactions \{details: [\{id, isin, ...\}], overall: \{count, quantity, ...\}\}
    */
   getEdisTransactions() { return getEdisTransactions(this); }
 
   /**
    * Redirect to CDSL page for login where you can submit your Holdings information and accordingly you can provide the same to exchange to Sell your holdings (browser only).
-   * @param holdings holding details [{isin, quantity}]
+   * @param holdings holding details [\{isin, quantity\}]
    * @returns HTTP(s) request options (manual)
    */
   submitEdisHoldingsStep(holdings: EdisHolding[]) { return submitEdisHoldingsStep(this, holdings); }

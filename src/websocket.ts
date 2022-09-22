@@ -538,7 +538,7 @@ function waitResponse(conn: Connection): Promise<Response> {
 
 /**
  * Connect to Order update URL with WebSocket.
- * @param auth authorization {app_id, access_token}
+ * @param auth authorization \{app_id, access_token\}
  * @param fn notified function
  * @returns WebSocket connection
  */
@@ -599,7 +599,7 @@ export function unsubscribeOrderUpdate(conn: Connection): Promise<Response> {
 
 /**
  * Connect to Market data URL with WebSocket.
- * @param auth authorization {app_id, access_token}
+ * @param auth authorization \{app_id, access_token\}
  * @param fn notified function
  * @returns WebSocket connection
  */
