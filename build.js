@@ -49,7 +49,7 @@ function publishRootPackage(ds, ver, typ) {
   m.keywords = keywords(ds);
   if (typ) {
     m.name = `${m.name}.${typ}`;
-    m.description = m.description.replace(/\.$/, ` \{${typ}\}.`);
+    m.description = m.description.replace(/\.$/, ` ${typ}.`);
     md = md.replace(/(unpkg\.com\/)(\S+?)(\/\))/, `$1$2.${typ}$3`);
   }
   build.writeMetadata('.', m);
@@ -82,7 +82,7 @@ function publishSubPackage(nam, ds, ver, typ) {
   m.keywords = keywords(ds);
   if (typ) {
     m.name = `${m.name}.${typ}`;
-    m.description = m.description.replace(/\.$/, ` \{${typ}\}.`);
+    m.description = m.description.replace(/\.$/, ` ${typ}.`);
     md = md.replace(/(unpkg\.com\/)(\S+?)(\/\))/, `$1$2.${typ}$3`);
   }
   build.writeMetadata('.', m);
@@ -193,6 +193,8 @@ function readmeDescription(d) {
   var sname = /a?sync$/i;
   if (!rkind.test(d.kind)) return '';
   if (sname.test(d.name) && d.name!=='spawnAsync') return '';
+  if (d.description==null) return '';
+  d.description = d.description || `Default ${d.name} interface of FYERS.`;
   var a = d.description.replace(/The.+method/, 'This method');
   a = a.replace(', with command-line arguments in ', ' and ');
   a = a.replace(/(\S)`(.*?)`/, '$1 `$2`');
@@ -213,10 +215,8 @@ function compareLocation(a, b) {
 
 // Update README.
 function updateReadme(ds) {
-  var m  = build.readMetadata('.');
-  var repo = m.name;
-  var ds = ds.slice().sort(compareLocation);
-  var dm = new Map(ds.map(d => [d.name, d]));
+  var ds  = ds.slice().sort(compareLocation);
+  var dm  = new Map(ds.map(d => [d.name, d]));
   var txt = build.readFileText('README.md');
   txt = build.wikiUpdateIndex(txt, dm, readmeDescription);
   txt = build.wikiUpdateLinkReferences(txt, dm, {owner, repo});

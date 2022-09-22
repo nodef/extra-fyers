@@ -3549,7 +3549,7 @@ export async function generateEdisTpin(auth: Authorization): Promise<void> {
 
 
 /**
- * Get the necessary information regarding the holdings you have on your and also the Status of the holdings. If the “sell” for the particular holdings is a success or not.
+ * Get the necessary information regarding the holdings you have on your and also the status of the holdings. If the “sell” for the particular holdings is a success or not.
  * @param auth authorization \{appId, accessToken\}
  * @returns list of e-DIS transactions \{details: [\{id, isin, ...\}], overall: \{count, quantity, ...\}\}
  */
@@ -3918,7 +3918,7 @@ export class Api implements Authorization {
   generateEdisTpin() { return generateEdisTpin(this); }
 
   /**
-   * Get the necessary information regarding the holdings you have on your and also the Status of the holdings. If the “sell” for the particular holdings is a success or not.
+   * Get the necessary information regarding the holdings you have on your and also the status of the holdings. If the “sell” for the particular holdings is a success or not.
    * @returns list of e-DIS transactions \{details: [\{id, isin, ...\}], overall: \{count, quantity, ...\}\}
    */
   getEdisTransactions() { return getEdisTransactions(this); }
