@@ -1176,7 +1176,7 @@ export function instrumentType(desc: string): InstrumentType {
 // --------------
 
 /** Get symbol name [equity, future, monthly-expiry option, weekly-expiry option]. */
-const RSYMBOL_NAME = /^\w+:(\w+)-\w+|^\w+:(\w+)\d{2}\w{3}FUT|^\w+:(\w+)\d{2}\w{3}\d+[CP]E|^\w+:(\w+)\d{2}\w{1}\d{2}\d+[CP]E/;
+const RSYMBOL_NAME = /^\w+:(.+?)-\w+$|^\w+:(.+?)\d{2}\w{3}FUT$|^\w+:(.+?)\d{2}\w{3}[\d\.]+[CP]E$|^\w+:(.+?)\d{2}\w{1}\d{2}[\d\.]+[CP]E$/;
 
 
 /** Essential details of a symbol, as given in Symbol master CSV file. */
@@ -2554,7 +2554,7 @@ function toMarketDepth(x: http.GetMarketDepthResponse): MarketDepth {
   return {
     symbol: s,
     token:  null,
-    name:   symbolName(s),
+    name:     symbolName(s),
     exchange: symbolExchange(s),
     expiryDate:   v.expiry,
     currentPrice: v.ltq,
