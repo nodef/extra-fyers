@@ -1707,7 +1707,7 @@ function toOrder(x: http.Order): Order {
     id:     x.id,
     symbol: x.symbol,
     token:  x.fytoken,
-    name: x.ex_sym,
+    name:   x.ex_sym,
     description:  x.description,
     segment:      toSegment(x.segment),
     instrument:   toInstrumentType(x.instrument),
@@ -2425,9 +2425,9 @@ export interface MarketQuote {
   /** Current time, open, high, low price and volume with HH:MM timestamp. */
   candle: Candle,
   /** Asking price for the symbol. */
-  sellPrice: number,
+  askPrice: number,
   /** Bidding price for the symbol. */
-  buyPrice: number,
+  bidPrice: number,
   /** Difference between lowest asking and highest bidding price. */
   priceSpread: number,
 }
@@ -2445,8 +2445,8 @@ function toMarketQuote(x: http.MarketQuote): MarketQuote {
     priceChangePercent: v.chp,
     currentPrice: v.lp,
     priceSpread:  v.spread,
-    sellPrice:  v.ask,
-    buyPrice:   v.bid,
+    askPrice:   v.ask,
+    bidPrice:   v.bid,
     openPrice:  v.open_price,
     highPrice:  v.high_price,
     lowPrice:   v.low_price,
@@ -2534,15 +2534,15 @@ export interface MarketDepth {
   /** Last traded quantity. */
   tradedQuantity: number,
   /** Average traded price. */
-  netPrice: number,
+  tradedPrice: number,
   /** Total buying quantity. */
-  buyQuantity: number,
+  bidQuantity: number,
   /** Total selling quantity. */
-  sellQuantity: number,
+  askQuantity: number,
   /** Bidding price along with volume and total number of orders. */
-  buyOffers: MarketOffer[],
+  bids: MarketOffer[],
   /** Offer price with volume and total number of orders. */
-  sellOffers: MarketOffer[],
+  asks: MarketOffer[],
 }
 
 
@@ -2572,11 +2572,11 @@ function toMarketDepth(x: http.GetMarketDepthResponse): MarketDepth {
     openInterestChangePercent: v.oipercent,
     tradedQuantity: v.ltq,
     tradedDate:     v.ltt,
-    netPrice:       v.atp,
-    buyQuantity:  v.totalbuyqty,
-    sellQuantity: v.totalsellqty,
-    buyOffers:  v.bids.map(toMarketOffer),
-    sellOffers: v.ask.map(toMarketOffer),
+    tradedPrice:    v.atp,
+    bidQuantity: v.totalbuyqty,
+    askQuantity: v.totalsellqty,
+    bids: v.bids.map(toMarketOffer),
+    asks: v.ask.map(toMarketOffer),
   };
 }
 
@@ -2827,13 +2827,13 @@ export interface MarketQuoteNotification {
   /** Today's volume. */
   volume: number,
   /** Total buy quantity. */
-  buyQuantity: number,
+  bidQuantity: number,
   /** Total sell quantity. */
-  sellQuantity: number,
+  askQuantity: number,
   /** Highest bid price. */
-  buyPrice: number,
+  bidPrice: number,
   /** Lowest ask price. */
-  sellPrice: number,
+  askPrice: number,
   /** Difference between lowest asking and highest bidding price. */
   priceSpread: number,
 }
@@ -2841,9 +2841,9 @@ export interface MarketQuoteNotification {
 /** Market depth notification from WebSocket. */
 export interface MarketDepthNotification extends MarketQuoteNotification {
   /** Bidding price along with volume and total number of orders. */
-  buyOffers: MarketOffer[],
+  bids: MarketOffer[],
   /** Offer price with volume and total number of orders. */
-  sellOffers: MarketOffer[],
+  asks: MarketOffer[],
 }
 
 /** Market depth notification from WebSocket. */
@@ -2859,11 +2859,11 @@ function toMarketDataNotification(x: websocket.MarketDataNotification, map: Map<
   var bid = d.bids == null? d.bid : d.bids[0].price;
   var ask = d.asks == null? d.ask : d.asks[0].price;
   return {
-    symbol: s,
-    token:  t,
+    symbol:   s,
+    token:    t,
     name:     s != null? symbolName(s)     : null,
     exchange: s != null? symbolExchange(s) : null,
-    date:   d.tt,
+    date:     d.tt,
     marketStatus: d.marketStat,
     currentPrice: d.ltp / p,
     openPrice:    d.open_price / p,
@@ -2886,13 +2886,13 @@ function toMarketDataNotification(x: websocket.MarketDataNotification, map: Map<
     tradedDate:     d.L2_LTT,
     tradedPrice:    d.ATP / p,
     volume: d.volume,
-    buyQuantity:  Number(d.tot_buy),
-    sellQuantity: Number(d.tot_sell),
-    buyPrice:     bid / p,
-    sellPrice:    ask / p,
-    priceSpread:  (ask - bid) / p,
-    buyOffers:    d.bids == null? null : d.bids.map(x => toMarketOfferL2(x, p)),
-    sellOffers:   d.asks == null? null : d.asks.map(x => toMarketOfferL2(x, p)),
+    bidQuantity: Number(d.tot_buy),
+    askQuantity: Number(d.tot_sell),
+    bidPrice:    bid / p,
+    askPrice:    ask / p,
+    priceSpread: (ask - bid) / p,
+    bids: d.bids == null? null : d.bids.map(x => toMarketOfferL2(x, p)),
+    asks: d.asks == null? null : d.asks.map(x => toMarketOfferL2(x, p)),
   };
 }
 
@@ -3485,7 +3485,7 @@ export async function getMarketQuotes(auth: Authorization, symbols: string[]): P
  * Get the current market depth for a particular symbol.
  * @param auth authorization \{appId, accessToken\}
  * @param symbol symbol name
- * @returns market depth \{buyQuantity, sellQuantity, buyOffers, ...\}
+ * @returns market depth \{bidQuantity, askQuantity, bids, ...\}
  */
 export async function getMarketDepth(auth: Authorization, symbol: string): Promise<MarketDepth> {
   var a = await http.getMarketDepth(fromAuthorization(auth), {symbol, ohlcv_flag: 1});
@@ -3878,7 +3878,7 @@ export class Api implements Authorization {
   /**
    * Get the current market depth for a particular symbol.
    * @param symbol symbol name
-   * @returns market depth \{buyQuantity, sellQuantity, buyOffers, ...\}
+   * @returns market depth \{bidQuantity, askQuantity, bids, ...\}
    */
   getMarketDepth(symbol: string) { return getMarketDepth(this, symbol); }
 
