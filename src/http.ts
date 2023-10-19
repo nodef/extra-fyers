@@ -6,10 +6,14 @@ import {HttpHeaders, HttpRequestOptions, queryString, httpRequestText, httpReque
 // CONSTANTS
 // =========
 
-/** Root URL for API requests. */
-export const API_URL: string = 'https://api.fyers.in/api/v2/';
-/** Root URL for Data API requests. */
-export const DATA_URL: string = 'https://api.fyers.in/data-rest/v2/';
+/** Root URL for API requests (V2). */
+export const APIV2_URL: string = 'https://api.fyers.in/api/v2/';
+/** Root URL for API requests (V3). */
+export const APIV3_URL: string = 'https://api-t1.fyers.in/api/v3/';
+/** Root URL for Data API requests (V2). */
+export const DATAV2_URL: string = 'https://api.fyers.in/data-rest/v2/';
+/** Root URL for Data API requests (V3). */
+export const DATAV3_URL: string = 'https://api-t1.fyers.in/data/';
 /** Root URL for Symbol master files. */
 export const SYMBOLS_URL: string = 'https://public.fyers.in/sym_details/';
 
@@ -67,7 +71,7 @@ export interface LoginStep1Request {
   /** This value must always be “code”. */
   response_type: string,
   /** The same value will be returned after successful login to the redirect uri. */
-  state: string,
+  state?: string,
 }
 
 
@@ -117,12 +121,16 @@ export interface Profile {
   image: string,
   /** PAN of the client. */
   PAN: string,
+  /** Registered mobile number. */
+  mobile_number: string,
   /** Last PIN changed date. */
   pin_change_date: string,
   /** Last password changed date. */
   pwd_change_date: string,
   /** Number of days until the current password expires. */
   pwd_to_expire: number,
+  /** Status of TOTP. */
+  totp: boolean,
 }
 
 
@@ -173,14 +181,22 @@ export interface Holding {
   isin: string,
   /** Eg: NSE:RCOM-EQ. */
   symbol: string,
+  /** The segment in which the holding is taken. */
+  segment: number,
   /** The exchange in which order is placed. */
   exchange: number,
   /** Identify the type of holding. */
   holdingType: string,
   /** The quantity of the symbol which the user has at the beginning of the day. */
   quantity: number,
+  /** Quantity t+1 day. */
+  qty_t1: number,
   /** This reflects the quantity - the quantity sold during the day. */
   remainingQuantity: number,
+  /** Pledged quantity. */
+  collateralQuantity: number,
+  /** Remaining Pledged quantity. */
+  remainingPledgeQuantity: number,
   /** The original buy price of the holding. */
   costPrice: number,
   /** The Market value of the current holding. */
@@ -322,6 +338,8 @@ export interface Position {
   symbol: string,
   /** The segment in which the position is taken. */
   segment: number,
+  /** The exchange in which the position is taken. */
+  exchange: number,
   /** The product type of the position. */
   productType: string,
   /** The side shows whether the position is long / short. */
@@ -346,6 +364,14 @@ export interface Position {
   netAvg: number,
   /** Net qty. */
   netQty: number,
+  /** Carry forward buy quantity. */
+  cfBuyQty: number,
+  /** Carry forward sell quantity. */
+  cfSellQty: number,
+  /** Day forward buy quantity. */
+  dayBuyQty: number,
+  /** Day forward sell quantity. */
+  daySellQty: number,
   /** Average price (netAvg). */
   avgPrice: number,
   /** The total p&l of the position. */
@@ -413,7 +439,7 @@ export interface Trade {
   /** The exchange in which order is placed. */
   exchange: number,
   /** The trade is buy or sell. */
-  transactionType: number,
+  side: number,
   /** The product in which the order was placed. */
   productType: string,
   /** The type of order. */
@@ -428,7 +454,7 @@ export interface Trade {
   tradeValue: number,
   /** Client id. */
   clientId: string,
-  /** ? */
+  /** The unique value to sort the trades. */
   row: number,
 }
 
@@ -503,10 +529,8 @@ export interface ModifyOrderRequest {
   id: string,
   /** The type of order. */
   type: number,
-  /** The original order qty. */
+  /** The updated order qty. */
   qty?: number,
-  /** Disclosed quantity. */
-  disclosedQty?: number,
   /** The limit price for the order. */
   limitPrice?: number,
   /** The stop price for the order. */
@@ -557,6 +581,21 @@ export interface CancelOrdersResponse extends Response {
 export interface ExitPositionRequest {
   /** Mandatory. Eg: NSE:FCONSUMER-EQ-INTRADAY. */
   id: string,
+  /** Close the working orders and then exit the open positions? */
+  pending_orders_cancel?: number,
+}
+
+
+/** Exit all positions request to Fyers. */
+export interface ExitAllPositionsRequest {
+  /** The segment in which the position is taken. */
+  segment: number,
+  /** The product in which the position is taken. */
+  productType: string,
+  /** The side shows whether the position is long / short. */
+  side: number,
+  /** Close the working orders and then exit the open positions? */
+  pending_orders_cancel?: number,
 }
 
 
@@ -583,6 +622,8 @@ export interface ConvertPositionRequest {
   convertFrom: string,
   /** The new product type. */
   convertTo: string,
+  /** If the position to be converted is a carry forward position, then send overnight flag as 1. If the position is taken today, irrespective of its product type, then send overnight flag as 0. */
+  overnight: number,
 }
 
 
@@ -590,6 +631,30 @@ export interface ConvertPositionRequest {
 export interface ConvertPositionResponse extends Response {
   /** Unknown. */
   positionDetails?: number,
+}
+
+
+
+
+// CALCULATE-MARGIN
+// ----------------
+
+/** Calculate margin request? TODO: Verify if this is correct. */
+export interface CalculateMarginRequest {
+  /** The symbol in fyers symbology format for which margin is calculated. Eg: NSE:SBIN-EQ. */
+  symbol: string,
+  /** The type of order. */
+  type: number,
+  /** Calculate margin for buy or sell order. */
+  side: number,
+  /** The product type. */
+  productType: string,
+  /** The quantity of the particular stock. The quantity should be in multiples of lot size for derivatives. */
+  qty: number,
+  /** The limit price to calculate margin. */
+  limitPrice?: number,
+  /** Provide valid price to calculate margin for CO and BO orders. */
+  stopLoss?: number,
 }
 
 
@@ -604,9 +669,9 @@ export interface MarketStatus {
   exchange: number,
   /** The segment in which the position is taken. */
   segment: number,
-  /** The type of market: NL, MS, ES, ... */
+  /** The type of market: NORMAL, SPECIAL, ODD_LOT, AUCTION, CALL_AUCTION2, ... */
   market_type: string,
-  /** Market status: OPEN, CLOSE. */
+  /** Market status: OPEN, CLOSED, PREOPEN, PREOPEN_CLOSED, POSTCLOSE_START, POSTCLOSE_CLOSED. */
   status: string,
 }
 
@@ -800,6 +865,8 @@ export interface MarketDepth {
   ltp: number,
   /** Average traded price. */
   atp: number,
+  /** Minimum price multiplier. */
+  tick_Size: number,
   /** Lower circuit price. */
   lower_ckt: number,
   /** Upper circuit price. */
@@ -894,7 +961,7 @@ export interface EdisTransaction {
 /** e-DIS transaction details response. */
 export interface GetEdisTransactionsResponse extends Response {
   /** List of e-DIS transactions. */
-  data: EdisTransaction[]|string
+  data: EdisTransaction[] | string
 }
 
 
@@ -955,27 +1022,35 @@ export interface InquireEdisTransactionResponse extends Response {
 // REQUEST
 // -------
 
-function requestStep(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): HttpRequestOptions {
+function requestStep(auth: Authorization | null, method: string, path: string, query: object|null, body: object|null): HttpRequestOptions {
   var url  = path + queryString(query);
   var headers: HttpHeaders = {};
   if (auth != null) headers['authorization'] = auth.app_id + ':' + auth.access_token;
   return {url, method, headers, body};
 }
 
-function requestText(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<string> {
+function requestText(auth: Authorization | null, method: string, path: string, query: object|null, body: object|null): Promise<string> {
   return httpRequestText(requestStep(auth, method, path, query, body));
 }
 
-function requestJson(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<object> {
+function requestJson(auth: Authorization | null, method: string, path: string, query: object|null, body: object|null): Promise<object> {
   return httpRequestJson(requestStep(auth, method, path, query, body));
 }
 
-function requestApi(auth: Authorization, method: string, path: string, query: object|null, body: object|null): Promise<Response> {
-  return requestJson(auth, method, API_URL + path, query, body) as Promise<Response>;
+function requestApiV2(auth: Authorization, method: string, path: string, query: object|null, body: object|null): Promise<Response> {
+  return requestJson(auth, method, APIV2_URL + path, query, body) as Promise<Response>;
 }
 
-function requestData(auth: Authorization, method: string, path: string, query: object|null, body: object|null): Promise<Response> {
-  return requestJson(auth, method, DATA_URL + path, query, body) as Promise<Response>;
+function requestApiV3(auth: Authorization, method: string, path: string, query: object|null, body: object|null): Promise<Response> {
+  return requestJson(auth, method, APIV3_URL + path, query, body) as Promise<Response>;
+}
+
+function requestDataV2(auth: Authorization, method: string, path: string, query: object|null, body: object|null): Promise<Response> {
+  return requestJson(auth, method, DATAV2_URL + path, query, body) as Promise<Response>;
+}
+
+function requestDataV3(auth: Authorization, method: string, path: string, query: object|null, body: object|null): Promise<Response> {
+  return requestJson(auth, method, DATAV3_URL + path, query, body) as Promise<Response>;
 }
 
 function requestSymbols(auth: null, method: string, path: string, query: object|null, body: object|null): Promise<string> {
@@ -994,7 +1069,7 @@ function requestSymbols(auth: null, method: string, path: string, query: object|
  * @returns HTTP(s) request options for authorization step 1 (manual)
  */
 export function loginStep1(options: LoginStep1Request): HttpRequestOptions {
-  return requestStep(null, 'GET', API_URL + 'generate-authcode', options, null);
+  return requestStep(null, 'GET', APIV2_URL + 'generate-authcode', options, null);
 }
 
 
@@ -1004,7 +1079,7 @@ export function loginStep1(options: LoginStep1Request): HttpRequestOptions {
  * @returns HTTP(s) request options for authorization step 2 (manual)
  */
 export function loginStep2(options: LoginStep2Request): HttpRequestOptions {
-  return requestStep(null, 'POST', API_URL + 'validate-authcode', null, options);
+  return requestStep(null, 'POST', APIV2_URL + 'validate-authcode', null, options);
 }
 
 
@@ -1019,7 +1094,7 @@ export function loginStep2(options: LoginStep2Request): HttpRequestOptions {
  * @returns details of user's profile \{fy_id, email_id, name, ...\}
  */
 export function getProfile(auth: Authorization): Promise<GetProfileResponse> {
-  return requestApi(auth, 'GET', 'profile', null, null) as Promise<GetProfileResponse>;
+  return requestApiV3(auth, 'GET', 'profile', null, null) as Promise<GetProfileResponse>;
 }
 
 
@@ -1029,7 +1104,7 @@ export function getProfile(auth: Authorization): Promise<GetProfileResponse> {
  * @returns details of user's funds \{fund_limit: [\{id, title, equityAmount, commodityAmount\}]\}
  */
 export function getFunds(auth: Authorization): Promise<GetFundsResponse> {
-  return requestApi(auth, 'GET', 'funds', null, null) as Promise<GetFundsResponse>;
+  return requestApiV3(auth, 'GET', 'funds', null, null) as Promise<GetFundsResponse>;
 }
 
 
@@ -1039,7 +1114,7 @@ export function getFunds(auth: Authorization): Promise<GetFundsResponse> {
  * @returns details of user's holdings \{holdings: \{id, ...\}, overall: \{count_total, ...\}\}
  */
 export function getHoldings(auth: Authorization): Promise<GetHoldingsResponse> {
-  return requestApi(auth, 'GET', 'holdings', null, null) as Promise<GetHoldingsResponse>;
+  return requestApiV3(auth, 'GET', 'holdings', null, null) as Promise<GetHoldingsResponse>;
 }
 
 
@@ -1055,7 +1130,7 @@ export function getHoldings(auth: Authorization): Promise<GetHoldingsResponse> {
  * @returns details of an order \{orderBook: [\{id, exchOrdId, symbol, ...\}]\}
  */
 export function getOrder(auth: Authorization, options: GetOrderRequest): Promise<GetOrdersResponse> {
-  return requestApi(auth, 'GET', 'orders', options, null) as Promise<GetOrdersResponse>;
+  return requestApiV3(auth, 'GET', 'orders', options, null) as Promise<GetOrdersResponse>;
 }
 
 
@@ -1065,7 +1140,7 @@ export function getOrder(auth: Authorization, options: GetOrderRequest): Promise
  * @returns details of orders \{orderBook: [\{id, exchOrdId, symbol, ...\}]\}
  */
 export function getOrders(auth: Authorization): Promise<GetOrdersResponse> {
-  return requestApi(auth, 'GET', 'orders', null, null) as Promise<GetOrdersResponse>;
+  return requestApiV3(auth, 'GET', 'orders', null, null) as Promise<GetOrdersResponse>;
 }
 
 
@@ -1075,7 +1150,7 @@ export function getOrders(auth: Authorization): Promise<GetOrdersResponse> {
  * @returns details of positions \{netPositions: \{id, ...\}, overall: \{count_total, ...\}\}
  */
 export function getPositions(auth: Authorization): Promise<GetPositionsResponse> {
-  return requestApi(auth, 'GET', 'positions', null, null) as Promise<GetPositionsResponse>;
+  return requestApiV3(auth, 'GET', 'positions', null, null) as Promise<GetPositionsResponse>;
 }
 
 
@@ -1085,7 +1160,7 @@ export function getPositions(auth: Authorization): Promise<GetPositionsResponse>
  * @returns details of trades \{tradeBook: [\{id, orderNumber, exchangeOrderNo, ...\}]\}
  */
 export function getTrades(auth: Authorization): Promise<GetTradesResponse> {
-  return requestApi(auth, 'GET', 'tradebook', null, null) as Promise<GetTradesResponse>;
+  return requestApiV3(auth, 'GET', 'tradebook', null, null) as Promise<GetTradesResponse>;
 }
 
 
@@ -1101,7 +1176,7 @@ export function getTrades(auth: Authorization): Promise<GetTradesResponse> {
  * @returns place status \{id\}
  */
 export function placeOrder(auth: Authorization, options: PlaceOrderRequest): Promise<PlaceOrderResponse> {
-  return requestApi(auth, 'POST', 'orders', null, options) as Promise<PlaceOrderResponse>;
+  return requestApiV3(auth, 'POST', 'orders/sync', null, options) as Promise<PlaceOrderResponse>;
 }
 
 
@@ -1112,7 +1187,7 @@ export function placeOrder(auth: Authorization, options: PlaceOrderRequest): Pro
  * @returns place status \{data: [\{statusCode, body: \{id\}, statusDescription\}]\}
  */
 export function placeOrders(auth: Authorization, options: PlaceOrderRequest[]): Promise<PlaceOrdersResponse> {
-  return requestApi(auth, 'POST', 'orders-multi', null, options) as Promise<PlaceOrdersResponse>;
+  return requestApiV3(auth, 'POST', 'multi-order/sync', null, options) as Promise<PlaceOrdersResponse>;
 }
 
 
@@ -1128,7 +1203,7 @@ export function placeOrders(auth: Authorization, options: PlaceOrderRequest[]): 
  * @returns modify status \{id\}
  */
 export function modifyOrder(auth: Authorization, options: ModifyOrderRequest): Promise<ModifyOrderResponse> {
-  return requestApi(auth, 'PUT', 'orders', null, options) as Promise<ModifyOrderResponse>;
+  return requestApiV3(auth, 'PATCH', 'orders/sync', null, options) as Promise<ModifyOrderResponse>;
 }
 
 
@@ -1139,7 +1214,7 @@ export function modifyOrder(auth: Authorization, options: ModifyOrderRequest): P
  * @returns modify status \{data: [\{statusCode, body: \{id\}, statusDescription\}]\}
  */
 export function modifyOrders(auth: Authorization, options: ModifyOrderRequest[]): Promise<ModifyOrdersResponse> {
-  return requestApi(auth, 'PUT', 'orders-multi', null, options) as Promise<ModifyOrdersResponse>;
+  return requestApiV3(auth, 'PATCH', 'multi-order/sync', null, options) as Promise<ModifyOrdersResponse>;
 }
 
 
@@ -1150,7 +1225,7 @@ export function modifyOrders(auth: Authorization, options: ModifyOrderRequest[])
  * @returns cancel status \{id\}
  */
 export function cancelOrder(auth: Authorization, options: CancelOrderRequest): Promise<CancelOrderResponse> {
-  return requestApi(auth, 'DELETE', 'orders', null, options) as Promise<CancelOrderResponse>;
+  return requestApiV3(auth, 'DELETE', 'orders/sync', null, options) as Promise<CancelOrderResponse>;
 }
 
 
@@ -1161,7 +1236,7 @@ export function cancelOrder(auth: Authorization, options: CancelOrderRequest): P
  * @returns cancel status \{data: [\{statusCode, body: \{id\}, statusDescription\}]\}
  */
 export function cancelOrders(auth: Authorization, options: CancelOrderRequest[]): Promise<CancelOrdersResponse> {
-  return requestApi(auth, 'DELETE', 'orders-multi', null, options) as Promise<CancelOrdersResponse>;
+  return requestApiV3(auth, 'DELETE', 'multi-order/sync', null, options) as Promise<CancelOrdersResponse>;
 }
 
 
@@ -1172,7 +1247,7 @@ export function cancelOrders(auth: Authorization, options: CancelOrderRequest[])
  * @returns exit status \{\}
  */
 export function exitPosition(auth: Authorization, options: ExitPositionRequest): Promise<ExitPositionResponse> {
-  return requestApi(auth, 'DELETE', 'positions', null, options) as Promise<ExitPositionResponse>;
+  return requestApiV3(auth, 'DELETE', 'positions', null, options) as Promise<ExitPositionResponse>;
 }
 
 
@@ -1181,8 +1256,8 @@ export function exitPosition(auth: Authorization, options: ExitPositionRequest):
  * @param auth authorization \{app_id, access_token\}
  * @returns exit status \{\}
  */
-export function exitAllPositions(auth: Authorization): Promise<ExitAllPositionsResponse> {
-  return requestApi(auth, 'DELETE', 'positions', null, {}) as Promise<ExitAllPositionsResponse>;
+export function exitAllPositions(auth: Authorization, options: ExitAllPositionsRequest): Promise<ExitAllPositionsResponse> {
+  return requestApiV3(auth, 'DELETE', 'positions', null, options) as Promise<ExitAllPositionsResponse>;
 }
 
 
@@ -1193,7 +1268,18 @@ export function exitAllPositions(auth: Authorization): Promise<ExitAllPositionsR
  * @returns conversion status \{positionDetails\}
  */
 export function convertPosition(auth: Authorization, options: ConvertPositionRequest): Promise<ConvertPositionResponse> {
-  return requestApi(auth, 'PUT', 'positions', null, options) as Promise<ConvertPositionResponse>;
+  return requestApiV3(auth, 'PUT', 'positions', null, options) as Promise<ConvertPositionResponse>;
+}
+
+
+
+
+// MARGIN CALCULATOR
+// -----------------
+
+// TODO: Settle this.
+export function calculateMargin(auth: Authorization, options: CalculateMarginRequest): Promise<void> {
+  return Promise.reject('Not implemented');
 }
 
 
@@ -1208,7 +1294,7 @@ export function convertPosition(auth: Authorization, options: ConvertPositionReq
  * @returns market status \{marketStatus: [\{exchange, segment, market_type, status\}]\}
  */
 export function getMarketStatus(auth: Authorization): Promise<GetMarketStatusResponse> {
-  return requestApi(auth, 'GET', 'market-status', null, null) as Promise<GetMarketStatusResponse>;
+  return requestDataV3(auth, 'GET', 'marketStatus', null, null) as Promise<GetMarketStatusResponse>;
 }
 
 
@@ -1219,7 +1305,7 @@ export function getMarketStatus(auth: Authorization): Promise<GetMarketStatusRes
  * @returns market history \{candles: \[\[time, open, high, low, close, volume\]\]\}
  */
 export function getMarketHistory(auth: Authorization, options: GetMarketHistoryRequest): Promise<GetMarketHistoryResponse> {
-  return requestData(auth, 'GET', 'history/', options, null) as Promise<GetMarketHistoryResponse>;
+  return requestDataV3(auth, 'GET', 'history/', options, null) as Promise<GetMarketHistoryResponse>;
 }
 
 
@@ -1230,7 +1316,7 @@ export function getMarketHistory(auth: Authorization, options: GetMarketHistoryR
  * @returns market quotes \{d: [\{n, s, v: \{ch, chp, lp, spread, ...\}\}]\}
  */
 export function getMarketQuotes(auth: Authorization, options: GetMarketQuotesRequest): Promise<GetMarketQuotesResponse> {
-  return requestData(auth, 'GET', 'quotes/', options, null) as Promise<GetMarketQuotesResponse>;
+  return requestDataV3(auth, 'GET', 'quotes/', options, null) as Promise<GetMarketQuotesResponse>;
 }
 
 
@@ -1241,7 +1327,7 @@ export function getMarketQuotes(auth: Authorization, options: GetMarketQuotesReq
  * @returns market depth \{d: \{<symbol>: \{totalbuyqty, totalsellqty, bids\}\}\}
  */
 export function getMarketDepth(auth: Authorization, options: GetMarketDepthRequest): Promise<GetMarketDepthResponse> {
-  return requestData(auth, 'GET', 'depth/', options, null) as Promise<GetMarketDepthResponse>;
+  return requestDataV3(auth, 'GET', 'depth/', options, null) as Promise<GetMarketDepthResponse>;
 }
 
 
@@ -1268,7 +1354,7 @@ export function getSymbolMaster(auth: null, options: GetSymbolMasterRequest): Pr
  * @returns optional data \{data\}
  */
 export function generateEdisTpin(auth: Authorization): Promise<GenerateEdisTpinResponse> {
-  return requestApi(auth, 'GET', 'tpin', null, null) as Promise<GenerateEdisTpinResponse>;
+  return requestApiV2(auth, 'GET', 'tpin', null, null) as Promise<GenerateEdisTpinResponse>;
 }
 
 
@@ -1278,7 +1364,7 @@ export function generateEdisTpin(auth: Authorization): Promise<GenerateEdisTpinR
  * @returns list of e-DIS transactions \{data: [\{transactionId, internalTxnId, ...\}]\}
  */
 export function getEdisTransactions(auth: Authorization): Promise<GetEdisTransactionsResponse> {
-  return requestApi(auth, 'GET', 'details', null, null) as Promise<GetEdisTransactionsResponse>;
+  return requestApiV2(auth, 'GET', 'details', null, null) as Promise<GetEdisTransactionsResponse>;
 }
 
 
@@ -1289,7 +1375,7 @@ export function getEdisTransactions(auth: Authorization): Promise<GetEdisTransac
  * @returns HTTP(s) request options (manual)
  */
 export function submitEdisHoldingsStep(auth: Authorization, options: SubmitEdisHoldingsRequest): HttpRequestOptions {
-  return requestStep(auth, 'POST', 'index', null, options);
+  return requestStep(auth, 'POST', APIV2_URL + 'index', null, options);
 }
 
 
@@ -1300,5 +1386,5 @@ export function submitEdisHoldingsStep(auth: Authorization, options: SubmitEdisH
  * @returns edis status \{FAILED_CNT, SUCEESS_CNT\}
  */
 export function inquireEdisTransaction(auth: Authorization, options: InquireEdisTransactionRequest): Promise<InquireEdisTransactionResponse> {
-  return requestApi(auth, 'POST', 'inquiry', null, options) as Promise<InquireEdisTransactionResponse>;
+  return requestApiV2(auth, 'POST', 'inquiry', null, options) as Promise<InquireEdisTransactionResponse>;
 }
