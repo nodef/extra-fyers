@@ -1,9 +1,9 @@
-import exclude from "rollup-plugin-exclude-dependencies-from-bundle";
-import alias from "@rollup/plugin-alias";
-import resolve from "@rollup/plugin-node-resolve";
-import commonjs from "@rollup/plugin-commonjs";
-import cleanup from "rollup-plugin-cleanup";
-import dts from "rollup-plugin-dts";
+const exclude  = require('rollup-plugin-exclude-dependencies-from-bundle');
+const alias    = require('@rollup/plugin-alias').default;
+const resolve  = require('@rollup/plugin-node-resolve').default;
+const commonjs = require('@rollup/plugin-commonjs').default;
+const cleanup  = require('rollup-plugin-cleanup');
+const dts      = require('rollup-plugin-dts').default;
 
 
 const E       = process.env;
@@ -14,7 +14,7 @@ const entries = !/web/i.test(E.TYPE)? [] : [
 const skip = ["ws"];
 
 
-export default [{
+module.exports = [{
   input: ".build/index.d.ts",
   output: {
     file: "index.d.ts",

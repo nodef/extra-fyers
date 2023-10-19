@@ -7,6 +7,9 @@ on:
     tags:
       - '!*'  # Do not execute on tags
 env:
+  NAME:  ${{vars.NAME}}
+  EMAIL: ${{vars.EMAIL}}
+  NPM_TOKEN:    ${{secrets.NPM_TOKEN}}
   GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
   CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
   FORCE_COLOR: 1
@@ -17,12 +20,12 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest, windows-latest, macOS-latest]
-        node: [16.x, 18.x]
+        node: [16.x, 18.x, 20.x]
     name: Test with Node ${{matrix.node}} on ${{matrix.platform}}
     runs-on: ${{matrix.platform}}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{matrix.node}}
       - run: npm ci
@@ -34,10 +37,10 @@ jobs:
   #   needs: [test]
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: actions/setup-node@v2
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v3
   #       with:
-  #         node-version: 18.x
+  #         node-version: 20.x
   #     - run: npm ci
   #     - run: npm test
   #     - uses: paambaati/codeclimate-action@v3.0.0
@@ -51,14 +54,11 @@ jobs:
     needs: [test]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
         with:
-          submodules: 'recursive'
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 18.x
-      - run: git clone https://${GITHUB_TOKEN}@github.com/nodef/deploy "$HOME/deploy"
-      - run: bash "$HOME/deploy/setup.sh"
+          node-version: 20.x
+      - uses: nodef/git-config.action@v1.0.0
       - run: npm i -g typescript typedoc
       - run: npm ci
       - run: npm run publish-docs
@@ -69,14 +69,13 @@ jobs:
     needs: [test]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
         with:
-          submodules: 'recursive'
-      - uses: actions/setup-node@v2
+          node-version: 20.x
+      - uses: nodef/npm-config.action@v1.0.0
         with:
-          node-version: 18.x
-      - run: git clone https://${GITHUB_TOKEN}@github.com/nodef/deploy "$HOME/deploy"
-      - run: bash "$HOME/deploy/setup.sh"
+          entries: access = public
       - run: npm i -g typescript rollup typedoc browserify terser
       - run: npm ci
       - run: npm run publish-packages
