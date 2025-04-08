@@ -209,7 +209,7 @@ main();
 [![](https://img.youtube.com/vi/AGCC-_Cuhhw/maxresdefault.jpg)](https://www.youtube.com/watch?v=AGCC-_Cuhhw)
 [![ORG](https://img.shields.io/badge/org-nodef-green?logo=Org)](https://nodef.github.io)
 [![DOI](https://zenodo.org/badge/459926913.svg)](https://zenodo.org/badge/latestdoi/459926913)
-
+![](https://ga-beacon.deno.dev/G-RC63DPBH3P:SH3Eq-NoQ9mwgYeHWxu7cw/github.com/nodef/extra-fyers)
 
 [exchangeDescription]: https://nodef.github.io/extra-fyers/functions/exchangeDescription.html
 [exchange]: https://nodef.github.io/extra-fyers/functions/exchange.html
