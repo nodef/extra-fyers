@@ -1,41 +1,46 @@
-import {WebSocket} from "./_websocket";
-import {Response, Authorization} from "./http";
-export {Response, Authorization} from "./http";
+import type {Response, Authorization} from "./http.ts";
+export type {Response, Authorization} from "./http.ts";
 
 
 
 
-// CONSTANTS
-// =========
+//#region CONSTANTS
+//=================
 
 /** Root URL for Market data notifications. */
-export const MARKET_DATA_URL: string  = "wss://api.fyers.in/socket/v2/dataSock";
+export const MARKET_DATA_URL:  string = "wss://api.fyers.in/socket/v2/dataSock";
+
 /** Root URL for Order update notifications. */
 export const ORDER_UPDATE_URL: string = "wss://api.fyers.in/socket/v2/orderSock";
+
 /** Base query string for Market data notifications. */
-const MARKET_DATA_QUERY:string  = "user-agent=fyers-api&type=symbolUpdate";
+const MARKET_DATA_QUERY:  string = "user-agent=fyers-api&type=symbolUpdate";
+
 /** Base query string for Order update notifications. */
-const ORDER_UPDATE_QUERY:string = "user-agent=fyers-api&type=orderUpdate";
+const ORDER_UPDATE_QUERY: string = "user-agent=fyers-api&type=orderUpdate";
+
 /** Ping interval on the WebSocket connection. */
 const PING_INTERVAL: number = 5000;
+//#endregion
 
 
 
 
-// TYPES
-// =====
+//#region TYPES
+//=============
 
-// NOTIFICATION
-// ------------
+//#region NOTIFICATION
+//--------------------
 
 /** Common notification format. */
 export type Notification = Response;
+//#endregion
 
 
 
 
-// ORDER-UPDATE
-// ------------
+//#region ORDER-UPDATE
+//--------------------
 
 /** Update for order placed by the user in the current trading day. */
 export interface OrderUpdate {
@@ -99,23 +104,25 @@ export interface OrderUpdateNotification extends Notification {
   /** Data for the notification. */
   d?: OrderUpdate,
 }
+//#endregion
 
 
 
 
-// MARKET-DATA HEADER
-// ------------------
+//#region MARKET-DATA HEADER
+//--------------------------
 
 /** Size of header in binary message. */
 const HEADER_SIZE   = 24;
+
 /** Offset of header in binary message. */
-const HEADER_OFFSET = 0;
+const _HEADER_OFFSET = 0;
 
 
 /** Header for each binary message. */
 export interface Header {
   /** Fytoken is a unique identifier for every symbol. */
-  token: BigInt,
+  token: bigint,
   /** Timestamp sent by exchange (UNIX epoch). */
   tt: number,
   /** 7202: OI data (NSE FO/CD, MCX), 7207/7208: NSE, BSE (indices/data), 31038: MCX. */
@@ -129,7 +136,8 @@ export interface Header {
 }
 
 
-function toHeader(x: DataView, i: number): Header {
+/** Convert binary data to header. */
+function _toHeader(x: DataView, i: number): Header {
   return {
     token:       x.getBigUint64(i + 0),
     tt:          x.getUint32(i + 8),
@@ -140,6 +148,8 @@ function toHeader(x: DataView, i: number): Header {
   };
 }
 
+
+/** Write header to binary data. */
 function writeHeader(a: Header, x: DataView, i: number): void {
   a.token      = x.getBigUint64(i + 0);
   a.tt         = x.getUint32(i + 8);
@@ -148,17 +158,18 @@ function writeHeader(a: Header, x: DataView, i: number): void {
   a.pktlen     = x.getUint16(i + 16);
   a.L2         = x.getUint8(i + 18);
 }
+//#endregion
 
 
 
 
-// MARKET-DATA OI-DATA
-// -------------------
+//#region MARKET-DATA OI-DATA
+//---------------------------
 
 /** Size of OI data in binary message. */
-const OI_DATA_SIZE   = 8;
+const _OI_DATA_SIZE   = 8;
 /** Offset of OI data in binary message. */
-const OI_DATA_OFFSET = HEADER_SIZE;
+const _OI_DATA_OFFSET = HEADER_SIZE;
 
 /** Open interest data (fyCode === 7202). */
 export interface OiData {
@@ -169,6 +180,7 @@ export interface OiData {
 }
 
 
+/** Convert binary data to OI data. */
 function toOiData(x: DataView, i: number): OiData {
   return {
     oi:   x.getUint32(i + 0),
@@ -176,21 +188,25 @@ function toOiData(x: DataView, i: number): OiData {
   };
 }
 
+
+/** Write OI data to binary data. */
 function writeOiData(a: CommonData, x: DataView, i: number): void {
   a.oi   = BigInt(x.getUint32(i + 0));
   a.pdoi = BigInt(x.getUint32(i + 4));
 }
+//#endregion
 
 
 
 
-// MARKET-DATA COMMON-DATA
-// -----------------------
+//#region MARKET-DATA COMMON-DATA
+//-------------------------------
 
 /** Size of common data in binary message. */
 const COMMON_DATA_SIZE = 64;
+
 /** Offset of common data in binary message. */
-const COMMON_DATA_OFFSET = HEADER_SIZE;
+const _COMMON_DATA_OFFSET = HEADER_SIZE;
 
 /** Common data (fyCode !== 7202). */
 export interface CommonData {
@@ -215,14 +231,15 @@ export interface CommonData {
   /** Close price (1 minute). */
   c: number,
   /** Volume (1 minute). */
-  v: BigInt,
+  v: bigint,
   /** Open interest. */
-  oi: BigInt,
+  oi: bigint,
   /** Previous day open interest. */
-  pdoi: BigInt,
+  pdoi: bigint,
 }
 
 
+/** Convert binary data to common data. */
 function toCommonData(x: DataView, i: number, hasOi: boolean): CommonData {
   return {
     price_conv: x.getUint32(i + 0),
@@ -241,6 +258,8 @@ function toCommonData(x: DataView, i: number, hasOi: boolean): CommonData {
   };
 }
 
+
+/** Write common data to binary data. */
 function writeCommonData(a: CommonData, x: DataView, i: number, hasOi: boolean): void {
   a.price_conv = x.getUint32(i + 0);
   a.ltp        = x.getUint32(i + 4);
@@ -257,17 +276,19 @@ function writeCommonData(a: CommonData, x: DataView, i: number, hasOi: boolean):
   a.oi   = x.getBigUint64(i + 48);
   a.pdoi = x.getBigUint64(i + 56);
 }
+//#endregion
 
 
 
 
-// MARKET-DATA L1-DATA
-// -------------------
+//#region MARKET-DATA L1-DATA
+//---------------------------
 
 /** Minimum size of L1 data in binary message. */
 const L1_DATA_SIZE   = 32;
+
 /** Offset of L1 data in binary message. */
-const L1_DATA_OFFSET = HEADER_SIZE + COMMON_DATA_SIZE;
+const _L1_DATA_OFFSET = HEADER_SIZE + COMMON_DATA_SIZE;
 
 /** Additional data (fyCode === 7208, 31038). */
 export interface L1Data {
@@ -280,9 +301,9 @@ export interface L1Data {
   /** Today's volume. */
   volume: number,
   /** Total buy quantity. */
-  tot_buy: BigInt,
+  tot_buy: bigint,
   /** Total sell quantity. */
-  tot_sell: BigInt,
+  tot_sell: bigint,
   /** Highest bid price. */
   bid: number,
   /** Lowest ask price. */
@@ -314,12 +335,13 @@ function writeL1Data(a: L1Data, x: DataView, i: number, bidAsk: boolean): void {
   a.bid = x.getUint32(i + 32);
   a.ask = x.getUint32(i + 36);
 }
+//#endregion
 
 
 
 
-// MARKET-DATA L2-DATA
-// -------------------
+//#region MARKET-DATA L2-DATA
+//---------------------------
 
 /** Open buy/sell orders at a particular price (L2 === 1). */
 export interface L2MarketOffer {
@@ -333,19 +355,21 @@ export interface L2MarketOffer {
 
 
 /** Size of L2 data in binary message. */
-const L2_DATA_SIZE   = 120;
+const _L2_DATA_SIZE   = 120;
+
 /** Offset of L1 data in binary message. */
-const L2_DATA_OFFSET = HEADER_SIZE + COMMON_DATA_SIZE + L1_DATA_SIZE;
+const _L2_DATA_OFFSET = HEADER_SIZE + COMMON_DATA_SIZE + L1_DATA_SIZE;
 
 /** Market depth data, 5 rows (L2 === 1). */
 export interface L2Data {
   /** Bidding price along with volume and total number of orders. */
-  bids: L2MarketOffer[],
+  bids: L2MarketOffer[] | null,
   /** Offer price with volume and total number of orders. */
-  asks: L2MarketOffer[],
+  asks: L2MarketOffer[] | null,
 }
 
 
+/** Convert binary data to L2 market offer. */
 function toL2MarketOffer(x: DataView, i: number): L2MarketOffer {
   return {
     price:  x.getUint32(i + 0),
@@ -354,30 +378,35 @@ function toL2MarketOffer(x: DataView, i: number): L2MarketOffer {
   };
 }
 
+
+/** Write L2 market offer to binary data. */
 function toL2Data(x: DataView, i: number): L2Data {
-  var bids = [], asks = [];
-  for (var j = 0; j < 60; j += 12) {
+  const bids = [], asks = [];
+  for (let j = 0; j < 60; j += 12) {
     bids.push(toL2MarketOffer(x, i + j));
     asks.push(toL2MarketOffer(x, i + j + 60));
   }
   return {bids, asks};
 }
 
+
+/** Write L2 data to binary data. */
 function writeL2Data(a: L2Data, x: DataView, i: number): void {
-  var bids = [], asks = [];
-  for (var j = 0; j < 60; j += 12) {
+  const bids = [], asks = [];
+  for (let j = 0; j < 60; j += 12) {
     bids.push(toL2MarketOffer(x, i + j));
     asks.push(toL2MarketOffer(x, i + j + 60));
   }
   a.bids = bids;
   a.asks = asks;
 }
+//#endregion
 
 
 
 
-// MARKET-DATA
-// -----------
+//#region MARKET-DATA
+//-------------------
 
 /** Split Market data (oi/quote/depth) for symbols subscribed by the user. */
 interface SplitMarketData extends Header {
@@ -395,11 +424,12 @@ interface SplitMarketData extends Header {
 export interface MarketData extends Header, CommonData, L1Data, L2Data {}
 
 
-function toSplitMarketData(x: DataView, i: number): SplitMarketData {
-  var fyCode = x.getUint16(i + 12);
-  var L2     = x.getUint8(i + 18);
-  var hasOi  = fyCode === 7202 || fyCode === 31038;
-  var l1Off  = hasOi? 88 : 72;
+/** Convert binary data to split market data. */
+function _toSplitMarketData(x: DataView, i: number): SplitMarketData {
+  const fyCode = x.getUint16(i + 12);
+  const L2     = x.getUint8(i + 18);
+  const hasOi  = fyCode === 7202 || fyCode === 31038;
+  const l1Off  = hasOi? 88 : 72;
   return {
     token:       x.getBigUint64(i + 0),
     tt:          x.getUint32(i + 8),
@@ -414,18 +444,22 @@ function toSplitMarketData(x: DataView, i: number): SplitMarketData {
   };
 }
 
+
+/** Write split market data to binary data. */
 function writeMarketData(a: MarketData, x: DataView, i: number): void {
   writeHeader(a, x, i + 0);
-  var hasOi = a.fyCode === 7202 || a.fyCode === 31038;
-  var l1Off = hasOi? 88 : 72;
+  const hasOi = a.fyCode === 7202 || a.fyCode === 31038;
+  const l1Off = hasOi? 88 : 72;
   if (a.fyCode === 7202) writeOiData(a, x, i + 24);
   else writeCommonData(a, x, i + 24, hasOi);
   if (a.fyCode === 7208 || a.fyCode === 31038) writeL1Data(a, x, i + l1Off, a.L2 !== 1);
   if (a.L2 === 1) writeL2Data(a, x, i + l1Off + 32);
 }
 
+
+/** Convert binary data to market data. */
 function toMarketData(x: DataView, i: number): MarketData {
-  var a: MarketData = {
+  const a: MarketData = {
     // HEADER
     token: BigInt(0),
     tt: 0,
@@ -470,12 +504,14 @@ export interface MarketDataNotification extends Notification {
   /** Data for the notification. */
   d?: MarketData,
 }
+//#endregion
+//#endregion
 
 
 
 
-// FUNCTIONS
-// =========
+//#region FUNCTIONS
+//=================
 
 /**
  * Notified function.
@@ -498,8 +534,8 @@ export type OnMarketDataNotification = (notification: MarketDataNotification) =>
 
 
 
-// WEB-CHANNEL
-// -----------
+//#region WEB-CHANNEL
+//-------------------
 
 /** Handler for reciever which has passed (resolved). */
 export type OnResolve = (response: Response) => void;
@@ -529,12 +565,13 @@ export class Connection extends WebSocket {
 function waitResponse(conn: Connection): Promise<Response> {
   return new Promise((resolve, reject) => conn.recievers.push({resolve, reject}));
 }
+//#endregion
 
 
 
 
-// ORDER-UPDATE
-// ------------
+//#region ORDER-UPDATE
+//--------------------
 
 /**
  * Connect to Order update URL with WebSocket.
@@ -544,27 +581,27 @@ function waitResponse(conn: Connection): Promise<Response> {
  */
 export function connectOrderUpdate(auth: Authorization, fn: OnOrderUpdateNotification): Promise<Connection> {
   return new Promise((resolve, reject) => {
-    var {app_id, access_token} = auth;
-    var query = `${ORDER_UPDATE_QUERY}&access_token=${app_id}:${access_token}`;
-    var conn  = new Connection(`${ORDER_UPDATE_URL}?${query}`);
-    var ping  = setInterval(() => {
+    const {app_id, access_token} = auth;
+    const query = `${ORDER_UPDATE_QUERY}&access_token=${app_id}:${access_token}`;
+    const conn  = new Connection(`${ORDER_UPDATE_URL}?${query}`);
+    const ping  = setInterval(() => {
       if (conn.readyState !== WebSocket.OPEN) return;
       conn.send("ping");
     }, PING_INTERVAL);
     conn.binaryType = "arraybuffer";
     conn.onerror = e => {
-      for (var r of conn.recievers)
-        r.reject(e.error);
+      for (const r of conn.recievers)
+        r.reject((e as ErrorEvent).error);
       clearInterval(ping);
-      reject(e.error);
+      reject((e as ErrorEvent).error);
     };
     conn.onopen = () => resolve(conn);
     conn.onmessage = e => {
       if (typeof e.data !== "string") return;
       if (e.data === "pong") return;
-      var x = JSON.parse(e.data); fn(x);
-      if (x.hasOwnProperty("d") || x.code === 0) return;
-      if (conn.recievers.length > 0) conn.recievers.shift().resolve(x);
+      const x = JSON.parse(e.data); fn(x);
+      if (x["d"] != null || x.code === 0) return;
+      if (conn.recievers.length > 0) (conn.recievers.shift() as Reciever).resolve(x);
   };
   });
 }
@@ -575,7 +612,7 @@ export function connectOrderUpdate(auth: Authorization, fn: OnOrderUpdateNotific
  * @param conn websocket connection
  */
 export function subscribeOrderUpdate(conn: Connection): Promise<Response> {
-  var req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 1};
+  const req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 1};
   conn.send(JSON.stringify(req));
   return waitResponse(conn);
 }
@@ -586,16 +623,17 @@ export function subscribeOrderUpdate(conn: Connection): Promise<Response> {
  * @param conn websocket connection
  */
 export function unsubscribeOrderUpdate(conn: Connection): Promise<Response> {
-  var req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 0};
+  const req = {T: "SUB_ORD", SLIST: ["orderUpdate"], SUB_T: 0};
   conn.send(JSON.stringify(req));
   return waitResponse(conn);
 }
+//#endregion
 
 
 
 
-// MARKET-DATA
-// -----------
+//#region MARKET-DATA
+//-------------------
 
 /**
  * Connect to Market data URL with WebSocket.
@@ -605,30 +643,30 @@ export function unsubscribeOrderUpdate(conn: Connection): Promise<Response> {
  */
 export function connectMarketData(auth: Authorization, fn: OnMarketDataNotification): Promise<Connection> {
   return new Promise((resolve, reject) => {
-    var {app_id, access_token} = auth;
-    var query = `${MARKET_DATA_QUERY}&access_token=${app_id}:${access_token}`;
-    var conn  = new Connection(`${MARKET_DATA_URL}?${query}`);
-    var ping  = setInterval(() => {
+    const {app_id, access_token} = auth;
+    const query = `${MARKET_DATA_QUERY}&access_token=${app_id}:${access_token}`;
+    const conn  = new Connection(`${MARKET_DATA_URL}?${query}`);
+    const ping  = setInterval(() => {
       if (conn.readyState !== WebSocket.OPEN) return;
       conn.send("ping");
     }, PING_INTERVAL);
     conn.binaryType = "arraybuffer";
     conn.onerror = e => {
-      for (var r of conn.recievers)
-        r.reject(e.error);
+      for (const r of conn.recievers)
+        r.reject((e as ErrorEvent).error);
       clearInterval(ping);
-      reject(e.error);
+      reject((e as ErrorEvent).error);
     };
     conn.onopen = () => resolve(conn);
     conn.onmessage = e => {
       if (typeof e.data === "string") {
         if (e.data === "pong") return;
-        var x = JSON.parse(e.data); fn(x);
-        if (x.hasOwnProperty("d") || x.code === 0) return;
-        if (conn.recievers.length > 0) conn.recievers.shift().resolve(x);
+        const x = JSON.parse(e.data); fn(x);
+        if (x["d"] != null || x.code === 0) return;
+        if (conn.recievers.length > 0) (conn.recievers.shift() as Reciever).resolve(x);
       }
       else {
-        var binary = new DataView(e.data as ArrayBuffer);
+        const binary = new DataView(e.data as ArrayBuffer);
         fn({s: "ok", d: toMarketData(binary, 0)});
       }
     };
@@ -642,7 +680,7 @@ export function connectMarketData(auth: Authorization, fn: OnMarketDataNotificat
  * @param symbols list of symbols
  */
 export function subscribeMarketQuote(conn: Connection, symbols: string[]): Promise<Response> {
-  var req = {T: "SUB_DATA", TLIST: symbols, SUB_T: 1};
+  const req = {T: "SUB_DATA", TLIST: symbols, SUB_T: 1};
   conn.send(JSON.stringify(req));
   return waitResponse(conn);
 }
@@ -654,7 +692,7 @@ export function subscribeMarketQuote(conn: Connection, symbols: string[]): Promi
  * @param symbols list of symbols
  */
 export function subscribeMarketDepth(conn: Connection, symbols: string[]): Promise<Response> {
-  var req = {T: "SUB_L2", L2LIST: symbols, SUB_T: 1};
+  const req = {T: "SUB_L2", L2LIST: symbols, SUB_T: 1};
   conn.send(JSON.stringify(req));
   return waitResponse(conn);
 }
@@ -666,7 +704,7 @@ export function subscribeMarketDepth(conn: Connection, symbols: string[]): Promi
  * @param symbols list of symbols
  */
 export function unsubscribeMarketQuote(conn: Connection, symbols: string[]): Promise<Response> {
-  var req = {T: "SUB_DATA", TLIST: symbols, SUB_T: 0};
+  const req = {T: "SUB_DATA", TLIST: symbols, SUB_T: 0};
   conn.send(JSON.stringify(req));
   return waitResponse(conn);
 }
@@ -678,7 +716,9 @@ export function unsubscribeMarketQuote(conn: Connection, symbols: string[]): Pro
  * @param symbols list of symbols
  */
 export function unsubscribeMarketDepth(conn: Connection, symbols: string[]): Promise<Response> {
-  var req = {T: "SUB_L2", L2LIST: symbols, SUB_T: 0};
+  const req = {T: "SUB_L2", L2LIST: symbols, SUB_T: 0};
   conn.send(JSON.stringify(req));
   return waitResponse(conn);
 }
+//#endregion
+//#endregion

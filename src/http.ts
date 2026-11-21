@@ -1,26 +1,34 @@
-import {HttpHeaders, HttpRequestOptions, queryString, httpRequestText, httpRequestJson} from './_http';
+import {
+  type HttpHeaders,
+  type HttpRequestOptions,
+  queryString,
+  httpRequestText,
+  httpRequestJson,
+} from "./_http.ts";
 
 
 
 
-// CONSTANTS
-// =========
+//#region CONSTANTS
+//=================
 
 /** Root URL for API requests. */
-export const API_URL: string = 'https://api.fyers.in/api/v2/';
+export const API_URL: string = "https://api.fyers.in/api/v2/";
+
 /** Root URL for Data API requests. */
-export const DATA_URL: string = 'https://api.fyers.in/data-rest/v2/';
+export const DATA_URL: string = "https://api.fyers.in/data-rest/v2/";
+
 /** Root URL for Symbol master files. */
-export const SYMBOLS_URL: string = 'https://public.fyers.in/sym_details/';
+export const SYMBOLS_URL: string = "https://public.fyers.in/sym_details/";
+//#endregion
 
 
 
+//#region TYPES
+//=============
 
-// TYPES
-// =====
-
-// RESPONSE
-// --------
+//#region RESPONSE
+//----------------
 
 /** Common response format. */
 export interface Response {
@@ -42,12 +50,13 @@ export interface ProxyResponse<Body> {
   /** HTTP status description. */
   statusDescription: string,
 }
+//#endregion
 
 
 
 
-// LOGIN
-// -----
+//#region LOGIN
+//-------------
 
 /** Attributes required for authorization of all requests. */
 export interface Authorization {
@@ -96,12 +105,13 @@ export interface LoginStep2Response extends Response {
   /** This value will be used for all the subsequent requests. */
   access_token: string,
 }
+//#endregion
 
 
 
 
-// GET-PROFILE
-// -----------
+//#region GET-PROFILE
+//-------------------
 
 /** Basic details of the client. */
 export interface Profile {
@@ -131,12 +141,13 @@ export interface GetProfileResponse extends Response {
   /** Basic details of the client. */
   data: Profile,
 }
+//#endregion
 
 
 
 
-// GET-FUNDS
-// ---------
+//#region GET-FUNDS
+//-----------------
 
 /** Limit details for particular fund. */
 export interface FundLimit {
@@ -156,12 +167,13 @@ export interface GetFundsResponse extends Response {
   /** Balance available for the user for capital as well as the commodity market. */
   fund_limit: FundLimit[],
 }
+//#endregion
 
 
 
 
-// GET-HOLDINGS
-// ------------
+//#region GET-HOLDINGS
+//--------------------
 
 /** Details of each equity or mutual fund holding. */
 export interface Holding {
@@ -214,12 +226,13 @@ export interface GetHoldingsResponse extends Response {
   /** Overall status of holdings in this demat account. */
   overall: HoldingsOverall,
 }
+//#endregion
 
 
 
 
-// GET-ORDERS
-// ----------
+//#region GET-ORDERS
+//------------------
 
 /** Order placed by the user in the current trading day. */
 export interface Order {
@@ -305,12 +318,13 @@ export interface GetOrdersResponse extends Response {
   /** List of all orders places during the day. */
   orderBook: Order[],
 }
+//#endregion
 
 
 
 
-// GET-POSITIONS
-// -------------
+//#region GET-POSITIONS
+//---------------------
 
 /** Current open/closed position for the current trading day. */
 export interface Position {
@@ -387,12 +401,13 @@ export interface GetPositionsResponse extends Response {
   /** Overall status of positions for the current trading day. */
   overall: PositionsOverall,
 }
+//#endregion
 
 
 
 
-// GET-TRADES
-// ----------
+//#region GET-TRADES
+//------------------
 
 /** Trade in the current trading day. */
 export interface Trade {
@@ -438,12 +453,13 @@ export interface GetTradesResponse extends Response {
    /** List of all trades for the current trading day. */
   tradeBook: Trade[]
 }
+//#endregion
 
 
 
 
-// PLACE-ORDER
-// -----------
+//#region PLACE-ORDER
+//-------------------
 
 /** Place order request to an exchange via Fyers. */
 export interface PlaceOrderRequest {
@@ -490,12 +506,13 @@ export interface PlaceOrdersResponse extends Response {
   /** List of HTTP data for each order. */
   data: ProxyResponse<PlaceOrderResponse>[]
 }
+//#endregion
 
 
 
 
-// MODIFY-ORDER
-// ------------
+//#region MODIFY-ORDER
+//--------------------
 
 /** Modify order request to Fyers. */
 export interface ModifyOrderRequest {
@@ -523,12 +540,13 @@ export interface ModifyOrdersResponse extends Response {
   /** List of HTTP data for each order. */
   data: ProxyResponse<ModifyOrderResponse>[],
 }
+//#endregion
 
 
 
 
-// CANCEL-ORDER
-// ------------
+//#region CANCEL-ORDER
+//---------------------
 
 /** Cancel order request to any exchange via Fyers. */
 export interface CancelOrderRequest {
@@ -546,12 +564,13 @@ export interface CancelOrdersResponse extends Response {
   /** List of HTTP data for each order. */
   data: ProxyResponse<CancelOrderResponse>[]
 }
+//#endregion
 
 
 
 
-// EXIT-POSITION
-// -------------
+//#region EXIT-POSITION
+//---------------------
 
 /** Exit position request to Fyers. */
 export interface ExitPositionRequest {
@@ -564,12 +583,13 @@ export interface ExitPositionRequest {
 export interface ExitAllPositionsResponse extends Response {}
 /** Exit position response. */
 export interface ExitPositionResponse extends Response {}
+//#endregion
 
 
 
 
-// CONVERT-POSITION
-// ----------------
+//#region CONVERT-POSITION
+//------------------------
 
 /** Convert position request to Fyers. */
 export interface ConvertPositionRequest {
@@ -591,14 +611,15 @@ export interface ConvertPositionResponse extends Response {
   /** Unknown. */
   positionDetails?: number,
 }
+//#endregion
 
 
 
 
-// GET-MARKET-STATUS
-// -----------------
+//#region GET-MARKET-STATUS
+//-------------------------
 
-/** Current market status of an exchange's segment. */
+/** Current market status of an exchange"s segment. */
 export interface MarketStatus {
   /** The exchange in which the position is taken. */
   exchange: number,
@@ -616,12 +637,13 @@ export interface GetMarketStatusResponse extends Response {
   /** List of statuses of various markets. */
   marketStatus: MarketStatus[],
 }
+//#endregion
 
 
 
 
-// GET-MARKET-HISTORY
-// ------------------
+//#region GET-MARKET-HISTORY
+//--------------------------
 
 /** Market history request for a symbol. */
 export interface GetMarketHistoryRequest {
@@ -649,12 +671,13 @@ export interface GetMarketHistoryResponse extends Response {
   /** List of short candles. */
   candles: ShortCandle[],
 }
+//#endregion
 
 
 
 
-// GET-MARKET-QUOTES
-// -----------------
+//#region GET-MARKET-QUOTES
+//-------------------------
 
 /** Market quotes request for one or more symbols. */
 export interface GetMarketQuotesRequest {
@@ -686,7 +709,7 @@ export interface Candle {
 export interface MarketQuoteDetails {
   /** Change value. */
   ch: number,
-  /** Percentage of change between the current value and the previous day's market close. */
+  /** Percentage of change between the current value and the previous day"s market close. */
   chp: number,
   /** Last traded price. */
   lp: number,
@@ -741,12 +764,13 @@ export interface GetMarketQuotesResponse extends Response {
   /** List of all market quotes. */
   d: MarketQuote[]
 }
+//#endregion
 
 
 
 
-// GET-MARKET-DEPTH
-// ----------------
+//#region GET-MARKET-DEPTH
+//------------------------
 
 /** Market depth details request. */
 export interface GetMarketDepthRequest {
@@ -788,7 +812,7 @@ export interface MarketDepth {
   c?: number,
   /** Volume traded. */
   v?: number,
-  /** Percentage of change between the current value and the previous day's market close. */
+  /** Percentage of change between the current value and the previous day"s market close. */
   chp: number,
   /** Change value. */
   ch: number,
@@ -822,12 +846,13 @@ export interface GetMarketDepthResponse extends Response {
   /** Dictionary of all market depth details. */
   d: { [symbol: string]: MarketDepth }
 }
+//#endregion
 
 
 
 
-// GET-SYMBOL-MASTER
-// -----------------
+//#region GET-SYMBOL-MASTER
+//-------------------------
 
 /** Symbol category of master file request. */
 export interface GetSymbolMasterRequest {
@@ -836,24 +861,26 @@ export interface GetSymbolMasterRequest {
   /** The segment whose symbols are needed (CM, FO, CD, COM). */
   segment: string,
 }
+//#endregion
 
 
 
 
-// GENERATE-EDIS-TPIN
-// ------------------
+//#region GENERATE-EDIS-TPIN
+//--------------------------
 
 /** e-DIS TPIN generation reponse. */
 export interface GenerateEdisTpinResponse extends Response {
   /** Unknown, seen to be empty. */
   data: string
 }
+//#endregion
 
 
 
 
-// GET-EDIS-TRANSACTIONS
-// ---------------------
+//#region GET-EDIS-TRANSACTIONS
+//-----------------------------
 
 /** Details of an e-DIS transaction. */
 export interface EdisTransaction {
@@ -896,12 +923,13 @@ export interface GetEdisTransactionsResponse extends Response {
   /** List of e-DIS transactions. */
   data: EdisTransaction[]|string
 }
+//#endregion
 
 
 
 
-// SUBMIT-EDIS-HOLDINGS
-// --------------------
+//#region SUBMIT-EDIS-HOLDINGS
+//----------------------------
 
 /** e-DIS securities held in a demat account. */
 export interface EdisHolding {
@@ -917,12 +945,13 @@ export interface SubmitEdisHoldingsRequest {
   /** Records of holdings of the user. */
   recordLst: EdisHolding[],
 }
+//#endregion
 
 
 
 
-// INQUIRE-EDIS-TRANSACTION
-// ------------------------
+//#region INQUIRE-EDIS-TRANSACTION
+//--------------------------------
 
 /** e-DIS transactions status inquiry request. */
 export interface InquireEdisTransactionRequest {
@@ -945,48 +974,51 @@ export interface InquireEdisTransactionResponse extends Response {
   /** Depository status data. */
   data: EdisTransactionStatus,
 }
+//#endregion
+//#endregion
 
 
 
 
-// FUNCTIONS
-// =========
+//#region FUNCTIONS
+//=================
 
-// REQUEST
-// -------
+//#region REQUEST
+//---------------
 
-function requestStep(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): HttpRequestOptions {
-  var url  = path + queryString(query);
-  var headers: HttpHeaders = {};
-  if (auth != null) headers['authorization'] = auth.app_id + ':' + auth.access_token;
+function requestStep(auth: Authorization | null, method: string, path: string, query: object | null, body: object | null): HttpRequestOptions {
+  const url  = path + queryString(query as Record<string, string>);
+  const headers: HttpHeaders = {};
+  if (auth != null) headers["authorization"] = auth.app_id + ":" + auth.access_token;
   return {url, method, headers, body};
 }
 
-function requestText(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<string> {
+function requestText(auth: Authorization | null, method: string, path: string, query: object | null, body: object | null): Promise<string> {
   return httpRequestText(requestStep(auth, method, path, query, body));
 }
 
-function requestJson(auth: Authorization|null, method: string, path: string, query: object|null, body: object|null): Promise<object> {
+function requestJson(auth: Authorization | null, method: string, path: string, query: object | null, body: object | null): Promise<object> {
   return httpRequestJson(requestStep(auth, method, path, query, body));
 }
 
-function requestApi(auth: Authorization, method: string, path: string, query: object|null, body: object|null): Promise<Response> {
+function requestApi(auth: Authorization, method: string, path: string, query: object | null, body: object | null): Promise<Response> {
   return requestJson(auth, method, API_URL + path, query, body) as Promise<Response>;
 }
 
-function requestData(auth: Authorization, method: string, path: string, query: object|null, body: object|null): Promise<Response> {
+function requestData(auth: Authorization, method: string, path: string, query: object | null, body: object | null): Promise<Response> {
   return requestJson(auth, method, DATA_URL + path, query, body) as Promise<Response>;
 }
 
-function requestSymbols(auth: null, method: string, path: string, query: object|null, body: object|null): Promise<string> {
+function requestSymbols(auth: null, method: string, path: string, query: object | null, body: object | null): Promise<string> {
   return requestText(auth, method, SYMBOLS_URL + path, query, body);
 }
+//#endregion
 
 
 
 
-// LOGIN
-// -----
+//#region LOGIN
+//-------------
 
 /**
  * Get request step 1 for authorization (browser only).
@@ -994,7 +1026,7 @@ function requestSymbols(auth: null, method: string, path: string, query: object|
  * @returns HTTP(s) request options for authorization step 1 (manual)
  */
 export function loginStep1(options: LoginStep1Request): HttpRequestOptions {
-  return requestStep(null, 'GET', API_URL + 'generate-authcode', options, null);
+  return requestStep(null, "GET", API_URL + "generate-authcode", options, null);
 }
 
 
@@ -1004,49 +1036,51 @@ export function loginStep1(options: LoginStep1Request): HttpRequestOptions {
  * @returns HTTP(s) request options for authorization step 2 (manual)
  */
 export function loginStep2(options: LoginStep2Request): HttpRequestOptions {
-  return requestStep(null, 'POST', API_URL + 'validate-authcode', null, options);
+  return requestStep(null, "POST", API_URL + "validate-authcode", null, options);
 }
+//#endregion
 
 
 
 
-// USER
-// ----
+//#region USER
+//------------
 
 /**
  * Get basic details of the client.
  * @param auth authorization \{app_id, access_token\}
- * @returns details of user's profile \{fy_id, email_id, name, ...\}
+ * @returns details of user"s profile \{fy_id, email_id, name, ...\}
  */
 export function getProfile(auth: Authorization): Promise<GetProfileResponse> {
-  return requestApi(auth, 'GET', 'profile', null, null) as Promise<GetProfileResponse>;
+  return requestApi(auth, "GET", "profile", null, null) as Promise<GetProfileResponse>;
 }
 
 
 /**
  * Get balance available for the user for capital as well as the commodity market.
  * @param auth authorization \{app_id, access_token\}
- * @returns details of user's funds \{fund_limit: [\{id, title, equityAmount, commodityAmount\}]\}
+ * @returns details of user"s funds \{fund_limit: [\{id, title, equityAmount, commodityAmount\}]\}
  */
 export function getFunds(auth: Authorization): Promise<GetFundsResponse> {
-  return requestApi(auth, 'GET', 'funds', null, null) as Promise<GetFundsResponse>;
+  return requestApi(auth, "GET", "funds", null, null) as Promise<GetFundsResponse>;
 }
 
 
 /**
  * Get the equity and mutual fund holdings which the user has in this demat account.
  * @param auth authorization \{app_id, access_token\}
- * @returns details of user's holdings \{holdings: \{id, ...\}, overall: \{count_total, ...\}\}
+ * @returns details of user"s holdings \{holdings: \{id, ...\}, overall: \{count_total, ...\}\}
  */
 export function getHoldings(auth: Authorization): Promise<GetHoldingsResponse> {
-  return requestApi(auth, 'GET', 'holdings', null, null) as Promise<GetHoldingsResponse>;
+  return requestApi(auth, "GET", "holdings", null, null) as Promise<GetHoldingsResponse>;
 }
+//#endregion
 
 
 
 
-// TRANSACTION-INFO
-// ----------------
+//#region TRANSACTION-INFO
+//------------------------
 
 /**
  * Get details of an order placed in the current trading day.
@@ -1055,7 +1089,7 @@ export function getHoldings(auth: Authorization): Promise<GetHoldingsResponse> {
  * @returns details of an order \{orderBook: [\{id, exchOrdId, symbol, ...\}]\}
  */
 export function getOrder(auth: Authorization, options: GetOrderRequest): Promise<GetOrdersResponse> {
-  return requestApi(auth, 'GET', 'orders', options, null) as Promise<GetOrdersResponse>;
+  return requestApi(auth, "GET", "orders", options, null) as Promise<GetOrdersResponse>;
 }
 
 
@@ -1065,7 +1099,7 @@ export function getOrder(auth: Authorization, options: GetOrderRequest): Promise
  * @returns details of orders \{orderBook: [\{id, exchOrdId, symbol, ...\}]\}
  */
 export function getOrders(auth: Authorization): Promise<GetOrdersResponse> {
-  return requestApi(auth, 'GET', 'orders', null, null) as Promise<GetOrdersResponse>;
+  return requestApi(auth, "GET", "orders", null, null) as Promise<GetOrdersResponse>;
 }
 
 
@@ -1075,7 +1109,7 @@ export function getOrders(auth: Authorization): Promise<GetOrdersResponse> {
  * @returns details of positions \{netPositions: \{id, ...\}, overall: \{count_total, ...\}\}
  */
 export function getPositions(auth: Authorization): Promise<GetPositionsResponse> {
-  return requestApi(auth, 'GET', 'positions', null, null) as Promise<GetPositionsResponse>;
+  return requestApi(auth, "GET", "positions", null, null) as Promise<GetPositionsResponse>;
 }
 
 
@@ -1085,14 +1119,15 @@ export function getPositions(auth: Authorization): Promise<GetPositionsResponse>
  * @returns details of trades \{tradeBook: [\{id, orderNumber, exchangeOrderNo, ...\}]\}
  */
 export function getTrades(auth: Authorization): Promise<GetTradesResponse> {
-  return requestApi(auth, 'GET', 'tradebook', null, null) as Promise<GetTradesResponse>;
+  return requestApi(auth, "GET", "tradebook", null, null) as Promise<GetTradesResponse>;
 }
+//#endregion
 
 
 
 
-// ORDER-PLACEMENT
-// ---------------
+//#region ORDER-PLACEMENT
+//-----------------------
 
 /**
  * Place an order to any exchange via Fyers.
@@ -1101,7 +1136,7 @@ export function getTrades(auth: Authorization): Promise<GetTradesResponse> {
  * @returns place status \{id\}
  */
 export function placeOrder(auth: Authorization, options: PlaceOrderRequest): Promise<PlaceOrderResponse> {
-  return requestApi(auth, 'POST', 'orders', null, options) as Promise<PlaceOrderResponse>;
+  return requestApi(auth, "POST", "orders", null, options) as Promise<PlaceOrderResponse>;
 }
 
 
@@ -1112,14 +1147,15 @@ export function placeOrder(auth: Authorization, options: PlaceOrderRequest): Pro
  * @returns place status \{data: [\{statusCode, body: \{id\}, statusDescription\}]\}
  */
 export function placeOrders(auth: Authorization, options: PlaceOrderRequest[]): Promise<PlaceOrdersResponse> {
-  return requestApi(auth, 'POST', 'orders-multi', null, options) as Promise<PlaceOrdersResponse>;
+  return requestApi(auth, "POST", "orders-multi", null, options) as Promise<PlaceOrdersResponse>;
 }
+//#endregion
 
 
 
 
-// OTHER-TRANSACTIONS
-// ------------------
+//#region OTHER-TRANSACTIONS
+//--------------------------
 
 /**
  * Modify an order placed on any exchange via Fyers.
@@ -1128,7 +1164,7 @@ export function placeOrders(auth: Authorization, options: PlaceOrderRequest[]): 
  * @returns modify status \{id\}
  */
 export function modifyOrder(auth: Authorization, options: ModifyOrderRequest): Promise<ModifyOrderResponse> {
-  return requestApi(auth, 'PUT', 'orders', null, options) as Promise<ModifyOrderResponse>;
+  return requestApi(auth, "PUT", "orders", null, options) as Promise<ModifyOrderResponse>;
 }
 
 
@@ -1139,7 +1175,7 @@ export function modifyOrder(auth: Authorization, options: ModifyOrderRequest): P
  * @returns modify status \{data: [\{statusCode, body: \{id\}, statusDescription\}]\}
  */
 export function modifyOrders(auth: Authorization, options: ModifyOrderRequest[]): Promise<ModifyOrdersResponse> {
-  return requestApi(auth, 'PUT', 'orders-multi', null, options) as Promise<ModifyOrdersResponse>;
+  return requestApi(auth, "PUT", "orders-multi", null, options) as Promise<ModifyOrdersResponse>;
 }
 
 
@@ -1150,7 +1186,7 @@ export function modifyOrders(auth: Authorization, options: ModifyOrderRequest[])
  * @returns cancel status \{id\}
  */
 export function cancelOrder(auth: Authorization, options: CancelOrderRequest): Promise<CancelOrderResponse> {
-  return requestApi(auth, 'DELETE', 'orders', null, options) as Promise<CancelOrderResponse>;
+  return requestApi(auth, "DELETE", "orders", null, options) as Promise<CancelOrderResponse>;
 }
 
 
@@ -1161,7 +1197,7 @@ export function cancelOrder(auth: Authorization, options: CancelOrderRequest): P
  * @returns cancel status \{data: [\{statusCode, body: \{id\}, statusDescription\}]\}
  */
 export function cancelOrders(auth: Authorization, options: CancelOrderRequest[]): Promise<CancelOrdersResponse> {
-  return requestApi(auth, 'DELETE', 'orders-multi', null, options) as Promise<CancelOrdersResponse>;
+  return requestApi(auth, "DELETE", "orders-multi", null, options) as Promise<CancelOrdersResponse>;
 }
 
 
@@ -1172,7 +1208,7 @@ export function cancelOrders(auth: Authorization, options: CancelOrderRequest[])
  * @returns exit status \{\}
  */
 export function exitPosition(auth: Authorization, options: ExitPositionRequest): Promise<ExitPositionResponse> {
-  return requestApi(auth, 'DELETE', 'positions', null, options) as Promise<ExitPositionResponse>;
+  return requestApi(auth, "DELETE", "positions", null, options) as Promise<ExitPositionResponse>;
 }
 
 
@@ -1182,7 +1218,7 @@ export function exitPosition(auth: Authorization, options: ExitPositionRequest):
  * @returns exit status \{\}
  */
 export function exitAllPositions(auth: Authorization): Promise<ExitAllPositionsResponse> {
-  return requestApi(auth, 'DELETE', 'positions', null, {}) as Promise<ExitAllPositionsResponse>;
+  return requestApi(auth, "DELETE", "positions", null, {}) as Promise<ExitAllPositionsResponse>;
 }
 
 
@@ -1193,14 +1229,15 @@ export function exitAllPositions(auth: Authorization): Promise<ExitAllPositionsR
  * @returns conversion status \{positionDetails\}
  */
 export function convertPosition(auth: Authorization, options: ConvertPositionRequest): Promise<ConvertPositionResponse> {
-  return requestApi(auth, 'PUT', 'positions', null, options) as Promise<ConvertPositionResponse>;
+  return requestApi(auth, "PUT", "positions", null, options) as Promise<ConvertPositionResponse>;
 }
+//#endregion
 
 
 
 
-// BROKER-CONFIG, DATA-API
-// -----------------------
+//#region BROKER-CONFIG, DATA-API
+//-------------------------------
 
 /**
  * Get the current market status of all the exchanges and their segments.
@@ -1208,7 +1245,7 @@ export function convertPosition(auth: Authorization, options: ConvertPositionReq
  * @returns market status \{marketStatus: [\{exchange, segment, market_type, status\}]\}
  */
 export function getMarketStatus(auth: Authorization): Promise<GetMarketStatusResponse> {
-  return requestApi(auth, 'GET', 'market-status', null, null) as Promise<GetMarketStatusResponse>;
+  return requestApi(auth, "GET", "market-status", null, null) as Promise<GetMarketStatusResponse>;
 }
 
 
@@ -1219,7 +1256,7 @@ export function getMarketStatus(auth: Authorization): Promise<GetMarketStatusRes
  * @returns market history \{candles: \[\[time, open, high, low, close, volume\]\]\}
  */
 export function getMarketHistory(auth: Authorization, options: GetMarketHistoryRequest): Promise<GetMarketHistoryResponse> {
-  return requestData(auth, 'GET', 'history/', options, null) as Promise<GetMarketHistoryResponse>;
+  return requestData(auth, "GET", "history/", options, null) as Promise<GetMarketHistoryResponse>;
 }
 
 
@@ -1230,7 +1267,7 @@ export function getMarketHistory(auth: Authorization, options: GetMarketHistoryR
  * @returns market quotes \{d: [\{n, s, v: \{ch, chp, lp, spread, ...\}\}]\}
  */
 export function getMarketQuotes(auth: Authorization, options: GetMarketQuotesRequest): Promise<GetMarketQuotesResponse> {
-  return requestData(auth, 'GET', 'quotes/', options, null) as Promise<GetMarketQuotesResponse>;
+  return requestData(auth, "GET", "quotes/", options, null) as Promise<GetMarketQuotesResponse>;
 }
 
 
@@ -1241,26 +1278,27 @@ export function getMarketQuotes(auth: Authorization, options: GetMarketQuotesReq
  * @returns market depth \{d: \{<symbol>: \{totalbuyqty, totalsellqty, bids\}\}\}
  */
 export function getMarketDepth(auth: Authorization, options: GetMarketDepthRequest): Promise<GetMarketDepthResponse> {
-  return requestData(auth, 'GET', 'depth/', options, null) as Promise<GetMarketDepthResponse>;
+  return requestData(auth, "GET", "depth/", options, null) as Promise<GetMarketDepthResponse>;
 }
 
 
 /**
  * Get all the latest symbols of all the exchanges from the symbol master files.
- * @param auth authorization (unused)
+ * @param _auth authorization (unused)
  * @param options details of symbol category \{exchange, segment\}
  * @returns symbol master file
  */
-export function getSymbolMaster(auth: null, options: GetSymbolMasterRequest): Promise<string> {
-  var {exchange, segment} = options;
-  return requestSymbols(null, 'GET', exchange + '_' + segment + '.csv', null, null);
+export function getSymbolMaster(_auth: null, options: GetSymbolMasterRequest): Promise<string> {
+  const {exchange, segment} = options;
+  return requestSymbols(null, "GET", exchange + "_" + segment + ".csv", null, null);
 }
+//#endregion
 
 
 
 
-// EDIS
-// ----
+//#region EDIS
+//------------
 
 /**
  * Generate e-DIS TPIN for validating/authorising transaction.
@@ -1268,7 +1306,7 @@ export function getSymbolMaster(auth: null, options: GetSymbolMasterRequest): Pr
  * @returns optional data \{data\}
  */
 export function generateEdisTpin(auth: Authorization): Promise<GenerateEdisTpinResponse> {
-  return requestApi(auth, 'GET', 'tpin', null, null) as Promise<GenerateEdisTpinResponse>;
+  return requestApi(auth, "GET", "tpin", null, null) as Promise<GenerateEdisTpinResponse>;
 }
 
 
@@ -1278,7 +1316,7 @@ export function generateEdisTpin(auth: Authorization): Promise<GenerateEdisTpinR
  * @returns list of e-DIS transactions \{data: [\{transactionId, internalTxnId, ...\}]\}
  */
 export function getEdisTransactions(auth: Authorization): Promise<GetEdisTransactionsResponse> {
-  return requestApi(auth, 'GET', 'details', null, null) as Promise<GetEdisTransactionsResponse>;
+  return requestApi(auth, "GET", "details", null, null) as Promise<GetEdisTransactionsResponse>;
 }
 
 
@@ -1289,7 +1327,7 @@ export function getEdisTransactions(auth: Authorization): Promise<GetEdisTransac
  * @returns HTTP(s) request options (manual)
  */
 export function submitEdisHoldingsStep(auth: Authorization, options: SubmitEdisHoldingsRequest): HttpRequestOptions {
-  return requestStep(auth, 'POST', 'index', null, options);
+  return requestStep(auth, "POST", "index", null, options);
 }
 
 
@@ -1300,5 +1338,7 @@ export function submitEdisHoldingsStep(auth: Authorization, options: SubmitEdisH
  * @returns edis status \{FAILED_CNT, SUCEESS_CNT\}
  */
 export function inquireEdisTransaction(auth: Authorization, options: InquireEdisTransactionRequest): Promise<InquireEdisTransactionResponse> {
-  return requestApi(auth, 'POST', 'inquiry', null, options) as Promise<InquireEdisTransactionResponse>;
+  return requestApi(auth, "POST", "inquiry", null, options) as Promise<InquireEdisTransactionResponse>;
 }
+//#endregion
+//#endregion

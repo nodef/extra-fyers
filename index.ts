@@ -1,27 +1,28 @@
-import {HttpRequestOptions} from "./_http";
-import {Connection} from "./websocket";
-import * as http from "./http";
-import * as websocket from "./websocket";
+import type {HttpRequestOptions} from "./src/_http.ts";
+import type {Connection} from "./src/websocket.ts";
+import * as http from "./src/http.ts";
+import * as websocket from "./src/websocket.ts";
 
 
 
 
-// RE-EXPORT
-// =========
+//#region RE-EXPORT
+//=================
 
-export {HttpHeaders, HttpRequestOptions} from "./_http";
-export * as http      from "./http";
-export * as websocket from "./websocket";
+export type {HttpHeaders, HttpRequestOptions} from "./src/_http.ts";
+export * as http      from "./src/http.ts";
+export * as websocket from "./src/websocket.ts";
+//#endregion
 
 
 
+//#region BASICS
+//==============
 
-// BASICS
-// ======
+//#region ERROR
+//-------------
 
-// ERROR
-// -----
-
+/** Describes the error code. */
 const ERROR_DESCRIPTION : Map<number, string> = new Map([
   [-209, "Invalid order id"],
   [-101, "Invalid order type"],
@@ -96,23 +97,24 @@ const ERROR_DESCRIPTION : Map<number, string> = new Map([
  * @param code error code (-ve)
  * @returns error description
  */
-function errorDescription(code: number): string {
+export function errorDescription(code: number): string {
   return code < 0? ERROR_DESCRIPTION.get(code) || "Unknown error" : "No error";
 }
+//#endregion
 
 
 
 
-// YEAR2
-// -----
+//#region YEAR2
+//-------------
 
 /**
  * Get year2 description.
  * @param code year2 code (YY)
  * @returns year2 description
  */
-function year2Description(code: string): string {
-  var val = parseInt(code, 10);
+export function year2Description(code: string): string {
+  const val = parseInt(code, 10);
   return val > 50? "19" + code : "20" + code;
 }
 
@@ -121,15 +123,16 @@ function year2Description(code: string): string {
  * @param desc year2 description
  * @returns year2 code (YY)
  */
-function year2(desc: string): string {
+export function year2(desc: string): string {
   return desc.substring(2);
 }
+//#endregion
 
 
 
 
-// MONTH3
-// ------
+//#region MONTH3
+//--------------
 
 const MONTH3_DESCRIPTION: Map<string, string> = new Map([
   ["JAN", "January"],
@@ -152,8 +155,8 @@ const MONTH3_DESCRIPTION: Map<string, string> = new Map([
  * @param code month3 code (MMM)
  * @returns month3 description
  */
-function month3Description(code: string): string {
-  return MONTH3_DESCRIPTION.get(code);
+export function month3Description(code: string): string {
+  return MONTH3_DESCRIPTION.get(code) || "Unknown month";
 }
 
 /**
@@ -161,15 +164,16 @@ function month3Description(code: string): string {
  * @param desc month3 description
  * @returns month3 code (MMM)
  */
-function month3(desc: string): string {
+export function month3(desc: string): string {
   return desc.substring(0, 3).toUpperCase();
 }
+//#endregion
 
 
 
 
-// MONTH1
-// ------
+//#region MONTH1
+// -------------
 
 const MONTH1_DESCRIPTION: Map<string, string> = new Map([
   ["1", "January"],
@@ -207,8 +211,8 @@ const MONTH1_CODE: Map<string, string> = new Map([
  * @param code month1 code (MMM)
  * @returns month1 description
  */
-function month1Description(code: string): string {
-  return MONTH1_DESCRIPTION.get(code);
+export function month1Description(code: string): string {
+  return MONTH1_DESCRIPTION.get(code) || "Unknown month";
 }
 
 /**
@@ -216,23 +220,24 @@ function month1Description(code: string): string {
  * @param desc month1 description
  * @returns month1 code (MMM)
  */
-function month1(desc: string): string {
-  var key = desc.substring(0, 3).toUpperCase();
-  return MONTH1_CODE.get(key);
+export function month1(desc: string): string {
+  const key = desc.substring(0, 3).toUpperCase();
+  return MONTH1_CODE.get(key) || "Unknown month";
 }
+//#endregion
 
 
 
 
-// DAY2
-// ----
+//#region DAY2
+//------------
 
 /**
  * Get day2 description.
  * @param code day2 code (DD)
  * @returns day2 description
  */
-function day2Description(code: string): string {
+export function day2Description(code: string): string {
   return code.replace(/^0+/, "");
 }
 
@@ -241,52 +246,58 @@ function day2Description(code: string): string {
  * @param desc day2 description
  * @returns day2 code (DD)
  */
-function day2(desc: string): string {
+export function day2(desc: string): string {
   return desc.padStart(2, "0");
 }
+//#endregion
 
 
 
 
-// EXCHANGE
-// --------
+//#region EXCHANGE
+//----------------
 
 /** Exchange code. */
 export type Exchange = "NSE" | "MCX" | "BSE";
 
-const enum InternalExchange {
+/** Internal exchange code. */
+const enum _InternalExchange {
   NSE = 10,
   MCX = 11,
   BSE = 12,
 }
 
-
+/** Mapping of exchange code to exchange name. */
 const TO_EXCHANGE: Map<number, Exchange> = new Map([
   [10, "NSE"],
   [11, "MCX"],
   [12, "BSE"],
 ]);
 
+/** Mapping of exchange name to exchange code. */
 const FROM_EXCHANGE: Map<Exchange, number> = new Map([
   ["NSE", 10],
   ["MCX", 11],
   ["BSE", 12],
 ]);
 
+/** Mapping of exchange code to exchange description. */
 const EXCHANGE_DESCRIPTION: Map<Exchange, string> = new Map([
   ["NSE", "National Stock Exchange"],
   ["MCX", "Multi Commodity Exchange"],
   ["BSE", "Bombay Stock Exchange"],
 ]);
 
-
+/** Convert internal exchange code to exchange code. */
 function toExchange(x: number): Exchange {
-  return TO_EXCHANGE.get(x);
+  return TO_EXCHANGE.get(x) || "NSE";
 }
 
-function fromExchange(x: Exchange): number {
-  return FROM_EXCHANGE.get(x);
+/** Convert exchange code to internal exchange code. */
+function _fromExchange(x: Exchange): number {
+  return FROM_EXCHANGE.get(x) as number;
 }
+
 
 /**
  * Get exchange description.
@@ -294,7 +305,7 @@ function fromExchange(x: Exchange): number {
  * @returns exchange description
  */
  export function exchangeDescription(code: Exchange): string {
-  return EXCHANGE_DESCRIPTION.get(code);
+  return EXCHANGE_DESCRIPTION.get(code) as string;
 }
 
 /**
@@ -303,28 +314,30 @@ function fromExchange(x: Exchange): number {
  * @returns exchange code (NSE, MCX, BSE)
  */
 export function exchange(desc: string): Exchange {
-  if (/bse|native|bombay|mumbai/i.test(desc)) return "BSE";
+  if (/bse|native|bombay|mumbai/i.test(desc))   return "BSE";
   if (/\bcom\b|mcx|multi|commodit/i.test(desc)) return "MCX";
   return "NSE";
 }
+//#endregion
 
 
 
 
-// SEGMENT
-// -------
+//#region SEGMENT
+//---------------
 
 /** Segment code. */
 export type Segment = "CM" | "FO" | "CD" | "COM";
 
-const enum InternalSegment {
+/** Internal segment code. */
+const enum _InternalSegment {
   CM  = 10,
   FO  = 11,
   CD  = 12,
   COM = 20,
 }
 
-
+/** Mapping of segment code to segment name. */
 const TO_SEGMENT: Map<number, Segment> = new Map([
   [10, "CM"],
   [11, "FO"],
@@ -332,6 +345,7 @@ const TO_SEGMENT: Map<number, Segment> = new Map([
   [20, "COM"],
 ]);
 
+/** Mapping of segment name to segment code. */
 const FROM_SEGMENT: Map<string, number> = new Map([
   ["CM",  10],
   ["FO",  11],
@@ -339,6 +353,7 @@ const FROM_SEGMENT: Map<string, number> = new Map([
   ["COM", 20],
 ]);
 
+/** Mapping of segment code to segment description. */
 const SEGMENT_DESCRIPTION: Map<Segment, string> = new Map([
   ["CM",  "Capital Market"],
   ["FO",  "Equity Derivatives"],
@@ -346,14 +361,16 @@ const SEGMENT_DESCRIPTION: Map<Segment, string> = new Map([
   ["COM", "Commodity Derivatives"],
 ]);
 
-
+/** Convert internal segment code to segment code. */
 function toSegment(x: number): Segment {
-  return TO_SEGMENT.get(x);
+  return TO_SEGMENT.get(x) || "CM";
 }
 
-function fromSegment(x: Segment): number {
-  return FROM_SEGMENT.get(x);
+/** Convert segment code to internal segment code. */
+function _fromSegment(x: Segment): number {
+  return FROM_SEGMENT.get(x) as number;
 }
+
 
 /**
  * Get segment description.
@@ -361,7 +378,7 @@ function fromSegment(x: Segment): number {
  * @returns segment description
  */
  export function segmentDescription(code: Segment): string {
-  return SEGMENT_DESCRIPTION.get(code);
+  return SEGMENT_DESCRIPTION.get(code) as string;
 }
 
 /**
@@ -375,35 +392,39 @@ export function segment(desc: string): Segment {
   if (/\bfn?o\b|fut|opt|deriv/i.test(desc)) return "FO";
   return "CM";
 }
+//#endregion
 
 
 
 
-// POSITION-SIDE
-// -------------
+//#region POSITION-SIDE
+//---------------------
 
 /** Position side code. */
 export type PositionSide = "LONG" | "SHORT" | "CLOSED";
 
-const enum InternalPositionSide {
+/** Internal position side code. */
+const enum _InternalPositionSide {
   LONG   =  1,
   SHORT  = -1,
   CLOSED =  0,
 }
 
-
+/** Mapping of position side code to position side name. */
 const TO_POSITION_SIDE: Map<number, PositionSide> = new Map([
   [1,  "LONG"],
   [-1, "SHORT"],
   [0,  "CLOSED"],
 ]);
 
+/** Mapping of position side name to position side code. */
 const FROM_POSITION_SIDE: Map<PositionSide, number> = new Map([
   ["LONG",   1],
   ["SHORT", -1],
   ["CLOSED", 0],
 ]);
 
+/** Mapping of position side code to position side description. */
 const POSITION_SIDE_DESCRIPTION: Map<PositionSide, string> = new Map([
   ["LONG",   "Long position"],
   ["SHORT",  "Short position"],
@@ -411,13 +432,16 @@ const POSITION_SIDE_DESCRIPTION: Map<PositionSide, string> = new Map([
 ]);
 
 
+/** Convert internal position side code to position side code. */
 function toPositionSide(x: number): PositionSide {
-  return TO_POSITION_SIDE.get(x);
+  return TO_POSITION_SIDE.get(x) || "CLOSED";
 }
 
+/** Convert position side code to internal position side code. */
 function fromPositionSide(x: PositionSide): number {
-  return FROM_POSITION_SIDE.get(x);
+  return FROM_POSITION_SIDE.get(x) as number;
 }
+
 
 /**
  * Get position side description.
@@ -425,7 +449,7 @@ function fromPositionSide(x: PositionSide): number {
  * @returns position side description
  */
  export function positionSideDescription(code: PositionSide): string {
-  return POSITION_SIDE_DESCRIPTION.get(code);
+  return POSITION_SIDE_DESCRIPTION.get(code) as string;
 }
 
 /**
@@ -434,31 +458,34 @@ function fromPositionSide(x: PositionSide): number {
  * @returns position side code (LONG, SHORT, CLOSED)
  */
 export function positionSide(desc: string): PositionSide {
-  if (/up|buy|long|rally/i.test(desc)) return "LONG";
+  if (/up|buy|long|rally/i.test(desc))     return "LONG";
   if (/down|sell|short|crash/i.test(desc)) return "SHORT";
   return "CLOSED";
 }
+//#endregion
 
 
 
 
-// ORDER-SIDE
-// ----------
+//#region ORDER-SIDE
+//------------------
 
 /** Order side code. */
 export type OrderSide = "BUY" | "SELL";
 
-const enum InternalOrderSide {
+/** Internal order side code. */
+const enum _InternalOrderSide {
   BUY  =  1,
   SELL = -1
 }
 
-
+/** Mapping of order side code to order side name. */
 const TO_ORDER_SIDE: Map<number, OrderSide> = new Map([
   [1,  "BUY"],
   [-1, "SELL"],
 ]);
 
+/** Mapping of order side name to order side code. */
 const FROM_ORDER_SIDE: Map<OrderSide, number> = new Map([
   ["BUY",   1],
   ["SELL", -1],
@@ -469,14 +496,16 @@ const ORDER_SIDE_DESCRIPTION: Map<OrderSide, string> = new Map([
   ["SELL", "Sell"],
 ]);
 
-
+/** Convert internal order side code to order side code. */
 function toOrderSide(x: number): OrderSide {
-  return TO_ORDER_SIDE.get(x);
+  return TO_ORDER_SIDE.get(x) || "BUY";
 }
 
+/** Convert order side code to internal order side code. */
 function fromOrderSide(x: OrderSide): number {
-  return FROM_ORDER_SIDE.get(x);
+  return FROM_ORDER_SIDE.get(x) as number;
 }
+
 
 /**
  * Get order side description.
@@ -484,7 +513,7 @@ function fromOrderSide(x: OrderSide): number {
  * @returns order side description
  */
  export function orderSideDescription(code: OrderSide): string {
-  return ORDER_SIDE_DESCRIPTION.get(code);
+  return ORDER_SIDE_DESCRIPTION.get(code) as string;
 }
 
 /**
@@ -495,17 +524,19 @@ function fromOrderSide(x: OrderSide): number {
 export function orderSide(desc: string): OrderSide {
   return /down|sell|short|crash/i.test(desc)? "SELL" : "BUY";
 }
+//#endregion
 
 
 
 
-// ORDER-SOURCE
-// ------------
+//#region ORDER-SOURCE
+//--------------------
 
 /** Order source code. */
 export type OrderSource = "MOBILE" | "WEB" | "ONE" | "ADMIN" | "API";
 
-const enum InternalOrderSource {
+/** Internal order source code. */
+const enum _InternalOrderSource {
   MOBILE = "M",
   WEB    = "W",
   ONE    = "R",
@@ -513,7 +544,7 @@ const enum InternalOrderSource {
   API    = "ITS",
 }
 
-
+/** Mapping of order source code to order source name. */
 const TO_ORDER_SOURCE: Map<string, OrderSource> = new Map([
   ["M",   "MOBILE"],
   ["W",   "WEB"],
@@ -522,6 +553,7 @@ const TO_ORDER_SOURCE: Map<string, OrderSource> = new Map([
   ["ITS", "API"],
 ]);
 
+/** Mapping of order source name to order source code. */
 const FROM_ORDER_SOURCE: Map<OrderSource, string> = new Map([
   ["MOBILE", "M"],
   ["WEB",    "W"],
@@ -530,6 +562,7 @@ const FROM_ORDER_SOURCE: Map<OrderSource, string> = new Map([
   ["API",    "ITS"],
 ]);
 
+/** Mapping of order source code to order source description. */
 const ORDER_SOURCE_DESCRIPTION: Map<OrderSource, string> = new Map([
   ["MOBILE", "FYERS Mobile"],
   ["WEB",    "FYERS Web"],
@@ -538,14 +571,16 @@ const ORDER_SOURCE_DESCRIPTION: Map<OrderSource, string> = new Map([
   ["API",    "FYERS API"],
 ]);
 
-
+/** Convert internal order source code to order source code. */
 function toOrderSource(x: string): OrderSource {
-  return TO_ORDER_SOURCE.get(x);
+  return TO_ORDER_SOURCE.get(x) || "WEB";
 }
 
-function fromOrderSource(x: OrderSource): string {
-  return FROM_ORDER_SOURCE.get(x);
+/** Convert order source code to internal order source code. */
+function _fromOrderSource(x: OrderSource): string {
+  return FROM_ORDER_SOURCE.get(x) as string;
 }
+
 
 /**
  * Get order source description.
@@ -553,7 +588,7 @@ function fromOrderSource(x: OrderSource): string {
  * @returns order source description
  */
  export function orderSourceDescription(code: OrderSource): string {
-  return ORDER_SOURCE_DESCRIPTION.get(code);
+  return ORDER_SOURCE_DESCRIPTION.get(code) as string;
 }
 
 /**
@@ -563,21 +598,23 @@ function fromOrderSource(x: OrderSource): string {
  */
 export function orderSource(desc: string): OrderSource {
   if (/its|api|sys/i.test(desc)) return "API";
-  if (/one|desk/i.test(desc)) return "ONE";
-  if (/mob|app/i.test(desc))  return "MOBILE";
-  if (/admin/i.test(desc))    return "ADMIN";
+  if (/one|desk/i.test(desc))    return "ONE";
+  if (/mob|app/i.test(desc))     return "MOBILE";
+  if (/admin/i.test(desc))       return "ADMIN";
   return "WEB";
 }
+//#endregion
 
 
 
 
-// ORDER-STATUS
-// ------------
+//#region ORDER-STATUS
+//--------------------
 
 /** Order status code. */
 export type OrderStatus = "CANCELLED" | "TRADED" | "TRANSIT" | "REJECTED" | "PENDING" | "EXPIRED";
 
+/** Internal order status code. */
 const enum InternalOrderStatus {
   CANCELLED = 1,
   TRADED    = 2,
@@ -589,7 +626,7 @@ const enum InternalOrderStatus {
 }
 import IOST = InternalOrderStatus;
 
-
+/** Mapping of order status code to order status name. */
 const TO_ORDER_STATUS: Map<number, OrderStatus> = new Map([
   [1, "CANCELLED"],
   [2, "TRADED"],
@@ -600,6 +637,7 @@ const TO_ORDER_STATUS: Map<number, OrderStatus> = new Map([
   [7, "EXPIRED"],
 ]);
 
+/** Mapping of order status name to order status code. */
 const FROM_ORDER_STATUS: Map<OrderStatus, number> = new Map([
   ["CANCELLED", 1],
   ["TRADED",    2],
@@ -610,6 +648,7 @@ const FROM_ORDER_STATUS: Map<OrderStatus, number> = new Map([
   ["EXPIRED",   7],
 ]);
 
+/** Mapping of order status code to order status description. */
 const ORDER_STATUS_DESCRIPTION: Map<OrderStatus, string> = new Map([
   ["CANCELLED", "Cancelled"],
   ["TRADED",    "Traded / Filled"],
@@ -619,6 +658,7 @@ const ORDER_STATUS_DESCRIPTION: Map<OrderStatus, string> = new Map([
   ["EXPIRED",   "Expired"],
 ]);
 
+/** Mapping of order status code to order status code. */
 const ORDER_STATUS_CODE: Map<string, OrderStatus> = new Map([
   ["C", "CANCELLED"],
   ["F", "TRADED"],
@@ -628,14 +668,16 @@ const ORDER_STATUS_CODE: Map<string, OrderStatus> = new Map([
   ["E", "EXPIRED"],
 ]);
 
-
+/** Convert internal order status code to order status code. */
 function toOrderStatus(x: number): OrderStatus {
-  return TO_ORDER_STATUS.get(x);
+  return TO_ORDER_STATUS.get(x) || "PENDING";
 }
 
-function fromOrderStatus(x: OrderStatus): number {
-  return FROM_ORDER_STATUS.get(x);
+/** Convert order status code to internal order status code. */
+function _fromOrderStatus(x: OrderStatus): number {
+  return FROM_ORDER_STATUS.get(x) as number;
 }
+
 
 /**
  * Get order status description.
@@ -643,7 +685,7 @@ function fromOrderStatus(x: OrderStatus): number {
  * @returns order status description
  */
  export function orderStatusDescription(code: OrderStatus): string {
-  return ORDER_STATUS_DESCRIPTION.get(code);
+  return ORDER_STATUS_DESCRIPTION.get(code) as string;
 }
 
 /**
@@ -652,28 +694,30 @@ function fromOrderStatus(x: OrderStatus): number {
  * @returns order status code (CANCELLED, TRADED, ...)
  */
 export function orderStatus(desc: string): OrderStatus {
-  var key = desc.charAt(0).toUpperCase();
+  let key = desc.charAt(0).toUpperCase();
   if (/traded/i.test(desc)) key = "F";
-  return ORDER_STATUS_CODE.get(key);
+  return ORDER_STATUS_CODE.get(key) || "PENDING";
 }
+//#endregion
 
 
 
 
-// ORDER-TYPE
-// ----------
+//#region ORDER-TYPE
+//------------------
 
 /** Order type code. */
 export type OrderType = "LIMIT" | "MARKET" | "SL_MARKET" | "SL_LIMIT";
 
-const enum InternalOrderType {
+/** Internal order type code. */
+const enum _InternalOrderType {
   LIMIT     = 1,
   MARKET    = 2,
   SL_MARKET = 3,
   SL_LIMIT  = 4,
 }
 
-
+/** Mapping of order type code to order type name. */
 const TO_ORDER_TYPE: Map<number, OrderType> = new Map([
   [1, "LIMIT"],
   [2, "MARKET"],
@@ -681,6 +725,7 @@ const TO_ORDER_TYPE: Map<number, OrderType> = new Map([
   [4, "SL_LIMIT"],
 ]);
 
+/** Mapping of order type name to order type code. */
 const FROM_ORDER_TYPE: Map<OrderType, number> = new Map([
   ["LIMIT",     1],
   ["MARKET",    2],
@@ -688,6 +733,7 @@ const FROM_ORDER_TYPE: Map<OrderType, number> = new Map([
   ["SL_LIMIT",  4],
 ]);
 
+/** Mapping of order type code to order type description. */
 const ORDER_TYPE_DESCRIPTION: Map<OrderType, string> = new Map([
   ["LIMIT",     "Limit order"],
   ["MARKET",    "Market order"],
@@ -695,6 +741,7 @@ const ORDER_TYPE_DESCRIPTION: Map<OrderType, string> = new Map([
   ["SL_LIMIT",  "Stoplimit order (SL-L)"],
 ]);
 
+/** Mapping of order type code to order type code. */
 const ORDER_TYPE_CODE: Map<string, OrderType> = new Map([
   ["L", "LIMIT"],
   ["M", "MARKET"],
@@ -702,13 +749,14 @@ const ORDER_TYPE_CODE: Map<string, OrderType> = new Map([
   ["R", "SL_LIMIT"],
 ]);
 
-
+/** Convert internal order type code to order type code. */
 function toOrderType(x: number): OrderType {
-  return TO_ORDER_TYPE.get(x);
+  return TO_ORDER_TYPE.get(x) || "LIMIT";
 }
 
+/** Convert order type code to internal order type code. */
 function fromOrderType(x: OrderType): number {
-  return FROM_ORDER_TYPE.get(x);
+  return FROM_ORDER_TYPE.get(x) as number;
 }
 
 
@@ -718,7 +766,7 @@ function fromOrderType(x: OrderType): number {
  * @returns order type description
  */
  export function orderTypeDescription(code: OrderType): string {
-  return ORDER_TYPE_DESCRIPTION.get(code);
+  return ORDER_TYPE_DESCRIPTION.get(code) as string;
 }
 
 /**
@@ -727,39 +775,43 @@ function fromOrderType(x: OrderType): number {
  * @returns order type code (LIMIT, MARKET, SL_MARKET, SL_LIMIT)
  */
 export function orderType(desc: string): OrderType {
-  var key = desc.charAt(0).toUpperCase();
+  let key = desc.charAt(0).toUpperCase();
   if (/s.+l(?!oss)/i.test(desc)) key = "R";
-  return ORDER_TYPE_CODE.get(key);
+  return ORDER_TYPE_CODE.get(key) || "LIMIT";
 }
+//#endregion
 
 
 
 
-// ORDER-VALIDITY
-// --------------
+//#region ORDER-VALIDITY
+//----------------------
 
 /** Order validity code. */
 export type OrderValidity = "DAY" | "IOC";
 
-const enum InternalOrderValidity {
+/** Internal order validity code. */
+const enum _InternalOrderValidity {
   DAY = "DAY",
   IOC = "IOC",
 }
 
-
+/** Mapping of order validity code to order validity name. */
 const ORDER_VALIDITY_DESCRIPTION: Map<OrderValidity, string> = new Map([
   ["DAY", "End of day validity"],
   ["IOC", "Immediate or Cancel validity"],
 ]);
 
-
+/** Convert internal order validity code to order validity code. */
 function toOrderValidity(x: string): OrderValidity {
   return x as OrderValidity;
 }
 
-function fromOrderValidity(x: OrderValidity): string {
+/** Convert order validity code to internal order validity code. */
+function _fromOrderValidity(x: OrderValidity): string {
   return x;
 }
+
 
 /**
  * Get order validity description.
@@ -767,7 +819,7 @@ function fromOrderValidity(x: OrderValidity): string {
  * @returns order validity description
  */
  export function orderValidityDescription(code: OrderValidity): string {
-  return ORDER_VALIDITY_DESCRIPTION.get(code);
+  return ORDER_VALIDITY_DESCRIPTION.get(code) as string;
 }
 
 /**
@@ -778,22 +830,24 @@ function fromOrderValidity(x: OrderValidity): string {
 export function orderValidity(desc: string): OrderValidity {
   return /ioc|cancel|immediate/i.test(desc)? "IOC" : "DAY";
 }
+//#endregion
 
 
 
 
-// OPTION-TYPE
-// -----------
+//#region OPTION-TYPE
+//-------------------
 
 /** Option type code. */
 export type OptionType = "CE" | "PE";
 
-const enum InternalOptionType {
+/** Internal option type code. */
+const enum _InternalOptionType {
   CE = "CE",
   PE = "PE",
 }
 
-
+/** Mapping of option type code to option type name. */
 const OPTION_TYPE_DESCRIPTION: Map<OptionType, string> = new Map([
   ["CE", "Call option"],
   ["PE", "Put option"],
@@ -806,7 +860,7 @@ const OPTION_TYPE_DESCRIPTION: Map<OptionType, string> = new Map([
  * @returns option type description
  */
  export function optionTypeDescription(code: OptionType): string {
-  return OPTION_TYPE_DESCRIPTION.get(code);
+  return OPTION_TYPE_DESCRIPTION.get(code) as string;
 }
 
 /**
@@ -817,23 +871,25 @@ const OPTION_TYPE_DESCRIPTION: Map<OptionType, string> = new Map([
 export function optionType(desc: string): OptionType {
   return /pe|put|sell/i.test(desc)? "PE" : "CE";
 }
+//#endregion
 
 
 
 
-// DERIVATIVE-TYPE
-// ---------------
+//#region DERIVATIVE-TYPE
+//-----------------------
 
 /** Derivative type code. */
 export type DerivativeType = "FUT" | "CE" | "PE";
 
-const enum InternalDerivativeType {
+/** Internal derivative type code. */
+const enum _InternalDerivativeType {
   FUT = "FUT",
   CE  = "CE",
   PE  = "PE",
 }
 
-
+/** Mapping of derivative type code to derivative type name. */
 const DERIVATIVE_TYPE_DESCRIPTION: Map<DerivativeType, string> = new Map([
   ["FUT", "Future"],
   ["CE",  "Call option"],
@@ -846,8 +902,8 @@ const DERIVATIVE_TYPE_DESCRIPTION: Map<DerivativeType, string> = new Map([
  * @param code derivative type code (FUT, CE, PE)
  * @returns derivative type description
  */
- export function derivativeTypeDescription(code: DerivativeType): string {
-  return DERIVATIVE_TYPE_DESCRIPTION.get(code);
+export function derivativeTypeDescription(code: DerivativeType): string {
+  return DERIVATIVE_TYPE_DESCRIPTION.get(code) as string;
 }
 
 /**
@@ -858,33 +914,36 @@ const DERIVATIVE_TYPE_DESCRIPTION: Map<DerivativeType, string> = new Map([
 export function derivativeType(desc: string): DerivativeType {
   return /fut|lat|buy/.test(desc)? "FUT" : optionType(desc);
 }
+//#endregion
 
 
 
 
-// HOLDING-TYPE
-// ------------
+//#region HOLDING-TYPE
+//--------------------
 
 /** Holding type code. */
 export type HoldingType = "T1" | "HLD";
 
-const enum InternalHoldingType {
+/** Internal holding type code. */
+const enum _InternalHoldingType {
   T1  = "T1",
   HLD = "HLD",
 }
 
-
+/** Mapping of holding type code to holding type name. */
 const HOLDING_TYPE_DESCRIPTION: Map<HoldingType, string> = new Map([
   ["T1",  "The shares are purchased but not yet delivered to the demat account"],
   ["HLD", "The shares are purchased and are available in the demat account"],
 ]);
 
-
+/** Convert internal holding type code to holding type code. */
 function toHoldingType(x: string): HoldingType {
   return x as HoldingType;
 }
 
-function fromHoldingType(x: HoldingType): string {
+/** Convert holding type code to internal holding type code. */
+function _fromHoldingType(x: HoldingType): string {
   return x;
 }
 
@@ -894,7 +953,7 @@ function fromHoldingType(x: HoldingType): string {
  * @returns holding type description
  */
  export function holdingTypeDescription(code: HoldingType): string {
-  return HOLDING_TYPE_DESCRIPTION.get(code);
+  return HOLDING_TYPE_DESCRIPTION.get(code) as string;
 }
 
 /**
@@ -905,17 +964,19 @@ function fromHoldingType(x: HoldingType): string {
 export function holdingType(desc: string): HoldingType {
   return /un|not|pend|t1/i.test(desc)? "T1" : "HLD";
 }
+//#endregion
 
 
 
 
-// PRODUCT-TYPE
-// ------------
+//#region PRODUCT-TYPE
+//--------------------
 
 /** Product type code. */
 export type ProductType = "CNC" | "INTRADAY" | "MARGIN" | "CO" | "BO";
 
-const enum InternalProductType {
+/** Internal product type code. */
+const enum _InternalProductType {
   CNC      = "CNC",
   INTRADAY = "INTRADAY",
   MARGIN   = "MARGIN",
@@ -923,7 +984,7 @@ const enum InternalProductType {
   BO       = "BO",
 }
 
-
+/** Mapping of product type code to product type name. */
 const PRODUCT_TYPE_DESCRIPTION: Map<ProductType, string> = new Map([
   ["CNC",      "Cash N Carry or Delivery Order, for equity only"],
   ["INTRADAY", "Intraday Order, applicable for all segments"],
@@ -932,6 +993,7 @@ const PRODUCT_TYPE_DESCRIPTION: Map<ProductType, string> = new Map([
   ["BO",       "Bracket Order"],
 ]);
 
+/** Mapping of product type code to product type code. */
 const PRODUCT_TYPE_CODE: Map<string, ProductType> = new Map([
   ["D", "CNC"],
   ["I", "INTRADAY"],
@@ -940,14 +1002,16 @@ const PRODUCT_TYPE_CODE: Map<string, ProductType> = new Map([
   ["B", "BO"],
 ]);
 
-
+/** Convert internal product type code to product type code. */
 function toProductType(x: string): ProductType {
   return x as ProductType;
 }
 
+/** Convert product type code to internal product type code. */
 function fromProductType(x: ProductType): string {
   return x;
 }
+
 
 /**
  * Get product type description.
@@ -955,7 +1019,7 @@ function fromProductType(x: ProductType): string {
  * @returns product type description
  */
  export function productTypeDescription(code: ProductType): string {
-  return PRODUCT_TYPE_DESCRIPTION.get(code);
+  return PRODUCT_TYPE_DESCRIPTION.get(code) as string;
 }
 
 /**
@@ -964,16 +1028,17 @@ function fromProductType(x: ProductType): string {
  * @returns product type code (CNC, INTRADAY, MARGIN, CO, BO)
  */
 export function productType(desc: string): ProductType {
-  var key = desc.charAt(0).toUpperCase();
+  let key = desc.charAt(0).toUpperCase();
   if (/cnc|cash|carry|deliver/i.test(desc)) key = "D";
-  return PRODUCT_TYPE_CODE.get(key);
+  return PRODUCT_TYPE_CODE.get(key) || "CNC";
 }
+//#endregion
 
 
 
 
-// INSTRUMENT-TYPE
-// ---------------
+//#region INSTRUMENT-TYPE
+//-----------------------
 
 /** Instrument type code. */
 export type InstrumentType =
@@ -982,7 +1047,8 @@ export type InstrumentType =
   "FUTCUR" | "FUTIRT" | "FUTIRC" | "OPTCUR" | "UNDCUR" | "UNDIRC" | "UNDIRT" | "UNDIRD" | "INDEX_CD" | "FUTIRD" | // CD segment
   "FUTCOM" | "OPTFUT" | "OPTCOM"; // COM segment
 
-const enum InternalInstrumentType {
+/** Internal instrument type code. */
+const enum _InternalInstrumentType {
   // CM segment
   EQ = 0,
   PREFSHARES = 1,
@@ -1014,7 +1080,7 @@ const enum InternalInstrumentType {
   OPTCOM = 32,
 }
 
-
+/** Mapping of instrument type code to instrument type name. */
 const TO_INSTRUMENT_TYPE: Map<number, InstrumentType> = new Map([
   // CM segment
   [0,  "EQ"],
@@ -1047,6 +1113,7 @@ const TO_INSTRUMENT_TYPE: Map<number, InstrumentType> = new Map([
   [32, "OPTCOM"],
 ]);
 
+/** Mapping of instrument type name to instrument type code. */
 const FROM_INSTRUMENT_TYPE: Map<InstrumentType, number> = new Map([
   // CM segment
   ["EQ", 0],
@@ -1079,6 +1146,7 @@ const FROM_INSTRUMENT_TYPE: Map<InstrumentType, number> = new Map([
   ["OPTCOM", 32],
 ]);
 
+/** Mapping of instrument type code to instrument type description. */
 const INSTRUMENT_TYPE_DESCRIPTION: Map<InstrumentType, string> = new Map([
   // CM segment
   ["EQ",     "Equity Shares"],
@@ -1111,14 +1179,16 @@ const INSTRUMENT_TYPE_DESCRIPTION: Map<InstrumentType, string> = new Map([
   ["OPTCOM", "Options on Commodity"],
 ]);
 
-
+/** Convert internal instrument type code to instrument type code. */
 function toInstrumentType(x: number): InstrumentType {
-  return TO_INSTRUMENT_TYPE.get(x);
+  return TO_INSTRUMENT_TYPE.get(x) || "EQ";
 }
 
-function fromInstrumentType(x: InstrumentType): number {
-  return FROM_INSTRUMENT_TYPE.get(x);
+/** Convert instrument type code to internal instrument type code. */
+function _fromInstrumentType(x: InstrumentType): number {
+  return FROM_INSTRUMENT_TYPE.get(x) as number;
 }
+
 
 /**
  * Get instrument type description.
@@ -1126,7 +1196,7 @@ function fromInstrumentType(x: InstrumentType): number {
  * @returns instrument type description
  */
  export function instrumentTypeDescription(code: InstrumentType): string {
-  return INSTRUMENT_TYPE_DESCRIPTION.get(code);
+  return INSTRUMENT_TYPE_DESCRIPTION.get(code) as string;
 }
 
 /**
@@ -1135,10 +1205,10 @@ function fromInstrumentType(x: InstrumentType): number {
  * @returns instrument type code
  */
 export function instrumentType(desc: string): InstrumentType {
-  var fut = /fut|future/i.test(desc);
-  var opt = /opt|option/i.test(desc);
-  var idx = /idx|index/i.test(desc);
-  var und = /und|underlying/i.test(desc);
+  const fut = /fut|future/i.test(desc);
+  const opt = /opt|option/i.test(desc);
+  const idx = /idx|index/i.test(desc);
+  const und = /und|underlying/i.test(desc);
   // COM segment
   if (/com(\b|$)|commodit/i.test(desc)) {
     if (opt) return fut? "OPTFUT" : "OPTCOM";
@@ -1168,12 +1238,13 @@ export function instrumentType(desc: string): InstrumentType {
   }
   return "EQ";
 }
+//#endregion
 
 
 
 
-// SYMBOL-DETAILS
-// --------------
+//#region SYMBOL-DETAILS
+//----------------------
 
 /** Get symbol name [equity, future, monthly-expiry option, weekly-expiry option]. */
 const RSYMBOL_NAME = /^\w+:(.+?)-\w+$|^\w+:(.+?)\d{2}\w{3}FUT$|^\w+:(.+?)\d{2}\w{3}[\d\.]+[CP]E$|^\w+:(.+?)\d{2}\w{1}\d{2}[\d\.]+[CP]E$/;
@@ -1193,9 +1264,9 @@ export interface SymbolDetails {
   isin: string,
 }
 
-
+/** Convert a row of symbol master CSV file to SymbolDetails object. */
 function toSymbolDetails(row: string): SymbolDetails {
-  var [token, description,, lotSize,, isin,,,, symbol] = row.split(',');
+  const [token, description,, lotSize,, isin,,,, symbol] = row.split(',');
   return {symbol, token, description, lotSize: parseInt(lotSize, 10), isin: isin || ""};
 }
 
@@ -1206,7 +1277,7 @@ function toSymbolDetails(row: string): SymbolDetails {
  * @returns symbol name
  */
 export function symbolName(code: string): string {
-  var m = RSYMBOL_NAME.exec(code);
+  const m = RSYMBOL_NAME.exec(code) as RegExpExecArray;
   return m[1] || m[2] || m[3] || m[4];
 }
 
@@ -1216,7 +1287,7 @@ export function symbolName(code: string): string {
  * @returns symbol exchange
  */
 export function symbolExchange(code: string): Exchange {
-  var i = code.indexOf(":");
+  const i = code.indexOf(":");
   return code.substring(0, i) as Exchange;
 }
 
@@ -1226,7 +1297,7 @@ export function symbolExchange(code: string): Exchange {
  * @returns symbol exchange series (EQ, BE, MF, ME, ...)
  */
 export function symbolSeries(code: string): string | null {
-  var i = code.lastIndexOf("-");
+  const i = code.lastIndexOf("-");
   return i > 0? code.substring(i) : null;
 }
 
@@ -1236,7 +1307,7 @@ export function symbolSeries(code: string): string | null {
  * @returns symbol option type
  */
 export function symbolOptionType(code: string): OptionType | null {
-  var a = code.substring(code.length - 2);
+  const a = code.substring(code.length - 2);
   return a === "CE" || a === "PE"? a : null;
 }
 
@@ -1246,7 +1317,7 @@ export function symbolOptionType(code: string): OptionType | null {
  * @returns symbol derivative type
  */
 export function symbolDerivativeType(code: string): DerivativeType | null {
-  var m = /(?:FUT|CE|PE)$/.exec(code);
+  const m = /(?:FUT|CE|PE)$/.exec(code);
   return m != null? m[0] as DerivativeType : null;
 }
 
@@ -1256,7 +1327,7 @@ export function symbolDerivativeType(code: string): DerivativeType | null {
  * @returns symbol strike price
  */
 export function symbolStrikePrice(code: string): number {
-  var RSTRIKE = /([\d\.]+)[CP]E$/, m = RSTRIKE.exec(code);
+  const RSTRIKE = /([\d\.]+)[CP]E$/, m = RSTRIKE.exec(code);
   return m != null? parseFloat(m[1]) : 0;
 }
 
@@ -1267,7 +1338,7 @@ export function symbolStrikePrice(code: string): number {
  * @returns symbol token
  */
 export function symbolToken(code: string, map: Map<string, SymbolDetails>): string {
-  return map.get(code).token;
+  return (map.get(code) as SymbolDetails).token;
 }
 
 /**
@@ -1277,7 +1348,7 @@ export function symbolToken(code: string, map: Map<string, SymbolDetails>): stri
  * @returns symbol description
  */
 export function symbolDescription(code: string, map: Map<string, SymbolDetails>): string {
-  return map.get(code).description;
+  return (map.get(code) as SymbolDetails).description;
 }
 
 /**
@@ -1287,7 +1358,7 @@ export function symbolDescription(code: string, map: Map<string, SymbolDetails>)
  * @returns symbol ISIN
  */
 export function symbolIsin(code: string, map: Map<string, SymbolDetails>): string {
-  return map.get(code).isin;
+  return (map.get(code) as SymbolDetails).isin;
 }
 
 /**
@@ -1297,14 +1368,15 @@ export function symbolIsin(code: string, map: Map<string, SymbolDetails>): strin
  * @returns symbol minimum lot size
  */
 export function symbolLotSize(code: string, map: Map<string, SymbolDetails>): number {
-  return map.get(code).lotSize;
+  return (map.get(code) as SymbolDetails).lotSize;
 }
+//#endregion
 
 
 
 
-// LOGIN
-// -----
+//#region LOGIN
+//-------------
 
 /** Attributes required for authorization of all requests. */
 export interface Authorization {
@@ -1314,7 +1386,7 @@ export interface Authorization {
   accessToken: string,
 }
 
-
+/** Convert Authorization object to http.Authorization object. */
 function fromAuthorization(x: Authorization): http.Authorization {
   return {
     app_id:       x.appId,
@@ -1333,7 +1405,7 @@ export interface LoginStep1Request {
   state: string,
 }
 
-
+/** Convert LoginStep1Request object to http.LoginStep1Request object. */
 function fromLoginStep1Request(x: LoginStep1Request): http.LoginStep1Request {
   return {
     client_id:     x.appId,
@@ -1352,8 +1424,8 @@ export interface LoginStep1Response {
   state: string,
 }
 
-
-function toLoginStep1Response(x: http.LoginStep1Response): LoginStep1Response {
+/** Convert http.LoginStep1Response object to LoginStep1Response object. */
+function _toLoginStep1Response(x: http.LoginStep1Response): LoginStep1Response {
   return {
     authorizationCode: x.auth_code,
     state: x.state,
@@ -1369,7 +1441,7 @@ export interface LoginStep2Request {
   authorizationCode: string,
 }
 
-
+/** Convert LoginStep2Request object to http.LoginStep2Request object. */
 function fromLoginStep2Request(x: LoginStep2Request): http.LoginStep2Request {
   return {
     grant_type: "authorization_code",
@@ -1385,18 +1457,19 @@ export interface LoginStep2Response {
   accessToken: string,
 }
 
-
-function toLoginStep2Response(x: http.LoginStep2Response): LoginStep2Response {
+/** Convert http.LoginStep2Response object to LoginStep2Response object. */
+function _toLoginStep2Response(x: http.LoginStep2Response): LoginStep2Response {
   return {
     accessToken: x.access_token,
   };
 }
+//#endregion
 
 
 
 
-// GET-PROFILE
-// -----------
+//#region GET-PROFILE
+//-------------------
 
 /** Basic details of the client. */
 export interface Profile {
@@ -1410,9 +1483,9 @@ export interface Profile {
   pan: string,
 }
 
-
+/** Convert http.GetProfileResponse object to Profile object. */
 function toProfile(x: http.GetProfileResponse): Profile {
-  var d = x.data;
+  const d = x.data;
   return {
     id:    d.fy_id,
     email: d.email_id,
@@ -1420,12 +1493,13 @@ function toProfile(x: http.GetProfileResponse): Profile {
     pan:   d.PAN,
   };
 }
+//#endregion
 
 
 
 
-// GET-FUNDS
-// ---------
+//#region GET-FUNDS
+//-----------------
 
 /** Limits for equity/commodity fund. */
 export interface Fund {
@@ -1460,6 +1534,7 @@ export interface Funds {
   commodity: Fund,
 }
 
+/** Internal fund limit type code. */
 const enum InternalFundLimitType {
   START    = 9,
   DEPOSITS = 6,
@@ -1475,10 +1550,11 @@ const enum InternalFundLimitType {
 import IFLT = InternalFundLimitType;
 
 
+/** Convert http.GetFundsResponse object to Funds object. */
 function toFunds(x: http.GetFundsResponse): Funds {
-  var e: Fund = {} as any;
-  var c: Fund = {} as any;
-  for (var l of x.fund_limit) {
+  const e: Fund = {} as Record<keyof Fund, number>;
+  const c: Fund = {} as Record<keyof Fund, number>;
+  for (const l of x.fund_limit) {
     switch (l.id) {
       case IFLT.START:
         e.start = l.equityAmount;
@@ -1524,12 +1600,13 @@ function toFunds(x: http.GetFundsResponse): Funds {
   }
   return {equity: e, commodity: c};
 }
+//#endregion
 
 
 
 
-// GET-HOLDINGS
-// ------------
+//#region GET-HOLDINGS
+//--------------------
 
 /** Details of each holding. */
 export interface Holding {
@@ -1561,7 +1638,7 @@ export interface Holding {
   returnsPercent: number,
 }
 
-
+/** Convert http.Holding object to Holding object. */
 function toHolding(x: http.Holding): Holding {
   return {
     isin:     x.isin,
@@ -1597,10 +1674,10 @@ export interface HoldingsOverall {
   returnsPercent: number,
 }
 
-
+/** Convert http.HoldingsOverall object to HoldingsOverall object. */
 function toHoldingsOverall(xs: http.Holding[], x: http.HoldingsOverall): HoldingsOverall {
-  var settledCount = 0;
-  for (var h of xs)
+  let settledCount = 0;
+  for (const h of xs)
     if (h.holdingType === "HLD") settledCount++;
   return {
     count: x.count_total,
@@ -1621,19 +1698,20 @@ export interface Holdings {
   overall: HoldingsOverall,
 }
 
-
+/** Convert http.GetHoldingsResponse object to Holdings object. */
 function toHoldings(x: http.GetHoldingsResponse): Holdings {
   return {
     details: x.holdings.map(toHolding),
     overall: toHoldingsOverall(x.holdings, x.overall),
   };
 }
+//#endregion
 
 
 
 
-// GET-ORDERS
-// ----------
+//#region GET-ORDERS
+//------------------
 
 /** Order placed by the user in the current trading day. */
 export interface Order {
@@ -1684,7 +1762,7 @@ export interface Order {
   /** The order time as per DD-MMM-YYYY hh:mm:ss in IST. */
   date: string,
   /** The parent order id will be provided only for applicable orders. */
-  parentId?: string,
+  parentId: string | null,
   /** Price change from previous trading day. */
   priceChange: number,
   /** Percent price change from previous trading day. */
@@ -1696,12 +1774,12 @@ export interface Order {
   /** The error messages are shown here. */
   message: string,
   /** PAN of the client. */
-  pan: string,
+  pan: string | null,
   /** The client id of the fyers user. */
-  clientId: string,
+  clientId: string | null,
 }
 
-
+/** Convert http.Order object to Order object. */
 function toOrder(x: http.Order): Order {
   return {
     id:     x.id,
@@ -1733,7 +1811,7 @@ function toOrder(x: http.Order): Order {
     currentPrice: x.lp,
     tradedPrice:  x.tradedPrice,
     message:      x.message,
-    pan:          x.pan      || null,
+    pan:          x.pan || null,
     clientId:     x.clientId || null,
   };
 }
@@ -1759,9 +1837,9 @@ export interface OrdersOverall {
   remainingDisclosedQuantity: number,
 }
 
-
+/** Convert http.Order[] object to OrdersOverall object. */
 function toOrdersOverall(x: http.Order[]): OrdersOverall {
-  var a: OrdersOverall = {
+  const a: OrdersOverall = {
     count: 0,
     openCount: 0,
     closedCount: 0,
@@ -1771,7 +1849,7 @@ function toOrdersOverall(x: http.Order[]): OrdersOverall {
     disclosedQuantity: 0,
     remainingDisclosedQuantity: 0,
   };
-  for (var o of x) {
+  for (const o of x) {
     a.count++;
     a.openCount += o.status === IOST.PENDING || o.status === IOST.TRANSIT? 1 : 0;
     a.quantity  += o.qty;
@@ -1800,12 +1878,13 @@ function toOrders(x: http.GetOrdersResponse): Orders {
     overall: toOrdersOverall(x.orderBook),
   };
 }
+//#endregion
 
 
 
 
-// GET-POSITIONS
-// -------------
+//#region GET-POSITIONS
+//---------------------
 
 /** Current open and closed position for the current trading day. */
 export interface Position {
@@ -1855,7 +1934,7 @@ export interface Position {
   currentPrice: number,
 }
 
-
+/** Convert http.Position object to Position object. */
 function toPosition(x: http.Position): Position {
   return {
     id: x.id,
@@ -1904,10 +1983,10 @@ export interface PositionsOverall {
   unrealizedReturns: number,
 }
 
-
+/** Convert http.Position[] and http.PositionsOverall object to PositionsOverall object. */
 function toPositionsOverall(xs: http.Position[], x: http.PositionsOverall): PositionsOverall {
-  var buyValue = 0, sellValue = 0;
-  for (var p of xs) {
+  let buyValue = 0, sellValue = 0;
+  for (const p of xs) {
     buyValue  += p.buyVal;
     sellValue += p.sellVal;
   }
@@ -1932,19 +2011,20 @@ export interface Positions {
   overall: PositionsOverall,
 }
 
-
+/** Convert http.GetPositionsResponse object to Positions object. */
 function toPositions(x: http.GetPositionsResponse): Positions {
   return {
     details: x.netPositions.map(toPosition),
     overall: toPositionsOverall(x.netPositions, x.overall),
   };
 }
+//#endregion
 
 
 
 
-// GET-TRADES
-// ----------
+//#region GET-TRADES
+//------------------
 
 /** Trade for the current day across all platforms and exchanges in the current trading day. */
 export interface Trade {
@@ -1978,7 +2058,7 @@ export interface Trade {
   clientId: string,
 }
 
-
+/** Convert http.Trade object to Trade object. */
 function toTrade(x: http.Trade): Trade {
   return {
     id: x.id,
@@ -2009,14 +2089,14 @@ export interface TradesOverall {
   value: number,
 }
 
-
+/** Convert http.Trade[] object to TradesOverall object. */
 function toTradesOverall(x: http.Trade[]): TradesOverall {
-  var a: TradesOverall = {
+  const a: TradesOverall = {
     count: 0,
     quantity: 0,
     value: 0,
   };
-  for (var t of x) {
+  for (const t of x) {
     a.count++;
     a.quantity += t.tradedQty;
     a.value    += t.tradeValue;
@@ -2033,19 +2113,20 @@ export interface Trades {
   overall: TradesOverall,
 }
 
-
+/** Convert http.GetTradesResponse object to Trades object. */
 function toTrades(x: http.GetTradesResponse): Trades {
   return {
     details: x.tradeBook.map(toTrade),
     overall: toTradesOverall(x.tradeBook),
   };
 }
+//#endregion
 
 
 
 
-// PLACE-ORDER
-// -----------
+//#region PLACE-ORDER
+//-------------------
 
 /** Defines an order to any exchange via Fyers. */
 export interface PlaceOrder {
@@ -2075,7 +2156,7 @@ export interface PlaceOrder {
   takeProfit?: number,
 }
 
-
+/** Convert PlaceOrder object to http.PlaceOrderRequest object. */
 function fromPlaceOrder(x: PlaceOrder): http.PlaceOrderRequest {
   return {
     symbol: x.symbol,
@@ -2092,12 +2173,13 @@ function fromPlaceOrder(x: PlaceOrder): http.PlaceOrderRequest {
     takeProfit:   x.takeProfit || 0,
   };
 }
+//#endregion
 
 
 
 
-// MODIFY-ORDER
-// ------------
+//#region MODIFY-ORDER
+//--------------------
 
 /** Defines an order modification request to Fyers. */
 export interface ModifyOrder {
@@ -2115,7 +2197,7 @@ export interface ModifyOrder {
   stopPrice?: number,
 }
 
-
+/** Convert ModifyOrder object to http.ModifyOrderRequest object. */
 function fromModifyOrder(x: ModifyOrder): http.ModifyOrderRequest {
   return {
     id:   x.id,
@@ -2126,12 +2208,13 @@ function fromModifyOrder(x: ModifyOrder): http.ModifyOrderRequest {
     stopPrice:    x.stopPrice,
   };
 }
+//#endregion
 
 
 
 
-// CONVERT-POSITION
-// ----------------
+//#region CONVERT-POSITION
+//------------------------
 
 /** Defines a convert position request to Fyers. */
 export interface ConvertPosition {
@@ -2147,7 +2230,7 @@ export interface ConvertPosition {
   toProductType?: ProductType,
 }
 
-
+/** Convert ConvertPosition object to http.ConvertPositionRequest object. */
 function fromConvertPosition(x: ConvertPosition): http.ConvertPositionRequest {
   return {
     symbol:       x.symbol,
@@ -2157,12 +2240,13 @@ function fromConvertPosition(x: ConvertPosition): http.ConvertPositionRequest {
     convertTo:    fromProductType(x.toProductType   || "CNC"),
   };
 }
+//#endregion
 
 
 
 
-// GET-MARKET-STATUS
-// -----------------
+//#region GET-MARKET-STATUS
+//-------------------------
 
 /** Current market status of an exchange's segment. */
 export interface MarketStatus {
@@ -2176,7 +2260,7 @@ export interface MarketStatus {
   status: string,
 }
 
-
+/** Convert http.MarketStatus object to MarketStatus object. */
 function toMarketStatus(x: http.MarketStatus): MarketStatus {
   return {
     exchange: toExchange(x.exchange),
@@ -2197,14 +2281,14 @@ export interface MarketsStatusOverall {
   closedCount: number,
 }
 
-
+/** Convert http.MarketStatus[] object to MarketsStatusOverall object. */
 function toMarketsStatusOverall(x: http.MarketStatus[]): MarketsStatusOverall {
-  var a: MarketsStatusOverall = {
+  const a: MarketsStatusOverall = {
     count: 0,
     openCount: 0,
     closedCount: 0,
   };
-  for (var s of x) {
+  for (const s of x) {
     a.count++;
     if (s.status === "OPEN") a.openCount++;
     else a.closedCount++;
@@ -2221,19 +2305,20 @@ export interface MarketsStatus {
   overall: MarketsStatusOverall,
 }
 
-
+/** Convert http.GetMarketStatusResponse object to MarketsStatus object. */
 function toMarketsStatus(x: http.GetMarketStatusResponse): MarketsStatus {
   return {
     details: x.marketStatus.map(toMarketStatus),
     overall: toMarketsStatusOverall(x.marketStatus),
   };
 }
+//#endregion
 
 
 
 
-// GET-MARKET-HISTORY
-// ------------------
+//#region GET-MARKET-HISTORY
+//--------------------------
 
 /** Request for getting market history of a symbol. */
 export interface GetMarketHistory {
@@ -2249,6 +2334,7 @@ export interface GetMarketHistory {
   continuous: boolean,
 }
 
+/** Internal short candle index. */
 const enum InternalShortCandleIndex {
   TIME   = 0,
   OPEN   = 1,
@@ -2260,18 +2346,20 @@ const enum InternalShortCandleIndex {
 import ISCI = InternalShortCandleIndex;
 
 
-// List of valid candle resolutions in minutes.
+/** List of valid candle resolutions in minutes. */
 const CANDLE_RESOLUTIONS = [1, 2, 3, 5, 10, 15, 20, 30, 60, 120, 240, 1440];
 
+/** Convert candle resolution in minutes to string. */
 function fromCandleResolution(x: number): string {
-  var R = 1, D = Infinity;
-  for (var r of CANDLE_RESOLUTIONS) {
-    var d = Math.abs(x - r);
+  let R = 1, D = Infinity;
+  for (const r of CANDLE_RESOLUTIONS) {
+    const d = Math.abs(x - r);
     if (d < D) { R = r; D = d; }
   }
   return R === 1440? "D" : R.toString();
 }
 
+/** Convert GetMarketHistory object to http.GetMarketHistoryRequest object. */
 function fromGetMarketHistory(x: GetMarketHistory): http.GetMarketHistoryRequest {
   return {
     symbol:      x.symbol,
@@ -2300,7 +2388,7 @@ export interface Candle {
   volume: number,
 }
 
-
+/** Convert http.ShortCandle object to Candle object. */
 function toCandleShort(x: http.ShortCandle): Candle {
   return {
     date:       x[ISCI.TIME],
@@ -2312,6 +2400,7 @@ function toCandleShort(x: http.ShortCandle): Candle {
   };
 }
 
+/** Convert http.Candle object to Candle object. */
 function toCandle(x: http.Candle): Candle {
   return {
     date:       x.t,
@@ -2342,9 +2431,9 @@ export interface MarketHistoryOverall {
   volume: number,
 }
 
-
+/** Convert http.ShortCandle[] object to MarketHistoryOverall object. */
 function toMarketHistoryOverall(x: http.ShortCandle[]): MarketHistoryOverall {
-  var a: MarketHistoryOverall = {
+  const a: MarketHistoryOverall = {
     fromDate: 0,
     toDate: 0,
     openPrice: 0,
@@ -2354,14 +2443,14 @@ function toMarketHistoryOverall(x: http.ShortCandle[]): MarketHistoryOverall {
     volume: 0,
   };
   if (x.length === 0) return a;
-  var l = x.length - 1;
+  const l = x.length - 1;
   a.fromDate   = x[0][ISCI.TIME];
   a.toDate     = x[l][ISCI.TIME];
   a.openPrice  = x[0][ISCI.OPEN];
   a.highPrice  = x[0][ISCI.HIGH];
   a.lowPrice   = x[0][ISCI.LOW];
   a.closePrice = x[l][ISCI.CLOSE];
-  for (var c of x) {
+  for (const c of x) {
     a.highPrice = Math.max(a.highPrice, c[ISCI.HIGH]);
     a.lowPrice  = Math.min(a.lowPrice,  c[ISCI.LOW]);
     a.volume    += c[ISCI.VOLUME];
@@ -2378,19 +2467,20 @@ export interface MarketHistory {
   overall: MarketHistoryOverall,
 }
 
-
+/** Convert http.GetMarketHistoryResponse object to MarketHistory object. */
 function toMarketHistory(x: http.GetMarketHistoryResponse): MarketHistory {
   return {
     details: x.candles.map(toCandleShort),
     overall: toMarketHistoryOverall(x.candles),
   };
 }
+//#endregion
 
 
 
 
-// GET-MARKET-QUOTES
-// -----------------
+//#region GET-MARKET-QUOTES
+//-------------------------
 
 /** Market quote details for a particular symbol. */
 export interface MarketQuote {
@@ -2423,7 +2513,7 @@ export interface MarketQuote {
   /** Percentage of change between the current value and the previous day's market close. */
   priceChangePercent: number,
   /** Current time, open, high, low price and volume with HH:MM timestamp. */
-  candle: Candle,
+  candle: Candle | null,
   /** Asking price for the symbol. */
   askPrice: number,
   /** Bidding price for the symbol. */
@@ -2432,9 +2522,9 @@ export interface MarketQuote {
   priceSpread: number,
 }
 
-
+/** Convert http.MarketQuote object to MarketQuote object. */
 function toMarketQuote(x: http.MarketQuote): MarketQuote {
-  var v = x.v;
+  const v = x.v;
   return {
     symbol:   x.n,
     token:    v.fyToken,
@@ -2473,7 +2563,7 @@ export interface MarketOffer {
   orders: number,
 }
 
-
+/** Convert http.MarketOffer object to MarketOffer object. */
 function toMarketOffer(x: http.MarketOffer): MarketOffer {
   return {
     price:  x.price,
@@ -2482,6 +2572,7 @@ function toMarketOffer(x: http.MarketOffer): MarketOffer {
   };
 }
 
+/** Convert websocket.L2MarketOffer object to MarketOffer object. */
 function toMarketOfferL2(x: websocket.L2MarketOffer, p: number): MarketOffer {
   return {
     price:  x.price / p,
@@ -2545,12 +2636,12 @@ export interface MarketDepth {
   asks: MarketOffer[],
 }
 
-
-function toMarketDepth(x: http.GetMarketDepthResponse): MarketDepth {
-  var ks = Object.keys(x.d);
+/** Convert http.GetMarketDepthResponse object to MarketDepth object. */
+function toMarketDepth(x: http.GetMarketDepthResponse): MarketDepth | null {
+  const ks = Object.keys(x.d);
   if (ks.length === 0) return null;  // TODO: OK?
-  var s = ks[0];
-  var v = x.d[s];
+  const s = ks[0];
+  const v = x.d[s];
   return {
     symbol: s,
     token:  null,
@@ -2579,12 +2670,13 @@ function toMarketDepth(x: http.GetMarketDepthResponse): MarketDepth {
     asks: v.ask.map(toMarketOffer),
   };
 }
+//#endregion
 
 
 
 
-// GET-EDIS-TRANSACTIONS
-// ---------------------
+//#region GET-EDIS-TRANSACTIONS
+//-----------------------------
 
 /** Details of an e-DIS transaction. */
 export interface EdisTransaction {
@@ -2616,7 +2708,7 @@ export interface EdisTransaction {
   reason: string,
 }
 
-
+/** Convert http.EdisTransaction object to EdisTransaction object. */
 function toEdisTransaction(x: http.EdisTransaction): EdisTransaction {
   return {
     id: x.transactionId,
@@ -2646,14 +2738,14 @@ export interface EdisTransactionsOverall {
   remainingQuantity: number,
 }
 
-
+/** Convert http.EdisTransaction[] object to EdisTransactionsOverall object. */
 function toEdisTransactionsOverall(x: http.EdisTransaction[]): EdisTransactionsOverall {
-  var a: EdisTransactionsOverall = {
+  const a: EdisTransactionsOverall = {
     count: 0,
     quantity: 0,
     remainingQuantity: 0,
   };
-  for (var t of x) {
+  for (const t of x) {
     a.count++;
     a.quantity          += t.qty;
     a.remainingQuantity += t.qty - t.qtyUtlize;
@@ -2670,20 +2762,21 @@ export interface EdisTransactions {
   overall: EdisTransactionsOverall,
 }
 
-
+/** Convert http.GetEdisTransactionsResponse object to EdisTransactions object. */
 function toEdisTransactions(x: http.GetEdisTransactionsResponse): EdisTransactions {
-  var ts: http.EdisTransaction[] = x.data.length === 0? [] : x.data as any;
+  const ts: http.EdisTransaction[] = x.data.length === 0? [] : x.data as http.EdisTransaction[];
   return {
     details: ts.map(toEdisTransaction),
     overall: toEdisTransactionsOverall(ts),
   };
 }
+//#endregion
 
 
 
 
-// SUBMIT-EDIS-HOLDINGS
-// --------------------
+//#region SUBMIT-EDIS-HOLDINGS
+//----------------------------
 
 /** e-DIS securities held in a demat account. */
 export interface EdisHolding {
@@ -2693,19 +2786,20 @@ export interface EdisHolding {
   quantity: number,
 }
 
-
+/** Convert EdisHolding object to http.EdisHolding object. */
 function fromEdisHolding(x: EdisHolding): http.EdisHolding {
   return {
     isin_code: x.isin,
     qty:       x.quantity,
   };
 }
+//#endregion
 
 
 
 
-// ORDER-UPDATE
-// ------------
+//#region ORDER-UPDATE
+//--------------------
 
 /** Order update notification from WebSocket. */
 export interface OrderUpdateNotification {
@@ -2744,16 +2838,16 @@ export interface OrderUpdateNotification {
   /** The order time as per DD-MMM-YYYY hh:mm:ss in IST. */
   date: string,
   /** The parent order id will be provided only for applicable orders. */
-  parentId?: string,
+  parentId: string | null,
   /** The average traded price for the order. */
   tradedPrice: number,
   /** The error messages are shown here. */
   message: string,
 }
 
-
+/** Convert websocket.OrderUpdateNotification object to OrderUpdateNotification object. */
 function toOrderUpdateNotification(x: websocket.OrderUpdateNotification): OrderUpdateNotification {
-  var d = x.d;
+  const d = x.d as websocket.OrderUpdate;
   return {
     id: d.id,
     symbol:       d.symbol,
@@ -2777,17 +2871,18 @@ function toOrderUpdateNotification(x: websocket.OrderUpdateNotification): OrderU
     message:      d.message,
   };
 }
+//#endregion
 
 
 
 
-// SUBSCRIBE-MARKET-QUOTES/DEPTH
-// -----------------------------
+//#region SUBSCRIBE-MARKET-QUOTES/DEPTH
+//-------------------------------------
 
 /** Market quote notification from WebSocket. */
 export interface MarketQuoteNotification {
   /** The symbol for which order is placed. */
-  symbol?: string,
+  symbol: string | null,
   /** A unique identifier for every symbol. */
   token: string,
   /** Short name for the symbol Eg: “SBIN-EQ”. */
@@ -2841,23 +2936,23 @@ export interface MarketQuoteNotification {
 /** Market depth notification from WebSocket. */
 export interface MarketDepthNotification extends MarketQuoteNotification {
   /** Bidding price along with volume and total number of orders. */
-  bids: MarketOffer[],
+  bids: MarketOffer[] | null,
   /** Offer price with volume and total number of orders. */
-  asks: MarketOffer[],
+  asks: MarketOffer[] | null,
 }
 
 /** Market depth notification from WebSocket. */
 export interface MarketDataNotification extends MarketDepthNotification {}
 
-
-function toMarketDataNotification(x: websocket.MarketDataNotification, map: Map<string, string>): MarketDataNotification {
-  var d = x.d;
-  var t = d.token.toString();
-  var p = d.price_conv || 1;
-  var s = map != null? map.get(t) || null : null;
-  var priceChange = d.ltp - d.prev_close_price;
-  var bid = d.bids == null? d.bid : d.bids[0].price;
-  var ask = d.asks == null? d.ask : d.asks[0].price;
+/** Convert websocket.MarketDataNotification object to MarketDataNotification object. */
+function toMarketDataNotification(x: websocket.MarketDataNotification, map: Map<string, string> | null): MarketDataNotification {
+  const d = x.d as websocket.MarketData;
+  const t = d.token.toString();
+  const p = d.price_conv || 1;
+  const s = map != null? map.get(t) || null : null;
+  const priceChange = d.ltp - d.prev_close_price;
+  const bid = d.bids == null? d.bid : d.bids[0].price;
+  const ask = d.asks == null? d.ask : d.asks[0].price;
   return {
     symbol:   s,
     token:    t,
@@ -2895,12 +2990,13 @@ function toMarketDataNotification(x: websocket.MarketDataNotification, map: Map<
     asks: d.asks == null? null : d.asks.map(x => toMarketOfferL2(x, p)),
   };
 }
+//#endregion
 
 
 
 
-// NOTIFICATIONS
-// -------------
+//#region NOTIFICATIONS
+//---------------------
 
 /**
  * Market data notified function.
@@ -2913,28 +3009,32 @@ export type OnMarketDataNotification = (notification: MarketDataNotification) =>
  * @param notification notification
  */
 export type OnOrderUpdateNotification = (notification: OrderUpdateNotification) => void;
+//#endregion
 
 
 
 
-// CHARGES
-// -------
+//#region CHARGES
+//---------------
 
+/** Get charge for a given value and percentage. */
 function charge(x: number, p: number) {
   return 0.01 * Math.round(x * p);
 }
 
+/** Get equity delivery buy charges. */
 function equityDeliveryBuyCharges(x: number) {
-  var sttctt = charge(x, 0.10);
-  var gst    = charge(sttctt, 18.0);
-  var exch   = charge(x, 0.00325);
-  var stamp  = charge(x, 0.015);
-  var sebi   = charge(x, 0.0001);
+  const sttctt = charge(x, 0.10);
+  const gst    = charge(sttctt, 18.0);
+  const exch   = charge(x, 0.00325);
+  const stamp  = charge(x, 0.015);
+  const sebi   = charge(x, 0.0001);
   return sttctt + gst + exch + stamp + sebi;
 }
 
+/** Get equity delivery sell charges. */
 function equityDeliverySellCharges(x: number) {
-  var debit  = 7.00 + 5.50;
+  const debit  = 7.00 + 5.50;
   return debit + equityDeliveryBuyCharges(x);
 }
 
@@ -2944,28 +3044,29 @@ function equityDeliverySellCharges(x: number) {
  * @param value traded value
  * @returns total charges including brokerage and taxes
  */
- export function equityDeliveryCharges(side: OrderSide, value: number) {
+ export function equityDeliveryCharges(side: OrderSide, value: number): number {
   if (side === "BUY") return equityDeliveryBuyCharges(value);
   return equityDeliverySellCharges(value);
 }
 
-
+/** Get equity intraday buy charges. */
 function equityIntradayBuyCharges(x: number) {
-  var broker = Math.min(20.00, charge(x, 0.03));
-  var gst    = charge(broker, 18.0);
-  var exch   = charge(x, 0.00325);
-  var stamp  = charge(x, 0.003);
-  var sebi   = charge(x, 0.0001);
+  const broker = Math.min(20.00, charge(x, 0.03));
+  const gst    = charge(broker, 18.0);
+  const exch   = charge(x, 0.00325);
+  const stamp  = charge(x, 0.003);
+  const sebi   = charge(x, 0.0001);
   return broker + gst + exch + stamp + sebi;
 }
 
+/** Get equity intraday sell charges. */
 function equityIntradaySellCharges(x: number) {
-  var broker = Math.min(20.00, charge(x, 0.03));
-  var sttctt = charge(x, 0.025);
-  var gst    = charge(broker + sttctt, 18.0);
-  var exch   = charge(x, 0.00325);
-  var stamp  = charge(x, 0.003);
-  var sebi   = charge(x, 0.0001);
+  const broker = Math.min(20.00, charge(x, 0.03));
+  const sttctt = charge(x, 0.025);
+  const gst    = charge(broker + sttctt, 18.0);
+  const exch   = charge(x, 0.00325);
+  const stamp  = charge(x, 0.003);
+  const sebi   = charge(x, 0.0001);
   return broker + sttctt + gst + exch + stamp + sebi;
 }
 
@@ -2975,30 +3076,31 @@ function equityIntradaySellCharges(x: number) {
  * @param value traded value
  * @returns total charges including brokerage and taxes
  */
- export function equityIntradayCharges(side: OrderSide, value: number) {
+ export function equityIntradayCharges(side: OrderSide, value: number): number {
   if (side === "BUY") return equityIntradayBuyCharges(value);
   return equityIntradaySellCharges(value);
 }
 
-
+/** Get equity futures buy charges. */
 function equityFuturesBuyCharges(x: number) {
-  var broker = Math.min(20.00, charge(x, 0.03));
-  var gst    = charge(broker, 18.0);
-  var exch   = charge(x, 0.0019);
-  var clear  = charge(x, 0.0005);
-  var stamp  = charge(x, 0.002);
-  var sebi   = charge(x, 0.0001);
+  const broker = Math.min(20.00, charge(x, 0.03));
+  const gst    = charge(broker, 18.0);
+  const exch   = charge(x, 0.0019);
+  const clear  = charge(x, 0.0005);
+  const stamp  = charge(x, 0.002);
+  const sebi   = charge(x, 0.0001);
   return broker + gst + exch + clear + stamp + sebi;
 }
 
+/** Get equity futures sell charges. */
 function equityFuturesSellCharges(x: number) {
-  var broker = Math.min(20.00, charge(x, 0.03));
-  var sttctt = charge(x, 0.01);
-  var gst    = charge(broker + sttctt, 18.0);
-  var exch   = charge(x, 0.0019);
-  var clear  = charge(x, 0.0005);
-  var stamp  = charge(x, 0.002);
-  var sebi   = charge(x, 0.0001);
+  const broker = Math.min(20.00, charge(x, 0.03));
+  const sttctt = charge(x, 0.01);
+  const gst    = charge(broker + sttctt, 18.0);
+  const exch   = charge(x, 0.0019);
+  const clear  = charge(x, 0.0005);
+  const stamp  = charge(x, 0.002);
+  const sebi   = charge(x, 0.0001);
   return broker + sttctt + gst + exch + clear + stamp + sebi;
 }
 
@@ -3008,30 +3110,31 @@ function equityFuturesSellCharges(x: number) {
  * @param value traded value
  * @returns total charges including brokerage and taxes
  */
- export function equityFuturesCharges(side: OrderSide, value: number) {
+ export function equityFuturesCharges(side: OrderSide, value: number): number {
   if (side === "BUY") return equityFuturesBuyCharges(value);
   return equityFuturesSellCharges(value);
 }
 
-
+/** Get equity options buy charges. */
 function equityOptionsBuyCharges(x: number) {
-  var broker = 20.00;
-  var gst    = charge(broker, 18.0);
-  var exch   = charge(x, 0.053);
-  var clear  = charge(x, 0.009);
-  var stamp  = charge(x, 0.003);
-  var sebi   = charge(x, 0.0001);
+  const broker = 20.00;
+  const gst    = charge(broker, 18.0);
+  const exch   = charge(x, 0.053);
+  const clear  = charge(x, 0.009);
+  const stamp  = charge(x, 0.003);
+  const sebi   = charge(x, 0.0001);
   return broker + gst + exch + clear + stamp + sebi;
 }
 
+/** Get equity options sell charges. */
 function equityOptionsSellCharges(x: number) {
-  var broker = 20.00;
-  var sttctt = charge(x, 0.05);
-  var gst    = charge(broker + sttctt, 18.0);
-  var exch   = charge(x, 0.053);
-  var clear  = charge(x, 0.009);
-  var stamp  = charge(x, 0.003);
-  var sebi   = charge(x, 0.0001);
+  const broker = 20.00;
+  const sttctt = charge(x, 0.05);
+  const gst    = charge(broker + sttctt, 18.0);
+  const exch   = charge(x, 0.053);
+  const clear  = charge(x, 0.009);
+  const stamp  = charge(x, 0.003);
+  const sebi   = charge(x, 0.0001);
   return broker + sttctt + gst + exch + clear + stamp + sebi;
 }
 
@@ -3041,72 +3144,74 @@ function equityOptionsSellCharges(x: number) {
  * @param value traded value
  * @returns total charges including brokerage and taxes
  */
- export function equityOptionsCharges(side: OrderSide, value: number) {
+ export function equityOptionsCharges(side: OrderSide, value: number): number {
   if (side === "BUY") return equityOptionsBuyCharges(value);
   return equityOptionsSellCharges(value);
 }
 
 
+/** Get currency futures buy/sell charges. */
 function currencyFuturesBuySellCharges(x: number) {
-  var broker = Math.min(20.00, charge(x, 0.03));
-  var gst    = charge(broker, 18.0);
-  var exch   = charge(x, 0.00115);
-  var clear  = charge(x, 0.0005);
-  var stamp  = charge(x, 0.0001);
-  var sebi   = charge(x, 0.0001);
+  const broker = Math.min(20.00, charge(x, 0.03));
+  const gst    = charge(broker, 18.0);
+  const exch   = charge(x, 0.00115);
+  const clear  = charge(x, 0.0005);
+  const stamp  = charge(x, 0.0001);
+  const sebi   = charge(x, 0.0001);
   return broker + gst + exch + clear + stamp + sebi;
 }
 
 /**
  * Get currency futures charges.
- * @param side order side (BUY, SELL)
+ * @param _side order side (BUY, SELL)
  * @param value traded value
  * @returns total charges including brokerage and taxes
  */
- export function currencyFuturesCharges(side: OrderSide, value: number) {
+ export function currencyFuturesCharges(_side: OrderSide, value: number): number {
   return currencyFuturesBuySellCharges(value);
 }
 
-
+/** Get currency options buy/sell charges. */
 function currencyOptionsBuySellCharges(x: number) {
-  var broker = 20.00;
-  var gst    = charge(broker, 18.0);
-  var exch   = charge(x, 0.04);
-  var clear  = charge(x, 0.009);
-  var stamp  = charge(x, 0.0001);
-  var sebi   = charge(x, 0.0001);
+  const broker = 20.00;
+  const gst    = charge(broker, 18.0);
+  const exch   = charge(x, 0.04);
+  const clear  = charge(x, 0.009);
+  const stamp  = charge(x, 0.0001);
+  const sebi   = charge(x, 0.0001);
   return broker + gst + exch + clear + stamp + sebi;
 }
 
 /**
  * Get currency options charges.
- * @param side order side (BUY, SELL)
+ * @param _side order side (BUY, SELL)
  * @param value traded value
  * @returns total charges including brokerage and taxes
  */
- export function currencyOptionsCharges(side: OrderSide, value: number) {
+ export function currencyOptionsCharges(_side: OrderSide, value: number): number {
   return currencyOptionsBuySellCharges(value);
 }
 
-
+/** Get commodity futures buy charges. */
 function commodityFuturesBuyCharges(x: number) {
-  var broker = Math.min(20.00, charge(x, 0.03));
-  var gst    = charge(broker, 18.0);
-  var exch   = charge(x, 0.0026);
-  var clear  = charge(x, 0.0018);
-  var stamp  = charge(x, 0.002);
-  var sebi   = charge(x, 0.0001);
+  const broker = Math.min(20.00, charge(x, 0.03));
+  const gst    = charge(broker, 18.0);
+  const exch   = charge(x, 0.0026);
+  const clear  = charge(x, 0.0018);
+  const stamp  = charge(x, 0.002);
+  const sebi   = charge(x, 0.0001);
   return broker + gst + exch + clear + stamp + sebi;
 }
 
+/** Get commodity futures sell charges. */
 function commodityFuturesSellCharges(x: number) {
-  var broker = Math.min(20.00, charge(x, 0.03));
-  var sttctt = charge(x, 0.01);
-  var gst    = charge(broker + sttctt, 18.0);
-  var exch   = charge(x, 0.0026);
-  var clear  = charge(x, 0.0018);
-  var stamp  = charge(x, 0.002);
-  var sebi   = charge(x, 0.0001);
+  const broker = Math.min(20.00, charge(x, 0.03));
+  const sttctt = charge(x, 0.01);
+  const gst    = charge(broker + sttctt, 18.0);
+  const exch   = charge(x, 0.0026);
+  const clear  = charge(x, 0.0018);
+  const stamp  = charge(x, 0.002);
+  const sebi   = charge(x, 0.0001);
   return broker + sttctt + gst + exch + clear + stamp + sebi;
 }
 
@@ -3116,28 +3221,29 @@ function commodityFuturesSellCharges(x: number) {
  * @param value traded value
  * @returns total charges including brokerage and taxes
  */
- export function commodityFuturesCharges(side: OrderSide, value: number) {
+ export function commodityFuturesCharges(side: OrderSide, value: number): number {
   if (side === "BUY") return commodityFuturesBuyCharges(value);
   return commodityFuturesSellCharges(value);
 }
 
-
+/** Get commodity options buy charges. */
 function commodityOptionsBuyCharges(x: number) {
-  var broker = 20.00;
-  var gst    = charge(broker, 18.0);
-  var clear  = charge(x, 0.05);
-  var stamp  = charge(x, 0.0003);
-  var sebi   = charge(x, 0.0001);
+  const broker = 20.00;
+  const gst    = charge(broker, 18.0);
+  const clear  = charge(x, 0.05);
+  const stamp  = charge(x, 0.0003);
+  const sebi   = charge(x, 0.0001);
   return broker + gst + clear + stamp + sebi;
 }
 
+/** Get commodity options sell charges. */
 function commodityOptionsSellCharges(x: number) {
-  var broker = 20.00;
-  var sttctt = charge(x, 0.05);
-  var gst    = charge(broker + sttctt, 18.0);
-  var clear  = charge(x, 0.05);
-  var stamp  = charge(x, 0.0003);
-  var sebi   = charge(x, 0.0001);
+  const broker = 20.00;
+  const sttctt = charge(x, 0.05);
+  const gst    = charge(broker + sttctt, 18.0);
+  const clear  = charge(x, 0.05);
+  const stamp  = charge(x, 0.0003);
+  const sebi   = charge(x, 0.0001);
   return broker + sttctt + gst + clear + stamp + sebi;
 }
 
@@ -3147,16 +3253,17 @@ function commodityOptionsSellCharges(x: number) {
  * @param value traded value
  * @returns total charges including brokerage and taxes
  */
- export function commodityOptionsCharges(side: OrderSide, value: number) {
+ export function commodityOptionsCharges(side: OrderSide, value: number): number {
   if (side === "BUY") return commodityOptionsBuyCharges(value);
   return commodityOptionsSellCharges(value);
 }
+//#endregion
 
 
 
 
-// ERROR
-// -----
+//#region ERROR
+//-------------
 
 /** Defines a FYERS error {code, message}. */
 class ApiError extends Error {
@@ -3175,15 +3282,16 @@ class ApiError extends Error {
     this.stack = (new Error(message)).stack;
   }
 }
+//#endregion
+//#endregion
 
 
 
+//#region STATELESS INTERFACE
+//===========================
 
-// STATELESS INTERFACE
-// ===================
-
-// LOGIN
-// -----
+//#region LOGIN
+//-------------
 
 /**
  * Get request step 1 for authorization.
@@ -3206,19 +3314,20 @@ export function loginStep1(appId: string, redirectUrl: string, state: string="de
 export function loginStep2(appHash: string, authorizationCode: string): HttpRequestOptions {
   return http.loginStep2(fromLoginStep2Request({appHash, authorizationCode}));
 }
+//#endregion
 
 
 
 
-// USER
-// ----
+//#region USER
+//------------
 
 function validateApiStatus(x: http.Response) {
-  if (x.s !== "ok") throw new ApiError(x.code, x.message);
+  if (x.s !== "ok") throw new ApiError(x.code as number, x.message as string);
 }
 
 function validateApiOrder(x: http.OrderResponse) {
-  if (x.id === "") throw new ApiError(x.code, x.message);
+  if (x.id === "") throw new ApiError(x.code as number, x.message as string);
 }
 
 
@@ -3228,7 +3337,7 @@ function validateApiOrder(x: http.OrderResponse) {
  * @returns details of user's profile \{id, email, name, ...\}
  */
 export async function getProfile(auth: Authorization): Promise<Profile> {
-  var a = await http.getProfile(fromAuthorization(auth));
+  const a = await http.getProfile(fromAuthorization(auth));
   validateApiStatus(a);
   return toProfile(a);
 }
@@ -3240,7 +3349,7 @@ export async function getProfile(auth: Authorization): Promise<Profile> {
  * @returns details of user's funds \{equity: \{start, ...\}, commodity: \{start, ...\}\}
  */
 export async function getFunds(auth: Authorization): Promise<Funds> {
-  var a = await http.getFunds(fromAuthorization(auth));
+  const a = await http.getFunds(fromAuthorization(auth));
   validateApiStatus(a);
   return toFunds(a);
 }
@@ -3252,16 +3361,17 @@ export async function getFunds(auth: Authorization): Promise<Funds> {
  * @returns details of user's holdings \{details: [\{isin, ...\}], overall: \{count, ...\}\}
  */
 export async function getHoldings(auth: Authorization): Promise<Holdings> {
-  var a = await http.getHoldings(fromAuthorization(auth));
+  const a = await http.getHoldings(fromAuthorization(auth));
   validateApiStatus(a);
   return toHoldings(a);
 }
+//#endregion
 
 
 
 
-// TRANSACTION-INFO
-// ----------------
+//#region TRANSACTION-INFO
+//------------------------
 
 /**
  * Get details of an order placed in the current trading day.
@@ -3270,7 +3380,7 @@ export async function getHoldings(auth: Authorization): Promise<Holdings> {
  * @returns details of an order \{id, symbol, ticker, ...\}
  */
 export async function getOrder(auth: Authorization, id: string): Promise<Order> {
-  var a = await http.getOrder(fromAuthorization(auth), {id});
+  const a = await http.getOrder(fromAuthorization(auth), {id});
   validateApiStatus(a);
   return toOrder(a.orderBook[0]);
 }
@@ -3282,7 +3392,7 @@ export async function getOrder(auth: Authorization, id: string): Promise<Order> 
  * @returns details of orders \{details: [\{id, ...\}], overall: \{count, ...\}\}
  */
 export async function getOrders(auth: Authorization): Promise<Orders> {
-  var a = await http.getOrders(fromAuthorization(auth));
+  const a = await http.getOrders(fromAuthorization(auth));
   validateApiStatus(a);
   return toOrders(a);
 }
@@ -3294,7 +3404,7 @@ export async function getOrders(auth: Authorization): Promise<Orders> {
  * @returns details of positions \{details: [\{id, ...\}], overall: \{count, ...\}\}
  */
 export async function getPositions(auth: Authorization): Promise<Positions> {
-  var a = await http.getPositions(fromAuthorization(auth));
+  const a = await http.getPositions(fromAuthorization(auth));
   validateApiStatus(a);
   return toPositions(a);
 }
@@ -3306,16 +3416,17 @@ export async function getPositions(auth: Authorization): Promise<Positions> {
  * @returns details of trades \{details: [\{id, ...\}], overall: \{count, ...\}\}
  */
 export async function getTrades(auth: Authorization): Promise<Trades> {
-  var a = await http.getTrades(fromAuthorization(auth));
+  const a = await http.getTrades(fromAuthorization(auth));
   validateApiStatus(a);
   return toTrades(a);
 }
+//#endregion
 
 
 
 
-// ORDER-PLACEMENT
-// ---------------
+//#region ORDER-PLACEMENT
+//-----------------------
 
 /**
  * Place an order to any exchange via Fyers.
@@ -3324,7 +3435,7 @@ export async function getTrades(auth: Authorization): Promise<Trades> {
  * @returns order id
  */
 export async function placeOrder(auth: Authorization, order: PlaceOrder): Promise<string> {
-  var a = await http.placeOrder(fromAuthorization(auth), fromPlaceOrder(order));
+  const a = await http.placeOrder(fromAuthorization(auth), fromPlaceOrder(order));
   validateApiOrder(a);
   return a.id;
 }
@@ -3337,19 +3448,20 @@ export async function placeOrder(auth: Authorization, order: PlaceOrder): Promis
  * @returns unique order ids
  */
 export function placeOrders(auth: Authorization, orders: PlaceOrder[]): Promise<string>[] {
-  var p = http.placeOrders(fromAuthorization(auth), orders.map(fromPlaceOrder));
+  const p = http.placeOrders(fromAuthorization(auth), orders.map(fromPlaceOrder));
   return orders.map((_, i) => p.then(a => {
     validateApiStatus(a);
     validateApiOrder(a.data[i].body);
     return a.data[i].body.id;
   }));
 }
+//#endregion
 
 
 
 
-// OTHER-TRANSACTIONS
-// ------------------
+//#region OTHER-TRANSACTIONS
+//--------------------------
 
 /**
  * Modifies an order placed on any exchange via Fyers.
@@ -3358,7 +3470,7 @@ export function placeOrders(auth: Authorization, orders: PlaceOrder[]): Promise<
  * @returns order id
  */
 export async function modifyOrder(auth: Authorization, order: ModifyOrder): Promise<string> {
-  var a = await http.modifyOrder(fromAuthorization(auth), fromModifyOrder(order));
+  const a = await http.modifyOrder(fromAuthorization(auth), fromModifyOrder(order));
   validateApiStatus(a);
   return a.id;
 }
@@ -3371,7 +3483,7 @@ export async function modifyOrder(auth: Authorization, order: ModifyOrder): Prom
  * @returns unique order ids
  */
 export function modifyOrders(auth: Authorization, orders: ModifyOrder[]): Promise<void>[] {
-  var p = http.modifyOrders(fromAuthorization(auth), orders.map(fromModifyOrder));
+  const p = http.modifyOrders(fromAuthorization(auth), orders.map(fromModifyOrder));
   return orders.map((_, i) => p.then(a => {
     validateApiStatus(a);
     validateApiOrder(a.data[i].body);
@@ -3386,7 +3498,7 @@ export function modifyOrders(auth: Authorization, orders: ModifyOrder[]): Promis
  * @returns order id
  */
 export async function cancelOrder(auth: Authorization, id: string): Promise<void> {
-  var a = await http.cancelOrder(fromAuthorization(auth), {id});
+  const a = await http.cancelOrder(fromAuthorization(auth), {id});
   validateApiStatus(a);
 }
 
@@ -3398,7 +3510,7 @@ export async function cancelOrder(auth: Authorization, id: string): Promise<void
  * @returns unique order ids
  */
 export function cancelOrders(auth: Authorization, ids: string[]): Promise<void>[] {
-  var p = http.cancelOrders(fromAuthorization(auth), ids.map(id => ({id})));
+  const p = http.cancelOrders(fromAuthorization(auth), ids.map(id => ({id})));
   return ids.map((_, i) => p.then(a => {
     validateApiStatus(a);
     validateApiOrder(a.data[i].body);
@@ -3412,7 +3524,7 @@ export function cancelOrders(auth: Authorization, ids: string[]): Promise<void>[
  * @param id position id
  */
 export async function exitPosition(auth: Authorization, id: string): Promise<void> {
-  var a = await http.exitPosition(fromAuthorization(auth), {id});
+  const a = await http.exitPosition(fromAuthorization(auth), {id});
   validateApiStatus(a);
 }
 
@@ -3422,7 +3534,7 @@ export async function exitPosition(auth: Authorization, id: string): Promise<voi
  * @param auth authorization \{appId, accessToken\}
  */
 export async function exitAllPositions(auth: Authorization): Promise<void> {
-  var a = await http.exitAllPositions(fromAuthorization(auth));
+  const a = await http.exitAllPositions(fromAuthorization(auth));
   validateApiStatus(a);
 }
 
@@ -3433,23 +3545,24 @@ export async function exitAllPositions(auth: Authorization): Promise<void> {
  * @param conversion details of conversion \{symbol, side, quantity, ...\}
  */
 export async function convertPosition(auth: Authorization, conversion: ConvertPosition): Promise<void> {
-  var a = await http.convertPosition(fromAuthorization(auth), fromConvertPosition(conversion));
+  const a = await http.convertPosition(fromAuthorization(auth), fromConvertPosition(conversion));
   validateApiStatus(a);
 }
+//#endregion
 
 
 
 
-// BROKER-CONFIG, DATA-API
-// -----------------------
+//#region BROKER-CONFIG, DATA-API
+//-------------------------------
 
 /**
  * Get the current market status of all the exchanges and their segments.
  * @param auth authorization \{appId, accessToken\}
  * @returns markets status \{details: [\{exchange, ...\}], overall: \{count, ...\}\}
  */
-export async function getMarketStatus(auth: Authorization): Promise<MarketsStatus> {
-  var a = await http.getMarketStatus(fromAuthorization(auth));
+export async function getMarketsStatus(auth: Authorization): Promise<MarketsStatus> {
+  const a = await http.getMarketStatus(fromAuthorization(auth));
   validateApiStatus(a);
   return toMarketsStatus(a);
 }
@@ -3462,7 +3575,7 @@ export async function getMarketStatus(auth: Authorization): Promise<MarketsStatu
  * @returns market history \{details: [\{date, ...\}], overall: \{dateFrom, ...\}\}
  */
 export async function getMarketHistory(auth: Authorization, market: GetMarketHistory): Promise<MarketHistory> {
-  var a = await http.getMarketHistory(fromAuthorization(auth), fromGetMarketHistory(market));
+  const a = await http.getMarketHistory(fromAuthorization(auth), fromGetMarketHistory(market));
   validateApiStatus(a);
   return toMarketHistory(a);
 }
@@ -3475,7 +3588,7 @@ export async function getMarketHistory(auth: Authorization, market: GetMarketHis
  * @returns market quotes [\{symbol, name, exchange, ...\}]
  */
 export async function getMarketQuotes(auth: Authorization, symbols: string[]): Promise<MarketQuote[]> {
-  var a = await http.getMarketQuotes(fromAuthorization(auth), {symbols: symbols.join()});
+  const a = await http.getMarketQuotes(fromAuthorization(auth), {symbols: symbols.join()});
   validateApiStatus(a);
   return a.d.map(toMarketQuote);
 }
@@ -3488,20 +3601,20 @@ export async function getMarketQuotes(auth: Authorization, symbols: string[]): P
  * @returns market depth \{bidQuantity, askQuantity, bids, ...\}
  */
 export async function getMarketDepth(auth: Authorization, symbol: string): Promise<MarketDepth> {
-  var a = await http.getMarketDepth(fromAuthorization(auth), {symbol, ohlcv_flag: 1});
+  const a = await http.getMarketDepth(fromAuthorization(auth), {symbol, ohlcv_flag: 1});
   validateApiStatus(a);
-  return toMarketDepth(a);
+  return toMarketDepth(a) as MarketDepth;
 }
 
 
 /**
  * Get all the latest symbols of all the exchanges from the symbol master files.
- * @param auth authorization (unused)
+ * @param _auth authorization (unused)
  * @param exchange exchange name
  * @param segment segment name
  * @returns symbol master file as text
  */
-export function getSymbolMaster(auth: null, exchange: string, segment: string): Promise<string> {
+export function getSymbolMaster(_auth: null, exchange: string, segment: string): Promise<string> {
   return http.getSymbolMaster(null, {exchange, segment});
 }
 
@@ -3512,8 +3625,8 @@ export function getSymbolMaster(auth: null, exchange: string, segment: string): 
  * @returns list of symbol details [\{symbol, description, lotSize, ...\}]
  */
 export function processSymbolMaster(csv: string): SymbolDetails[] {
-  var a: SymbolDetails[] = [];
-  var RLINE = /[^\n]+/g, m = null;
+  const a: SymbolDetails[] = [];
+  const RLINE = /[^\n]+/g; let m = null;
   while ((m = RLINE.exec(csv)) != null)
     a.push(toSymbolDetails(m[0]));
   return a;
@@ -3522,28 +3635,29 @@ export function processSymbolMaster(csv: string): SymbolDetails[] {
 
 /**
  * Get details of symbols from the symbol master files.
- * @param auth authorization (unused)
+ * @param _auth authorization (unused)
  * @param exchange exchange name
  * @param segment segment name
  * @returns list of symbol details [\{symbol, description, lotSize, ...\}]
  */
-export async function loadSymbolMaster(auth: null, exchange: string, segment: string): Promise<SymbolDetails[]> {
-  var csv = await getSymbolMaster(null, exchange, segment);
+export async function loadSymbolMaster(_auth: null, exchange: string, segment: string): Promise<SymbolDetails[]> {
+  const csv = await getSymbolMaster(null, exchange, segment);
   return processSymbolMaster(csv);
 }
+//#endregion
 
 
 
 
-// EDIS
-// ----
+//#region EDIS
+//------------
 
 /**
  * Generate e-DIS TPIN for validating/authorising transaction.
  * @param auth authorization \{appId, accessToken\}
  */
 export async function generateEdisTpin(auth: Authorization): Promise<void> {
-  var a = await http.generateEdisTpin(fromAuthorization(auth));
+  const a = await http.generateEdisTpin(fromAuthorization(auth));
   validateApiStatus(a);
 }
 
@@ -3554,7 +3668,7 @@ export async function generateEdisTpin(auth: Authorization): Promise<void> {
  * @returns list of e-DIS transactions \{details: [\{id, isin, ...\}], overall: \{count, quantity, ...\}\}
  */
 export async function getEdisTransactions(auth: Authorization): Promise<EdisTransactions> {
-  var a = await http.getEdisTransactions(fromAuthorization(auth));
+  const a = await http.getEdisTransactions(fromAuthorization(auth));
   validateApiStatus(a);
   return toEdisTransactions(a);
 }
@@ -3578,19 +3692,20 @@ export function submitEdisHoldingsStep(auth: Authorization, holdings: EdisHoldin
  * @returns edis status
  */
 export async function inquireEdisTransaction(auth: Authorization, id: string): Promise<number> {
-  var a = await http.inquireEdisTransaction(fromAuthorization(auth), {transactionId: id});
+  const a = await http.inquireEdisTransaction(fromAuthorization(auth), {transactionId: id});
   validateApiStatus(a);
   return a.data.FAILED_CNT > 0? -a.data.FAILED_CNT : a.data.SUCEESS_CNT;
 }
+//#endregion
+//#endregion
 
 
 
+//#region NOTIFICATIONS
+//=====================
 
-// NOTIFICATIONS
-// =============
-
-// ORDER-UPDATE
-// ------------
+//#region ORDER-UPDATE
+//--------------------
 
 /**
  * Connect to Order update URL with WebSocket.
@@ -3610,8 +3725,8 @@ export function connectOrderUpdate(auth: Authorization, fn: OnOrderUpdateNotific
  * @param conn websocket connection
  */
 export async function subscribeOrderUpdate(conn: Connection): Promise<void> {
-  var a = await websocket.subscribeOrderUpdate(conn);
-  if (a.code < 0) throw new ApiError(a.code, a.message);
+  const a = await websocket.subscribeOrderUpdate(conn);
+  if (a.code as number < 0) throw new ApiError(a.code as number, a.message as string);
 }
 
 
@@ -3620,15 +3735,16 @@ export async function subscribeOrderUpdate(conn: Connection): Promise<void> {
  * @param conn websocket connection
  */
 export async function unsubscribeOrderUpdate(conn: Connection): Promise<void> {
-  var a = await websocket.unsubscribeOrderUpdate(conn);
-  if (a.code < 0) throw new ApiError(a.code, a.message);
+  const a = await websocket.unsubscribeOrderUpdate(conn);
+  if (a.code as number < 0) throw new ApiError(a.code as number, a.message as string);
 }
+//#endregion
 
 
 
 
-// MARKET-DATA
-// -----------
+//#region MARKET-DATA
+//-------------------
 
 /**
  * Connect to Market data URL with WebSocket.
@@ -3636,7 +3752,7 @@ export async function unsubscribeOrderUpdate(conn: Connection): Promise<void> {
  * @param fn notified function
  * @returns WebSocket connection
  */
-export function connectMarketData(auth: Authorization, fn: OnMarketDataNotification, map: Map<string, string>=null): Promise<Connection> {
+export function connectMarketData(auth: Authorization, fn: OnMarketDataNotification, map: Map<string, string> | null = null): Promise<Connection> {
   return websocket.connectMarketData(fromAuthorization(auth), x => {
     if (x.d) fn(toMarketDataNotification(x, map));
   });
@@ -3649,8 +3765,8 @@ export function connectMarketData(auth: Authorization, fn: OnMarketDataNotificat
  * @param symbols list of symbols
  */
 export async function subscribeMarketQuote(conn: Connection, symbols: string[]): Promise<void> {
-  var a = await websocket.subscribeMarketQuote(conn, symbols);
-  if (a.code < 0) throw new ApiError(a.code, a.message);
+  const a = await websocket.subscribeMarketQuote(conn, symbols);
+  if (a.code as number < 0) throw new ApiError(a.code as number, a.message as string);
 }
 
 
@@ -3660,8 +3776,8 @@ export async function subscribeMarketQuote(conn: Connection, symbols: string[]):
  * @param symbols list of symbols
  */
 export async function subscribeMarketDepth(conn: Connection, symbols: string[]): Promise<void> {
-  var a = await websocket.subscribeMarketDepth(conn, symbols);
-  if (a.code < 0) throw new ApiError(a.code, a.message);
+  const a = await websocket.subscribeMarketDepth(conn, symbols);
+  if (a.code as number < 0) throw new ApiError(a.code as number, a.message as string);
 }
 
 
@@ -3671,8 +3787,8 @@ export async function subscribeMarketDepth(conn: Connection, symbols: string[]):
  * @param symbols list of symbols
  */
 export async function unsubscribeMarketQuote(conn: Connection, symbols: string[]): Promise<void> {
-  var a = await websocket.unsubscribeMarketQuote(conn, symbols);
-  if (a.code < 0) throw new ApiError(a.code, a.message);
+  const a = await websocket.unsubscribeMarketQuote(conn, symbols);
+  if (a.code as number < 0) throw new ApiError(a.code as number, a.message as string);
 }
 
 
@@ -3682,15 +3798,17 @@ export async function unsubscribeMarketQuote(conn: Connection, symbols: string[]
  * @param symbols list of symbols
  */
 export async function unsubscribeMarketDepth(conn: Connection, symbols: string[]): Promise<void> {
-  var a = await websocket.unsubscribeMarketDepth(conn, symbols);
-  if (a.code < 0) throw new ApiError(a.code, a.message);
+  const a = await websocket.unsubscribeMarketDepth(conn, symbols);
+  if (a.code as number < 0) throw new ApiError(a.code as number, a.message as string);
 }
+//#endregion
+//#endregion
 
 
 
 
-// STATEFUL INTERFACE
-// ==================
+//#region STATEFUL INTERFACE
+//==========================
 
 /** Stateful interface for FYERS API. */
 export class Api implements Authorization {
@@ -3716,8 +3834,8 @@ export class Api implements Authorization {
     this.accessToken = accessToken;
     this.symbolDetails = new Map();
     this.tokenSymbol   = new Map();
-    this.orderUpdateConnection = null;
-    this.marketDataConnection  = null;
+    this.orderUpdateConnection = Promise.reject(new Error("Not connected to order update"));
+    this.marketDataConnection  = Promise.reject(new Error("Not connected to market data"));
   }
 
 
@@ -3748,139 +3866,181 @@ export class Api implements Authorization {
    * @param segment segment name
    * @returns symbol master file as text
    */
-  static getSymbolMaster(exchange: string, segment: string) { return getSymbolMaster(null, exchange, segment); }
+  static getSymbolMaster(exchange: string, segment: string): Promise<string> {
+    return getSymbolMaster(null, exchange, segment);
+  }
 
-  /**
+  /**`
    * Get basic details of the client.
    * @returns details of user's profile \{id, email, name, ...\}
    */
-  getProfile() { return getProfile(this); }
+  getProfile(): Promise<Profile> {
+    return getProfile(this);
+  }
 
   /**
    * Get balance available for the user for capital as well as the commodity market.
    * @returns details of user's funds \{equity: \{start, ...\}, commodity: \{start, ...\}\}
    */
-  getFunds() { return getFunds(this); }
+  getFunds(): Promise<Funds> {
+    return getFunds(this);
+  }
 
   /**
    * Get the equity and mutual fund holdings which the user has in this demat account.
    * @returns details of user's holdings \{details: [\{isin, ...\}], overall: \{count, ...\}\}
    */
-  getHoldings() { return getHoldings(this); }
+  getHoldings(): Promise<Holdings> {
+    return getHoldings(this);
+  }
 
   /**
    * Get details of an order placed in the current trading day.
    * @param id order id
    * @returns details of an order \{id, symbol, ticker, ...\}
    */
-  getOrder(id: string) { return getOrder(this, id); }
+  getOrder(id: string): Promise<Order> {
+    return getOrder(this, id);
+  }
 
   /**
    * Get details of all the orders placed in the current trading day.
    * @returns details of orders \{details: [\{id, ...\}], overall: \{count, ...\}\}
    */
-  getOrders() { return getOrders(this); }
+  getOrders(): Promise<Orders> {
+    return getOrders(this);
+  }
 
   /**
    * Get details of all the positions in the current trading day.
    * @returns details of positions \{details: [\{id, ...\}], overall: \{count, ...\}\}
    */
-  getPositions() { return getPositions(this); }
+  getPositions(): Promise<Positions> {
+    return getPositions(this);
+  }
 
   /**
    * Get details of all the trades in the current trading day.
    * @returns details of trades \{details: [\{id, ...\}], overall: \{count, ...\}\}
    */
-  getTrades() { return getTrades(this); }
+  getTrades(): Promise<Trades> {
+    return getTrades(this);
+  }
 
   /**
    * Place an order to any exchange via Fyers.
    * @param order details of an order \{symbol, type, side, ...\}
    * @returns order id
    */
-  placeOrder(order: PlaceOrder) { return placeOrder(this, order); }
+  placeOrder(order: PlaceOrder): Promise<string> {
+    return placeOrder(this, order);
+  }
 
   /**
    * Place multiple orders to any exchange via Fyers.
    * @param orders details of multiple orders [\{symbol, type, side, ...\}]
    * @returns unique order ids
    */
-  placeOrders(orders: PlaceOrder[]) { return placeOrders(this, orders); }
+  placeOrders(orders: PlaceOrder[]): Promise<string>[] {
+    return placeOrders(this, orders);
+  }
 
   /**
    * Modifies an order placed on any exchange via Fyers.
    * @param order details of order \{id, type, quantity, ...\}
    * @returns order id
    */
-  modifyOrder(order: ModifyOrder) { return modifyOrder(this, order); }
+  modifyOrder(order: ModifyOrder): Promise<string> {
+    return modifyOrder(this, order);
+  }
 
   /**
    * Modifies orders placed on any exchange via Fyers.
    * @param orders details of orders [\{id, type, quantity, ...\}]
    * @returns unique order ids
    */
-  modifyOrders(orders: ModifyOrder[]) { return modifyOrders(this, orders); }
+  modifyOrders(orders: ModifyOrder[]): Promise<void>[] {
+    return modifyOrders(this, orders);
+  }
 
   /**
    * Cancels an order placed on any exchange via Fyers.
    * @param id order id
    * @returns order id
    */
-  cancelOrder(id: string) { return cancelOrder(this, id); }
+  cancelOrder(id: string): Promise<void> {
+    return cancelOrder(this, id);
+  }
 
   /**
    * Cancels orders placed on any exchange via Fyers.
    * @param ids unique order ids
    * @returns unique order ids
    */
-  cancelOrders(ids: string[]) { return cancelOrders(this, ids); }
+  cancelOrders(ids: string[]): Promise<void>[] {
+    return cancelOrders(this, ids);
+  }
 
   /**
    * Exits a position on the current trading day.
    * @param id position id
    * @returns position status
    */
-  exitPosition(id: string) { return exitPosition(this, id); }
+  exitPosition(id: string): Promise<void> {
+    return exitPosition(this, id);
+  }
 
   /**
    * Exits all positions on the current trading day.
    * @returns positions status
    */
-  exitAllPositions() { return exitAllPositions(this); }
+  exitAllPositions(): Promise<void> {
+    return exitAllPositions(this);
+  }
 
   /**
    * Converts a position on the current trading day.
    * @param conversion details of conversion \{symbol, side, quantity, ...\}
    * @returns conversion status
    */
-  convertPosition(conversion: ConvertPosition) { return convertPosition(this, conversion); }
+  convertPosition(conversion: ConvertPosition): Promise<void> {
+    return convertPosition(this, conversion);
+  }
 
   /**
    * Get the current market status of all the exchanges and their segments.
    * @returns markets status \{details: [\{exchange, ...\}], overall: \{count, ...\}\}
    */
-  getMarketStatus() { return getMarketStatus(this); }
+  getMarketsStatus(): Promise<MarketsStatus> {
+    return getMarketsStatus(this);
+  }
 
   /**
    * Get the market history for a particular symbol.
    * @param market market details \{symbol, resolution, fromDate, ...\}
    * @returns market history \{details: [\{date, ...\}], overall: \{dateFrom, ...\}\}
    */
-  getMarketHistory(market: GetMarketHistory) { return getMarketHistory(this, market); }
+  getMarketHistory(market: GetMarketHistory): Promise<MarketHistory> {
+    return getMarketHistory(this, market);
+  }
 
   /**
    * Get the current market quotes for a set of symbols.
    * @param symbols list of symbols
    * @returns market quotes [\{symbol, name, exchange, ...\}]
    */
-  getMarketQuotes(symbols: string[]) { return getMarketQuotes(this, symbols); }
+  getMarketQuotes(symbols: string[]): Promise<MarketQuote[]> {
+    return getMarketQuotes(this, symbols);
+  }
 
   /**
    * Get the current market depth for a particular symbol.
    * @param symbol symbol name
    * @returns market depth \{bidQuantity, askQuantity, bids, ...\}
    */
-  getMarketDepth(symbol: string) { return getMarketDepth(this, symbol); }
+  getMarketDepth(symbol: string): Promise<MarketDepth> {
+    return getMarketDepth(this, symbol);
+  }
 
   /**
    * Get details of symbols from the symbol master file text.
@@ -3888,12 +4048,12 @@ export class Api implements Authorization {
    * @returns list of symbol details [\{symbol, description, lotSize, ...\}]
    */
   processSymbolMaster(csv: string): SymbolDetails[] {
-    var rs = processSymbolMaster(csv);
-    for (var r of rs) {
+    const rows = processSymbolMaster(csv);
+    for (const r of rows) {
       this.symbolDetails.set(r.symbol, r);
       this.tokenSymbol.set(r.token, r.symbol);
     }
-    return rs;
+    return rows;
   }
 
   /**
@@ -3903,39 +4063,47 @@ export class Api implements Authorization {
    * @returns list of symbol details [\{symbol, description, lotSize, ...\}]
    */
   async loadSymbolMaster(exchange: string, segment: string): Promise<SymbolDetails[]> {
-    var rs = await loadSymbolMaster(null, exchange, segment);
-    for (var r of rs) {
+    const rows = await loadSymbolMaster(null, exchange, segment);
+    for (const r of rows) {
       this.symbolDetails.set(r.symbol, r);
       this.tokenSymbol.set(r.token, r.symbol);
     }
-    return rs;
+    return rows;
   }
 
   /**
    * Generate e-DIS TPIN for validating/authorising transaction.
    * @returns optional data
    */
-  generateEdisTpin() { return generateEdisTpin(this); }
+  generateEdisTpin(): Promise<void> {
+    return generateEdisTpin(this);
+  }
 
   /**
    * Get the necessary information regarding the holdings you have on your and also the status of the holdings. If the “sell” for the particular holdings is a success or not.
    * @returns list of e-DIS transactions \{details: [\{id, isin, ...\}], overall: \{count, quantity, ...\}\}
    */
-  getEdisTransactions() { return getEdisTransactions(this); }
+  getEdisTransactions(): Promise<EdisTransactions> {
+    return getEdisTransactions(this);
+  }
 
   /**
    * Redirect to CDSL page for login where you can submit your Holdings information and accordingly you can provide the same to exchange to Sell your holdings (browser only).
    * @param holdings holding details [\{isin, quantity\}]
    * @returns HTTP(s) request options (manual)
    */
-  submitEdisHoldingsStep(holdings: EdisHolding[]) { return submitEdisHoldingsStep(this, holdings); }
+  submitEdisHoldingsStep(holdings: EdisHolding[]): HttpRequestOptions {
+    return submitEdisHoldingsStep(this, holdings);
+  }
 
   /**
    * Inquire the information/status of the provided transaction Id for the respective holdings you have on your end.
    * @param id transaction id
    * @returns edis status
    */
-  inquireEdisTransaction(id: string) { return inquireEdisTransaction(this, id); }
+  inquireEdisTransaction(id: string): Promise<number> {
+    return inquireEdisTransaction(this, id);
+  }
 
 
   /**
@@ -3967,7 +4135,7 @@ export class Api implements Authorization {
    * @param fn notified function
    * @returns WebSocket connection
    */
-  async connectMarketData(fn: OnMarketDataNotification): Promise<Connection> {
+  connectMarketData(fn: OnMarketDataNotification): Promise<Connection> {
     if (this.marketDataConnection != null) this.marketDataConnection.then(c => c.close());
     return this.marketDataConnection = connectMarketData(this, fn, this.tokenSymbol);
   }
@@ -4004,3 +4172,4 @@ export class Api implements Authorization {
     return unsubscribeMarketDepth(await this.marketDataConnection, symbols);
   }
 }
+//#endregion

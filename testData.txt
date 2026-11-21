@@ -1,24 +1,24 @@
-import fs from "fs";
-import WebSocket from "ws";
-
-const app_id       = fs.readFileSync("app_id.log", "utf8").trim();
-const access_token = fs.readFileSync("access_token.log", "utf8").trim();
+const app_id       = Deno.readTextFileSync("app_id.log").trim();
+const access_token = Deno.readTextFileSync("access_token.log").trim();
 const DATA_URL     = "wss://api.fyers.in/socket/v2/dataSock";
 const DATA_QUERY   = "user-agent=fyers-api&type=symbolUpdate";
-const REQUEST_L1   = {"T": "SUB_DATA", "TLIST":  ["NSE:SBIN-EQ", "NSE:FCONSUMER-EQ"], "SUB_T": 1};
+const _REQUEST_L1  = {"T": "SUB_DATA", "TLIST":  ["NSE:SBIN-EQ", "NSE:FCONSUMER-EQ"], "SUB_T": 1};
 const REQUEST_L2   = {"T": "SUB_L2",   "L2LIST": ["NSE:SBIN-EQ", "NSE:FCONSUMER-EQ"], "SUB_T": 1};
 
 
 
 
-function mainDataUsingOn() {
-  var url = `${DATA_URL}?${DATA_QUERY}&access_token=${app_id}:${access_token}`;
-  var ws  = new WebSocket(url);
+function _mainDataUsingOn() {
+  const url = `${DATA_URL}?${DATA_QUERY}&access_token=${app_id}:${access_token}`;
+  const ws  = new WebSocket(url);
   ws.binaryType = 'arraybuffer';
-  ws.on('error', (err) => {
+  ws.addEventListener('error', (err: Error) => {
+    console.error("Error:", err);
+  }
+  ws.on('error', (err: Error) => {
     console.error("Error:", err);
   });
-  ws.on('close', (code, reason) => {
+  ws.on('close', (code: number, reason: string) => {
     console.log("Closed:", code, reason);
   });
   ws.on('open', () => {
@@ -34,13 +34,13 @@ function mainDataUsingOn() {
 
 
 function mainDataUsingProperty() {
-  var url = `${DATA_URL}?${DATA_QUERY}&access_token=${app_id}:${access_token}`;
-  var ws  = new WebSocket(url);
+  const url = `${DATA_URL}?${DATA_QUERY}&access_token=${app_id}:${access_token}`;
+  const ws  = new WebSocket(url);
   ws.binaryType = 'arraybuffer';
-  ws.onerror = (err) => {
+  ws.onerror = (err: Error) => {
     console.error("Error:", err);
   };
-  ws.onclose = (code, reason) => {
+  ws.onclose = (code: number, reason: string) => {
     console.log("Closed:", code, reason);
   };
   ws.onopen = () => {

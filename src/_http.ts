@@ -1,127 +1,124 @@
-import https from 'https';
+//#region REQUEST (TYPES)
+//-----------------------
 
-
-
-
-// REQUEST (TYPES)
-// ---------------
-
-/** HTTP(s) header keys and values. */
+/** HTTP(s) Header keys and values. */
 export interface HttpHeaders {
-  [key: string]: string,
+  [key: string]: string;
 }
 
 
-/** HTTP(s) request error. */
-export interface HttpRequestError extends Error {
+/** HTTP(s) Error. */
+export interface HttpError extends Error {
   /** Status code (404). */
-  code: number,
+  code: number;
   /** Response data. */
-  response: string|object,
+  response: string | object | null;
 }
 
 
-/** HTTP(s) request options. */
+/** HTTP(s) Request Options. */
 export interface HttpRequestOptions {
-  /** Full URL, inluding protocol and query. */
-  url: string,
+  /** Full URL, including protocol and query. */
+  url: string;
   /** HTTP(s) method (GET). */
-  method?: string,
+  method?: string;
   /** Body of request (JSON). */
-  body?: object|null,
+  body?: object | null;
   /** Request headers. */
-  headers?: HttpHeaders,
-  /** What if we don't get a response? */
-  timeout?: number,
+  headers?: HttpHeaders;
+  /** What if we don't get a response? (ms) */
+  timeout?: number;
 }
+//#endregion
 
 
 
 
-// QUERY
-// -----
+//#region QUERY
+//-------------
 
-export function queryString(data: object): string {
-  if (data == null) return '';
-  var a = new URLSearchParams();
-  for (var k in data)
+/** Convert an object to a query string. */
+export function queryString(data: Record<string, string>): string {
+  if (data == null) return "";
+  const a = new URLSearchParams();
+  for (const k in data)
     a.append(k, data[k]);
-  return '?' + a.toString();
+  return "?" + a.toString();
 }
+//#endregion
 
 
 
 
-// ERROR
-// -----
+//#region ERROR
+//-------------
 
-function getHttpError(error: Error): HttpRequestError {
-  var a  = error as HttpRequestError;
-  a.code = 0;
-  a.response = null;
-  return a;
-}
-
-function getHttpResponseError(error: Error, code: number, response: string): HttpRequestError {
-  var a  = error as HttpRequestError;
-  a.code = code;
+/** Convert a generic error to an HTTP error. */
+function httpError(error: Error, code: number = 0, response: string | null = null): HttpError {
+  const a = error as HttpError;
+  a.code     = code
   a.response = response;
   return a;
 }
+//#endregion
 
 
 
 
-// HEADERS
-// -------
+//#region HEADERS
+//---------------
 
-function hasHeader(key: string, o: HttpRequestOptions): boolean {
-  if (o.headers == null) return false;
-  if (o.headers.hasOwnProperty(key)) return true;
-  if (o.headers.hasOwnProperty(key.toLowerCase())) return true;
+/** Check if a header exists (case-insensitive). */
+function hasHeader(key: string, headers: HttpHeaders): boolean {
+  if (headers == null) return false;
+  if (headers[key] != null) return true;
+  if (headers[key.toLowerCase()] != null) return true;
   return false;
 }
 
+
+/** Set default headers if not already present. */
 function setHeaders(headers: HttpHeaders, o: HttpRequestOptions): void {
-  if (o.body != null && !hasHeader('Content-Type', o)) {
-    headers['content-type'] = 'application/json; charset=utf-8';
+  if (o.body != null && !hasHeader("Content-Type", headers)) {
+    headers["content-type"] = "application/json; charset=utf-8";
   }
-  if (!hasHeader('Accept', o)) {
-    headers['accept'] = 'application/json, text/*';
+  if (!hasHeader("Accept", headers)) {
+    headers["accept"] = "application/json, text/*";
   }
+}
+//#endregion
+
+
+
+
+//#region REQUEST
+//---------------
+
+/** Make an HTTP(s) request and return the response as text. */
+async function httpRequest(o: HttpRequestOptions): Promise<string> {
+  const {url, method = "GET", body} = o;
+  const headers: HttpHeaders = {...(o.headers ?? {})};
+  setHeaders(headers, o);
+  // Fetch API supports AbortSignal.timeout() in modern browsers and Node.js 20+.
+  const signal   = o.timeout != null? AbortSignal.timeout(o.timeout) : undefined;
+  const bodyText = body != null? JSON.stringify(body) : undefined;
+  let res: Response;
+  try { res = await fetch(url, {method, headers, body: bodyText, signal}); }
+  catch (e) { throw httpError(e as Error); }
+  try { return await res.text(); }
+  catch (e) { throw httpError(e as Error, res.status, ""); }
 }
 
 
-
-
-// REQUEST
-// -------
-
-function httpRequest(o: HttpRequestOptions): Promise<string> {
-  return new Promise((resolve, reject) => {
-    var {url, method, headers, timeout} = o;
-    setHeaders(headers, o);
-    var req = https.request(url, {method, headers, timeout}, res => {
-      var body = '';
-      res.setEncoding('utf8');
-      res.on('error', e => reject(getHttpResponseError(e, res.statusCode, body)));
-      res.on('data',  chunk => body += chunk);
-      res.on('end',   () => resolve(body));
-    });
-    req.on('error', e => reject(getHttpError(e)));
-    if (o.body != null) {
-      req.useChunkedEncodingByDefault = true;
-      req.write(JSON.stringify(o.body));
-    }
-    req.end();
-  });
-}
-
+/** Make an HTTP(s) request and return the response as text. */
 export function httpRequestText(options: HttpRequestOptions): Promise<string> {
   return httpRequest(options);
 }
 
+
+/** Make an HTTP(s) request and return the response as JSON. */
 export async function httpRequestJson(options: HttpRequestOptions): Promise<object> {
-  var response = await httpRequest(options);
-  return JSON.parse(response);
+  const res = await httpRequest(options);
+  return JSON.parse(res);
 }
+//#endregion
